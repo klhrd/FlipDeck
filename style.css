@@ -1,0 +1,110 @@
+body {
+    font-family: 'Noto Sans TC', 'Inter', sans-serif;
+    touch-action: manipulation;
+}
+.material-symbols-outlined {
+    vertical-align: middle;
+    font-size: 1.25em;
+}
+.card {
+    line-height: 1.2;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+.card .placeholder { display: block; }
+.card .content { display: none; }
+.card.revealed .placeholder { display: none; }
+.card.revealed .content { display: block; }
+button, .card, #main-screen, a {
+    -webkit-tap-highlight-color: transparent;
+}
+/* 通用選單面板樣式 */
+.menu-panel {
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%); /* 預設隱藏 */
+    z-index: 50; /* 提高層級，確保在最上層 */
+}
+.menu-panel.open {
+    transform: translateX(0); /* 打開時顯示 */
+}
+#menu-overlay {
+    z-index: 40; /* 遮罩層級略低於選單 */
+}
+
+/* JSON 編輯器 Textarea 樣式 */
+#json-editor-textarea {
+    font-family: monospace;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    background-color: #1a202c; /* dark:gray-900 */
+    color: #e2e8f0; /* dark:gray-200 */
+    border: 1px solid #4a5568; /* dark:gray-600 */
+    border-radius: 0.5rem; /* rounded-lg */
+    resize: none; /* 禁用拖曳縮放 */
+}
+/* 標籤樣式 */
+.tag-badge {
+    display: inline-block;
+    background-color: #e6fefc; /* teal-50 */
+    color: #134e4a; /* teal-900 */
+    border: 1px solid #99f6e4; /* teal-200 */
+    padding: 2px 8px;
+    border-radius: 9999px; /* rounded-full */
+    font-size: 0.75rem; /* text-xs */
+    font-weight: 500; /* font-medium */
+    margin: 2px;
+    cursor: pointer;
+}
+.dark .tag-badge {
+    background-color: #134e4a; /* teal-900 */
+    color: #ccfbf1; /* teal-100 */
+    border-color: #14b8a6; /* teal-500 */
+}
+.tag-badge.active-filter {
+    background-color: #14b8a6; /* teal-500 */
+    color: white;
+}
+/* 選單頂部圖示按鈕樣式 */
+.menu-icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem; /* w-10 */
+    height: 2.5rem; /* h-10 */
+    padding: 0.5rem; /* p-2 */
+    border-radius: 9999px; /* rounded-full */
+    transition: background-color 0.2s;
+}
+.menu-icon-button:hover {
+    background-color: #f3f4f6; /* hover:bg-gray-100 */
+}
+.dark .menu-icon-button:hover {
+    background-color: #374151; /* dark:hover:bg-gray-700 */
+}
+/* 自動翻開複選框樣式 */
+#auto-reveal-options-container label {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    cursor: pointer;
+}
+#auto-reveal-options-container input {
+    margin-right: 8px;
+    width: 1rem;
+    height: 1rem;
+    color: #14b8a6; /* teal-500 */
+    border-color: #9ca3af; /* gray-400 */
+    border-radius: 0.25rem; /* rounded */
+    cursor: pointer;
+}
+#auto-reveal-options-container input:focus {
+    outline: 2px solid #14b8a6; /* focus ring (replaces Tailwind's ring) */
+    outline-offset: 0;
+}
+/* 圖形編輯器 Row 樣式 */
+.editor-row:nth-child(even) {
+    background-color: rgba(0,0,0,0.02);
+}
+.dark .editor-row:nth-child(even) {
+    background-color: rgba(255,255,255,0.02);
+}

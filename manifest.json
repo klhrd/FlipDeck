@@ -1,7 +1,7 @@
 {
-  "name": "單字卡 PWA",
-  "short_name": "單字卡",
-  "description": "一個漸進式網頁應用程式 (PWA) 的單字卡學習工具，支援 .txt 和 .json。",
+  "name": "FlipDeck",
+  "short_name": "FlipDeck",
+  "description": "FlipDeck 是一個漸進式網頁應用程式 (PWA) 的單字卡學習工具，支援 .txt 和 .json。",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f3f4f6",

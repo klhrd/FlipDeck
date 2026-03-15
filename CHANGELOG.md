@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.0] - 2026-03-15
+### Changed
+- **專案重新命名**：專案從「單字卡 PWA」正式更名為 「FlipDeck」。
+- **UI 更新**：首頁標題更換為 「FlipDeck」。
+- **文件與 PWA 同步**：更新 `manifest.json` 與相關說明文件之專案名稱與版本號。
+
 ## [3.1.0] - 2026-03-15
 ### Added
 - **圖形化單字集編輯器**：現在可以透過視覺化介面建立新單字集，或編輯現有的單字內容，支援動態增減卡片與欄位。

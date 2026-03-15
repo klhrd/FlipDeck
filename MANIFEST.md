@@ -1,4 +1,4 @@
-# Project Manifest - 單字卡 PWA
+# Project Manifest - FlipDeck
 
 ## 核心功能清單 (Critical Features)
 - [F01] **PWA 支援**：支援離線存取、Service Worker 快取與桌面/行動端安裝。
@@ -9,6 +9,7 @@
 - [F06] **個人化學習設定**：可調整字體大小、自動翻牌索引、卡片排列方向（水平/垂直）。
 - [F07] **現代化 UI/UX**：使用 Tailwind CSS 構建，支援深色模式 (Dark Mode) 與響應式設計。
 - [F08] **圖形化編輯器**：提供視覺化介面直接建立或編輯單字集，支援動態欄位增減，無需手動編寫文字檔。
+- [F09] **品牌重新命名**：將專案更名為 FlipDeck 並進行品牌視覺優化。
 
 ## 筆記 (Note)
 - 專案版本號目前由 `index.html` 的標題與內部註解維護。
