@@ -8,14 +8,17 @@
 - [F05] **資料備份與匯出**：提供全系統 .zip 備份及單一單字集多格式 (.csv, .txt, .json) 匯出。
 - [F06] **個人化學習設定**：可調整字體大小、自動翻牌索引、卡片排列方向（水平/垂直）。
 - [F07] **現代化 UI/UX**：使用 Tailwind CSS 構建，支援深色模式 (Dark Mode) 與響應式設計。
+- [F08] **圖形化編輯器**：提供視覺化介面直接建立或編輯單字集，支援動態欄位增減，無需手動編寫文字檔。
 
 ## 筆記 (Note)
 - 專案版本號目前由 `index.html` 的標題與內部註解維護。
 - 資料存儲完全依賴用戶瀏覽器的 LocalStorage，需定期導出備份以防資料遺失。
 - 程式架構採用原生 JavaScript (Vanilla JS)，不依賴大型框架。
+- 已全面從 Emoji 轉換為 Google Material Symbols 圖標。
 
 ## 技術棧 (Stack)
 - HTML5 / Tailwind CSS (CDN)
+- Google Material Symbols
 - Vanilla JavaScript
 - JSZip (用於備份功能)
 - Service Worker API

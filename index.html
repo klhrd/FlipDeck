@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字卡 PWA v3.0.3</title>
+    <title>單字卡 PWA v3.1.0</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -17,10 +17,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
         body {
             font-family: 'Noto Sans TC', 'Inter', sans-serif;
             touch-action: manipulation;
+        }
+        .material-symbols-outlined {
+            vertical-align: middle;
+            font-size: 1.25em;
         }
         .card {
             line-height: 1.2;
@@ -117,22 +122,27 @@
             outline: 2px solid #14b8a6; /* focus ring (replaces Tailwind's ring) */
             outline-offset: 0;
         }
+        /* 圖形編輯器 Row 樣式 */
+        .editor-row:nth-child(even) {
+            background-color: rgba(0,0,0,0.02);
+        }
+        .dark .editor-row:nth-child(even) {
+            background-color: rgba(255,255,255,0.02);
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-2 sm:p-4">
 
     <div id="app" class="w-full max-w-6xl mx-auto">
 
-        <!-- ===== 首頁 (v3.0.3) ===== -->
+        <!-- ===== 首頁 (v3.1.0) ===== -->
         <div id="home-screen" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
             
             <!-- 標題與選單 -->
             <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center space-x-2">
                     <button id="home-menu-btn" class="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
+                        <span class="material-symbols-outlined !text-3xl">menu</span>
                     </button>
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">我的單字集</h1>
                 </div>
@@ -163,7 +173,7 @@
                 <!-- 清單容器 - 使用固定高度 h-[70vh] -->
                 <div id="deck-list-container" class="space-y-3 h-[70vh] overflow-y-auto">
                     <!-- 範例卡片 (JS 動態生成) -->
-                    <p id="no-recent-decks" class="text-gray-500 dark:text-gray-400 text-center py-8">尚未開啟任何單字集。<br>點擊左上角 ☰ 選單中的 ＋ 按鈕來新增。</p>
+                    <p id="no-recent-decks" class="text-gray-500 dark:text-gray-400 text-center py-8">尚未開啟任何單字集。<br>點擊左上角選單中的 ＋ 按鈕來新增。</p>
                 </div>
             </div>
         </div>
@@ -177,16 +187,16 @@
             </div>
             <!-- 控制按鈕區 -->
             <div class="absolute bottom-4 left-4 right-4 flex justify-between items-center space-x-2">
-                <button id="prev-btn" class="px-4 py-3 bg-gray-300 dark:bg-gray-600 rounded-full shadow-md hover:bg-gray-400 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+                <button id="prev-btn" class="px-4 py-3 bg-gray-300 dark:bg-gray-600 rounded-full shadow-md hover:bg-gray-400 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"><span class="material-symbols-outlined">arrow_back</span></button>
                 <div class="flex space-x-4">
-                    <button id="incorrect-btn" class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center text-4xl bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-110">❌</button>
-                    <button id="correct-btn" class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center text-4xl bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all transform hover:scale-110">✅</button>
+                    <button id="incorrect-btn" class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-110"><span class="material-symbols-outlined !text-4xl">close</span></button>
+                    <button id="correct-btn" class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all transform hover:scale-110"><span class="material-symbols-outlined !text-4xl">check</span></button>
                 </div>
-                <button id="next-btn" class="px-4 py-3 bg-gray-300 dark:bg-gray-600 rounded-full shadow-md hover:bg-gray-400 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
+                <button id="next-btn" class="px-4 py-3 bg-gray-300 dark:bg-gray-600 rounded-full shadow-md hover:bg-gray-400 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"><span class="material-symbols-outlined">arrow_forward</span></button>
             </div>
             <!-- 頂部 UI -->
             <div class="absolute top-4 left-4 right-4 flex justify-between items-center">
-                <button id="menu-btn" class="p-2 bg-gray-300 dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors z-30"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+                <button id="menu-btn" class="p-2 bg-gray-300 dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors z-30"><span class="material-symbols-outlined">menu</span></button>
                 <div id="deck-info" class="text-sm font-medium bg-gray-300 dark:bg-gray-700 px-3 py-1 rounded-full text-center"></div>
             </div>
             <div id="history-alert" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-500 text-white px-6 py-3 rounded-lg shadow-xl text-center z-40"><p>無法再返回！</p><p class="text-sm">（最多保留20組歷史紀錄）</p></div>
@@ -203,26 +213,25 @@
         <!-- 頂部圖示列 -->
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
             <button id="home-menu-home-btn" class="menu-icon-button" title="首頁">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6-4a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 00-1-1h-2a1 1 0 00-1 1v4z" /></svg>
+                <span class="material-symbols-outlined">home</span>
             </button>
             <button id="home-menu-add-btn" class="menu-icon-button bg-teal-100 dark:bg-teal-800 text-teal-600 dark:text-teal-300" title="新增單字集">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                <span class="material-symbols-outlined">add</span>
             </button>
             <button id="home-menu-fullscreen-btn" class="menu-icon-button" title="全螢幕">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
+                <span class="material-symbols-outlined">fullscreen</span>
             </button>
             <button id="home-menu-close-btn" class="menu-icon-button">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         <!-- 列表 -->
         <div class="flex-grow overflow-y-auto">
             <ul class="space-y-2">
-                <li><button id="backup-all-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">💾 備份學習紀錄 (.zip)</button></li>
-                <li><button id="manage-tags-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">🏷️ 標籤管理</button></li>
-                <li><button id="show-how-to-use-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">❔ 使用教學</button></li>
+                <li><button id="create-new-deck-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined mr-2">edit_note</span>建立新單字集 (視覺化)</button></li>
+                <li><button id="backup-all-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined mr-2">backup</span>備份學習紀錄 (.zip)</button></li>
+                <li><button id="manage-tags-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined mr-2">label</span>標籤管理</button></li>
+                <li><button id="show-how-to-use-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined mr-2">help</span>使用教學</button></li>
             </ul>
         </div>
     </div>
@@ -232,36 +241,33 @@
         <!-- 頂部圖示列 -->
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
             <button id="deck-menu-home-btn" class="menu-icon-button" title="回到首頁">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6-4a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 00-1-1h-2a1 1 0 00-1 1v4z" /></svg>
+                <span class="material-symbols-outlined">home</span>
             </button>
             <button id="deck-menu-add-btn" class="menu-icon-button bg-teal-100 dark:bg-teal-800 text-teal-600 dark:text-teal-300" title="新增單字集">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                <span class="material-symbols-outlined">add</span>
             </button>
             <button id="deck-menu-fullscreen-btn" class="menu-icon-button" title="全螢幕">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
+                <span class="material-symbols-outlined">fullscreen</span>
             </button>
             <button id="deck-menu-download-btn" class="menu-icon-button" title="下載此單字集學習歷程">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
+                <span class="material-symbols-outlined">download</span>
             </button>
             <button id="deck-menu-close-btn" class="menu-icon-button">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         
         <!-- 列表 -->
         <div class="flex-grow overflow-y-auto">
             <ul class="space-y-2">
-                <li><button id="show-all-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">📄 顯示全卡片</button></li>
-                <li><button id="edit-deck-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">✍️ 編輯 (JSON)</button></li>
-                <li><button id="toggle-layout-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">🔃 切換排列方向</button></li>
+                <li><button id="show-all-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined mr-2">list_alt</span>顯示全卡片</button></li>
+                <li><button id="visual-edit-deck-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-bold text-teal-600 dark:text-teal-400"><span class="material-symbols-outlined mr-2">edit</span>圖形化編輯 (推薦)</button></li>
+                <li><button id="edit-deck-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 opacity-60 text-xs"><span class="material-symbols-outlined mr-2">code</span>進階編輯 (JSON)</button></li>
+                <li><button id="toggle-layout-btn" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined mr-2">import_export</span>切換排列方向</button></li>
                 
                 <!-- 自動翻開 (多選) -->
                 <li class="w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200">
-                    <span class="mr-2">▶️ 自動翻開</span>
+                    <span class="mr-2"><span class="material-symbols-outlined mr-2">play_arrow</span>自動翻開</span>
                     <div id="auto-reveal-options-container" class="mt-2 space-y-1 pl-2 border-l-2 border-gray-200 dark:border-gray-600">
                         <!-- JS 動態填入複選框 -->
                     </div>
@@ -269,7 +275,7 @@
                 
                 <!-- 字型大小 (Per-Deck) -->
                 <li class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-800 dark:text-gray-200">
-                    <span class="mr-2">🅰️ 大小</span>
+                    <span class="mr-2"><span class="material-symbols-outlined mr-2">format_size</span>大小</span>
                     <div class="flex items-center space-x-2">
                         <button id="font-size-decrease" class="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 font-bold">-</button>
                         <span id="font-size-value" class="w-16 text-center text-sm">預設</span>
@@ -288,7 +294,7 @@
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <h2 class="text-xl font-bold">新增單字集</h2>
                 <button id="close-quick-start-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
             <div class="p-6 space-y-4">
@@ -296,7 +302,7 @@
                 <div class="flex items-center justify-center w-full">
                     <label for="file-upload" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:hover:border-gray-500 dark:hover:bg-gray-600 transition-colors">
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg class="w-10 h-10 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
+                            <span class="material-symbols-outlined !text-4xl mb-4 text-gray-500 dark:text-gray-400">upload_file</span>
                             <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">上傳新單字集</span> (或拖曳至此)</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">支援 .txt, .csv, .json 格式</p>
                         </div>
@@ -324,12 +330,12 @@
     </div>
 
     <!-- 所有卡片列表 Modal -->
-    <div id="all-cards-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50"><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl h-[90vh] flex flex-col"><div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center"><h2 class="text-xl font-bold">所有卡片</h2><button id="close-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button></div><div class="flex-grow overflow-y-auto p-4"><table id="all-cards-table" class="w-full text-left"></table></div></div></div>
+    <div id="all-cards-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50"><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl h-[90vh] flex flex-col"><div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center"><h2 class="text-xl font-bold">所有卡片</h2><button id="close-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="material-symbols-outlined">close</span></button></div><div class="flex-grow overflow-y-auto p-4"><table id="all-cards-table" class="w-full text-left"></table></div></div></div>
     
     <!-- 下載格式選擇 Modal -->
     <div id="download-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-sm">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center"><h2 class="text-xl font-bold">選擇下載格式</h2><button id="close-download-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button></div>
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center"><h2 class="text-xl font-bold">選擇下載格式</h2><button id="close-download-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="material-symbols-outlined">close</span></button></div>
             <div class="p-4 grid grid-cols-3 gap-4">
                 <button data-format="csv" class="download-format-btn px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">CSV</button>
                 <button data-format="txt" class="download-format-btn px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">TXT</button>
@@ -344,19 +350,19 @@
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <h2 class="text-xl font-bold">使用教學</h2>
                 <button id="close-how-to-use-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
             <div class="flex-grow overflow-y-auto p-6 space-y-4 text-gray-700 dark:text-gray-300">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">程式總覽 (v3.0.3)</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">程式總覽 (v3.1.0)</h3>
                 <p>歡迎使用「單字卡 PWA」！這是一款以單字集為中心的學習程式，能幫您管理、學習並編輯您的單字集。</p>
 
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">一、首頁 (單字集列表)</h3>
                 <ul class="list-disc list-inside space-y-2">
                     <li><strong>選單 (☰)：</strong>點擊左上角選單，您可以：</li>
                     <ul class="list-circle list-inside ml-4">
-                        <li><strong>新增 (＋)：</strong>開啟「快速開始」視窗以上傳或載入範例。</li>
-                        <li><strong>備份 (💾)：</strong>將您的**所有**資料 (單字集、進度、標籤) 下載為一個 .zip 檔案。</li>
+                        <li><strong>建立 (🆕)：</strong>直接在程式內建立新的單字集，不用自己打 TXT。</li>
+                        <li><strong>備份 (☁️)：</strong>將您的**所有**資料 (單字集、進度、標籤) 下載為一個 .zip 檔案。</li>
                         <li><strong>標籤 (🏷️)：</strong>管理您的全域標籤。</li>
                     </ul>
                     <li><strong>單字集卡片：</strong>首頁會顯示您所有的單字集，包含進度、標籤等資訊。</li>
@@ -367,42 +373,23 @@
                     <li><strong>排序與篩選：</strong>您可以在列表上方按「最後閱讀」、「名稱」或「進度」排序，也可點擊標籤來篩選列表。</li>
                 </ul>
 
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">二、檔案格式 (重要！)</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">二、檔案格式</h3>
                 <ul class="list-disc list-inside space-y-2">
-                    <li><strong>.txt / .csv (傳統格式)</strong>
-                        <ul class="list-circle list-inside ml-4">
-                            <li>每行一組卡片，欄位間用 <strong>分號 (;)</strong> 分隔。</li>
-                            <li>例如：<code>apple;蘋果</code></li>
-                            <li>支援用 <strong>雙斜線 (//)</strong> 換行。</li>
-                            <li>**注意：** 此格式在上傳時會自動轉換為內部的 JSON 格式。</li>
-                        </ul>
-                    </li>
                     <li><strong>.json (推薦格式)</strong>
                         <ul class="list-circle list-inside ml-4">
                             <li>提供最完整的功能，是程式的標準格式。</li>
                             <li>格式為一個物件陣列，每張卡片包含 `fields` (欄位內容)、`tags` (標籤)、`notes` (筆記)。</li>
-                            <li>範例：<br><code>[{"fields": ["Hello", "你好"], "tags": ["英文"]}]</code></li>
+                        </ul>
+                    </li>
+                    <li><strong>.txt / .csv (傳統格式)</strong>
+                        <ul class="list-circle list-inside ml-4">
+                            <li>每行一組卡片，欄位間用 <strong>分號 (;)</strong> 分隔。</li>
                         </ul>
                     </li>
                 </ul>
 
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">三、主學習畫面操作</h3>
-                <ul class="list-disc list-inside space-y-2">
-                    <li><strong>🃏 翻開卡片：</strong>點擊卡片 (?) 將其翻開。</li>
-                    <li><strong>✅ / ❌：</strong>點擊按鈕評分，✅ 會將卡片移出待學習列表。</li>
-                    <li><strong>《 / 》：</strong>返回或跳過卡片。</li>
-                    <li><strong>點擊背景：</strong>效果同「下一張」。</li>
-                </ul>
-
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">四、學習中選單 (☰)</h3>
-                <ul class="list-disc list-inside space-y-2">
-                    <li><strong>頂部圖示：</strong>(首頁), (新增), (全螢幕), (下載此單字集紀錄)。</li>
-                    <li><strong>📄 顯示全卡片：</strong>查看所有卡片的學習狀態。</li>
-                    <li><strong>✍️ 編輯 (JSON)：</strong>以 JSON 格式直接編輯**當前**的單字集。</li>
-                    <li><strong>🔃 切換排列方向：</strong>(全域設定) 切換卡片水平/垂直排列。</li>
-                    <li><strong>▶️ 自動翻開：</strong>(單字集設定) 透過**複選框**設定此單字集要自動翻開哪些卡片。</li>
-                    <li><strong>🅰️ 大小：</strong>(單字集設定) 調整此單字集的卡片字體大小。</li>
-                </ul>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">三、圖形化編輯器 (視覺化自訂)</h3>
+                <p>現在您不需要編輯複雜的文字檔。點擊「建立新單字集」或學習選單中的「圖形化編輯」，即可透過輸入框輕鬆新增、刪除或修改卡片內容。支援自訂欄位數量（例如：單字、解釋、例句）。</p>
             </div>
         </div>
     </div>
@@ -413,7 +400,7 @@
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <h2 class="text-xl font-bold">標籤管理</h2>
                 <button id="close-settings-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
             <div class="flex-grow overflow-y-auto p-6 space-y-4">
@@ -429,13 +416,68 @@
         </div>
     </div>
 
+    <!-- 圖形化編輯器 Modal -->
+    <div id="deck-editor-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-5xl h-[95vh] flex flex-col">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900 rounded-t-2xl">
+                <div>
+                    <h2 id="editor-modal-title" class="text-xl font-bold">圖形化單字集編輯器</h2>
+                    <p class="text-xs text-gray-500">視覺化新增卡片，無需手動編寫檔案</p>
+                </div>
+                <button id="close-deck-editor-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="flex-grow overflow-hidden flex flex-col">
+                <!-- 頂部設定區 -->
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">單字集名稱</label>
+                        <input type="text" id="editor-deck-title" placeholder="例如：多益常用單字" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div class="flex space-x-2 items-end">
+                        <div class="flex-grow">
+                            <label class="block text-sm font-medium mb-1">欄位數量 (每張卡片有幾面？)</label>
+                            <select id="editor-field-count" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 focus:ring-2 focus:ring-teal-500">
+                                <option value="1">1 個欄位 (僅正面)</option>
+                                <option value="2" selected>2 個欄位 (正面/反面)</option>
+                                <option value="3">3 個欄位 (正面/反面/例句)</option>
+                                <option value="4">4 個欄位</option>
+                                <option value="5">5 個欄位</option>
+                            </select>
+                        </div>
+                        <button id="editor-apply-fields-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-sm">套用</button>
+                    </div>
+                </div>
+
+                <!-- 卡片列表區 -->
+                <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-gray-100 dark:bg-gray-950" id="editor-rows-container">
+                    <!-- 每一列卡片將動態填入 -->
+                </div>
+
+                <!-- 底部按鈕區 -->
+                <div class="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <button id="editor-add-row-btn" class="flex items-center px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors shadow-md">
+                        <span class="material-symbols-outlined mr-1">add_circle</span>新增一列卡片
+                    </button>
+                    <div class="space-x-2 flex items-center">
+                        <div id="editor-status-msg" class="text-xs text-red-500 font-medium"></div>
+                        <button id="editor-cancel-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">取消</button>
+                        <button id="editor-save-btn" class="px-6 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition-colors shadow-lg">儲存並開始學習</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 編輯單字集 (JSON) Modal -->
     <div id="edit-deck-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl h-[90vh] flex flex-col">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h2 class="text-xl font-bold">編輯單字集 (JSON)</h2>
+                <h2 class="text-xl font-bold">進階編輯 (JSON)</h2>
                 <button id="close-edit-deck-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
             <div class="flex-grow overflow-y-auto p-4">
@@ -457,7 +499,7 @@
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <h2 id="deck-options-title" class="text-xl font-bold">編輯選項</h2>
                 <button id="close-deck-options-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
             <div class="p-6 space-y-4 overflow-y-auto">
@@ -503,7 +545,7 @@
             });
         }
 
-        // ===== 應用程式腳本 (v3.0.3) =====
+        // ===== 應用程式腳本 (v3.1.0) =====
         document.addEventListener('DOMContentLoaded', () => {
             
             // --- DOM 元素 ---
@@ -538,6 +580,7 @@
             const homeMenuPanel = document.getElementById('home-menu-panel');
             const homeMenuHomeBtn = document.getElementById('home-menu-home-btn');
             const homeMenuAddBtn = document.getElementById('home-menu-add-btn');
+            const createNewDeckBtn = document.getElementById('create-new-deck-btn');
             const homeMenuFullscreenBtn = document.getElementById('home-menu-fullscreen-btn');
             const homeMenuCloseBtn = document.getElementById('home-menu-close-btn');
             const backupAllBtn = document.getElementById('backup-all-btn');
@@ -552,12 +595,24 @@
             const deckMenuDownloadBtn = document.getElementById('deck-menu-download-btn');
             const deckMenuCloseBtn = document.getElementById('deck-menu-close-btn');
             const showAllBtn = document.getElementById('show-all-btn');
+            const visualEditDeckBtn = document.getElementById('visual-edit-deck-btn');
             const editDeckBtn = document.getElementById('edit-deck-btn');
             const toggleLayoutBtn = document.getElementById('toggle-layout-btn');
             const autoRevealOptionsContainer = document.getElementById('auto-reveal-options-container'); 
             const fontSizeDecrease = document.getElementById('font-size-decrease');
             const fontSizeIncrease = document.getElementById('font-size-increase');
             const fontSizeValue = document.getElementById('font-size-value');
+            // 圖形化編輯器
+            const deckEditorModal = document.getElementById('deck-editor-modal');
+            const closeDeckEditorModalBtn = document.getElementById('close-deck-editor-modal-btn');
+            const editorDeckTitle = document.getElementById('editor-deck-title');
+            const editorFieldCount = document.getElementById('editor-field-count');
+            const editorApplyFieldsBtn = document.getElementById('editor-apply-fields-btn');
+            const editorRowsContainer = document.getElementById('editor-rows-container');
+            const editorAddRowBtn = document.getElementById('editor-add-row-btn');
+            const editorSaveBtn = document.getElementById('editor-save-btn');
+            const editorCancelBtn = document.getElementById('editor-cancel-btn');
+            const editorStatusMsg = document.getElementById('editor-status-msg');
             // Modals
             const allCardsModal = document.getElementById('all-cards-modal');
             const closeModalBtn = document.getElementById('close-modal-btn');
@@ -678,6 +733,7 @@
                 
                 // 首頁選單
                 homeMenuCloseBtn.addEventListener('click', () => toggleMenu('home')); 
+                createNewDeckBtn.addEventListener('click', () => { openDeckEditor(); hideAllMenus(); });
                 backupAllBtn.addEventListener('click', backupAllData);
                 manageTagsBtn.addEventListener('click', openSettingsModal);
                 showHowToUseBtn.addEventListener('click', openHowToUseModal);
@@ -686,12 +742,24 @@
                 deckMenuCloseBtn.addEventListener('click', () => toggleMenu('deck')); 
                 deckMenuDownloadBtn.addEventListener('click', () => { downloadModal.classList.remove('hidden'); hideAllMenus(); });
                 showAllBtn.addEventListener('click', showAllCardsView);
+                visualEditDeckBtn.addEventListener('click', () => { openDeckEditor(currentDeckId); hideAllMenus(); });
                 editDeckBtn.addEventListener('click', openEditDeckModal);
                 toggleLayoutBtn.addEventListener('click', toggleCardLayout);
                 autoRevealOptionsContainer.addEventListener('change', saveAutoRevealOptions); 
                 fontSizeIncrease.addEventListener('click', () => changeDeckFontSize(FONT_SIZE_STEP));
                 fontSizeDecrease.addEventListener('click', () => changeDeckFontSize(-FONT_SIZE_STEP));
                 
+                // 圖形編輯器
+                closeDeckEditorModalBtn.addEventListener('click', () => deckEditorModal.classList.add('hidden'));
+                editorCancelBtn.addEventListener('click', () => deckEditorModal.classList.add('hidden'));
+                editorAddRowBtn.addEventListener('click', () => renderEditorRow());
+                editorApplyFieldsBtn.addEventListener('click', () => {
+                    if (confirm("變更欄位數量會清空目前編輯中的內容，確定嗎？")) {
+                        renderEditorRows();
+                    }
+                });
+                editorSaveBtn.addEventListener('click', saveDeckFromEditor);
+
                 // Modals
                 closeQuickStartModalBtn.addEventListener('click', () => quickStartModal.classList.add('hidden'));
                 closeModalBtn.addEventListener('click', () => allCardsModal.classList.add('hidden'));
@@ -859,7 +927,7 @@
                     if (currentFilter.filterTag) {
                         noRecentDecks.textContent = `沒有符合「${currentFilter.filterTag}」標籤的單字集。`;
                     } else {
-                        noRecentDecks.innerHTML = `尚未開啟任何單字集。<br>點擊左上角 ☰ 選單中的 ＋ 按鈕來新增。`;
+                        noRecentDecks.innerHTML = `尚未開啟任何單字集。<br>點擊左上角選單中的 ＋ 按鈕來新增。`;
                     }
                     return;
                 }
@@ -885,8 +953,8 @@
                                 <h3 class="font-bold text-lg text-teal-600 dark:text-teal-400 group-hover:underline break-all">${deck.title}</h3>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate">來源: ${deck.sourceFileName}</p>
                             </a>
-                            <button class="deck-options-btn p-2 -mr-2 -mt-2 flex-shrink-0 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600" data-deck-id="${deck.id}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                            <button class="deck-options-btn p-2 -mr-2 -mt-2 flex-shrink-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600" data-deck-id="${deck.id}">
+                                <span class="material-symbols-outlined">more_vert</span>
                             </button>
                         </div>
                         <div class="my-3">
@@ -1258,7 +1326,7 @@
             function showAllCardsView() {
                 allCardsModal.classList.remove('hidden');
                 hideAllMenus();
-                const statusIcons = { correct: '✅', incorrect: '❌', unjudged: '⬜', unseen: '⬜' };
+                const statusIcons = { correct: 'check_circle', incorrect: 'cancel', unjudged: 'radio_button_unchecked', unseen: 'radio_button_unchecked' };
                 let tableHTML = '<thead><tr class="border-b border-gray-200 dark:border-gray-600"><th class="p-2">狀態</th>';
                 
                 const fieldsPerCard = currentFullDeck.length > 0 ? currentFullDeck[0].fields.length : 0;
@@ -1267,12 +1335,103 @@
                 
                 currentFullDeck.forEach(cardData => {
                     const status = currentCardStatus.get(cardData.card_id) || 'unseen';
-                    tableHTML += `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900"><td class="p-2 text-center">${statusIcons[status]}</td>`;
+                    tableHTML += `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900"><td class="p-2 text-center text-teal-500"><span class="material-symbols-outlined">${statusIcons[status]}</span></td>`;
                     cardData.fields.forEach(field => { tableHTML += `<td class="p-2">${field.replace(/<br>/g, ' ')}</td>`; });
                     tableHTML += '</tr>';
                 });
                 tableHTML += '</tbody>';
                 allCardsTable.innerHTML = tableHTML;
+            }
+
+            // --- 圖形化編輯器 (Visual Editor) ---
+            let editingDeckId = null;
+
+            function openDeckEditor(deckId = null) {
+                editingDeckId = deckId;
+                editorStatusMsg.textContent = '';
+                editorRowsContainer.innerHTML = '';
+                
+                if (deckId) {
+                    const deckMeta = deckList.find(d => d.id === deckId);
+                    const deckData = getDeckData(deckId);
+                    editorDeckTitle.value = deckMeta.title;
+                    editorFieldCount.value = deckMeta.fieldCount;
+                    deckData.forEach(card => renderEditorRow(card.fields));
+                    document.getElementById('editor-modal-title').textContent = `圖形化編輯: ${deckMeta.title}`;
+                } else {
+                    editorDeckTitle.value = '';
+                    editorFieldCount.value = 2;
+                    renderEditorRow(); // 預設一行
+                    document.getElementById('editor-modal-title').textContent = "建立新單字集";
+                }
+                
+                deckEditorModal.classList.remove('hidden');
+                hideAllMenus();
+            }
+
+            function renderEditorRows() {
+                const rows = editorRowsContainer.querySelectorAll('.editor-row');
+                editorRowsContainer.innerHTML = '';
+                renderEditorRow();
+            }
+
+            function renderEditorRow(fieldValues = []) {
+                const fieldCount = parseInt(editorFieldCount.value, 10);
+                const row = document.createElement('div');
+                row.className = "editor-row flex items-center space-x-2 p-2 border-b border-gray-200 dark:border-gray-800 animate-in fade-in slide-in-from-left-2 duration-200";
+                
+                let inputsHTML = '';
+                for (let i = 0; i < fieldCount; i++) {
+                    const val = fieldValues[i] || '';
+                    inputsHTML += `<input type="text" class="card-field-input flex-grow px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:ring-1 focus:ring-teal-500" placeholder="欄位 ${i+1}" value="${val.replace(/<br>/g, '\n')}">`;
+                }
+                
+                row.innerHTML = `
+                    <div class="flex-grow grid gap-2" style="grid-template-columns: repeat(${fieldCount}, 1fr)">
+                        ${inputsHTML}
+                    </div>
+                    <button class="remove-row-btn p-2 text-gray-400 hover:text-red-500 transition-colors">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                `;
+                
+                row.querySelector('.remove-row-btn').addEventListener('click', () => {
+                    row.remove();
+                    if (editorRowsContainer.children.length === 0) renderEditorRow();
+                });
+                
+                editorRowsContainer.appendChild(row);
+                editorRowsContainer.scrollTop = editorRowsContainer.scrollHeight;
+            }
+
+            function saveDeckFromEditor() {
+                const title = editorDeckTitle.value.trim();
+                if (!title) { editorStatusMsg.textContent = "請輸入單字集名稱"; return; }
+                
+                const rows = editorRowsContainer.querySelectorAll('.editor-row');
+                const deckData = [];
+                
+                rows.forEach((row, index) => {
+                    const inputs = row.querySelectorAll('.card-field-input');
+                    const fields = Array.from(inputs).map(input => input.value.trim().replace(/\n/g, '<br>'));
+                    
+                    if (fields.some(f => f.length > 0)) {
+                        deckData.push({
+                            card_id: `card_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 5)}`,
+                            fields: fields,
+                            tags: [],
+                            notes: ""
+                        });
+                    }
+                });
+                
+                if (deckData.length === 0) { editorStatusMsg.textContent = "請至少填寫一張卡片內容"; return; }
+                
+                const deckId = editingDeckId || `deck_${Date.now()}`;
+                const sourceName = editingDeckId ? deckList.find(d => d.id === editingDeckId).sourceFileName : "手動建立";
+                
+                processNewDeck(deckData, deckId, title, sourceName);
+                deckEditorModal.classList.add('hidden');
             }
             
             // --- 下載功能 ---
@@ -1280,7 +1439,6 @@
                 const statusIcons = { correct: '✅', incorrect: '❌', unjudged: '⬜', unseen: '⬜' };
                 
                 if (format === 'json') {
-                    // 匯出包含狀態的 UDM
                     return currentFullDeck.map(card => {
                         return {
                             ...card,
@@ -1289,7 +1447,6 @@
                         };
                     });
                 } else {
-                    // TXT/CSV: 匯出 [狀態, 欄位1, 欄位2, ...]
                     const fieldsPerCard = currentFullDeck.length > 0 ? currentFullDeck[0].fields.length : 0;
                     const headers = ['狀態', ...Array.from({ length: fieldsPerCard }, (_, i) => `卡片 ${i + 1}`)];
                     const rows = currentFullDeck.map(cardData => {
@@ -1313,7 +1470,7 @@
                 } 
                 else if (format === 'csv') {
                     const { headers, rows } = getCleanData('csv');
-                    let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // 包含 BOM
+                    let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
                     csvContent += headers.join(',') + '\r\n';
                     rows.forEach(row => {
                         const rowData = row.map(field => `"${String(field).replace(/"/g, '""')}"`);
@@ -1342,39 +1499,30 @@
             
             // --- 備份功能 ---
             async function backupAllData() {
-                console.log("開始備份所有資料...");
                 hideAllMenus();
-                
                 try {
                     const zip = new JSZip();
-                    
                     zip.file("deckList.json", localStorage.getItem(STORAGE_KEYS.DECK_LIST) || "[]");
                     zip.file("allTags.json", localStorage.getItem(STORAGE_KEYS.ALL_TAGS) || "[]");
                     zip.file("preferences.json", localStorage.getItem(STORAGE_KEYS.PREFERENCES) || "{}");
-                    
                     const dataFolder = zip.folder("data");
                     const stateFolder = zip.folder("state");
-                    
                     deckList.forEach(deck => {
                         const deckId = deck.id;
                         const data = localStorage.getItem(`${STORAGE_KEYS.DECK_DATA_PREFIX}${deckId}`);
                         const state = localStorage.getItem(`${STORAGE_KEYS.DECK_STATE_PREFIX}${deckId}`);
-                        
                         if (data) dataFolder.file(`${deckId}.json`, data);
                         if (state) stateFolder.file(`${deckId}.json`, state);
                     });
-                    
                     const content = await zip.generateAsync({ type: "blob" });
                     const filename = `flashcard_backup_${new Date().toISOString().slice(0,10)}.zip`;
                     triggerDownload(URL.createObjectURL(content), filename);
-                    
                 } catch (err) {
-                    console.error("備份失敗:", err);
                     alert("備份失敗: " + err.message);
                 }
             }
             
-            // --- 偏好設定 (Persistence) ---
+            // --- 偏好設定 ---
             function saveGlobalPreferences() {
                 localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(globalPreferences));
             }
@@ -1382,10 +1530,9 @@
             function loadGlobalPreferences() {
                 const savedPrefs = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
                 globalPreferences = savedPrefs ? { ...DEFAULT_GLOBAL_PREFERENCES, ...JSON.parse(savedPrefs) } : { ...DEFAULT_GLOBAL_PREFERENCES };
-                // 移除舊的單字集特定設定
                 delete globalPreferences.fontSize;
                 delete globalPreferences.autoRevealFirstCard;
-                delete globalPreferences.autoRevealIndices; // 確保移除
+                delete globalPreferences.autoRevealIndices;
             }
             
             function saveCurrentDeckSettings() {
@@ -1399,7 +1546,6 @@
             function applyCurrentDeckSettings() {
                 updateCardFontSize(); 
                 populateAutoRevealOptions(); 
-                // 確保 autoRevealIndices 是陣列
                 if (!Array.isArray(currentDeckSettings.autoRevealIndices)) {
                     currentDeckSettings.autoRevealIndices = [];
                 }
@@ -1408,7 +1554,6 @@
                     if (checkbox) checkbox.checked = true;
                 });
             }
-
 
             function toggleCardLayout() {
                 globalPreferences.cardLayout = (globalPreferences.cardLayout === 'horizontal') ? 'vertical' : 'horizontal';
@@ -1423,18 +1568,10 @@
             function populateAutoRevealOptions() {
                 autoRevealOptionsContainer.innerHTML = '';
                 const fieldCount = currentFullDeck.length > 0 ? currentFullDeck[0].fields.length : 0;
-                
-                if (fieldCount === 0) {
-                    autoRevealOptionsContainer.innerHTML = `<span class="text-sm text-gray-500">無卡片</span>`;
-                    return;
-                }
-                
+                if (fieldCount === 0) return;
                 for (let i = 0; i < fieldCount; i++) {
                     const label = document.createElement('label');
-                    label.innerHTML = `
-                        <input type="checkbox" id="reveal-check-${i}" value="${i}">
-                        <span>卡片 ${i + 1}</span>
-                    `;
+                    label.innerHTML = `<input type="checkbox" id="reveal-check-${i}" value="${i}"><span>卡片 ${i + 1}</span>`;
                     autoRevealOptionsContainer.appendChild(label);
                 }
             }
@@ -1442,10 +1579,7 @@
             function saveAutoRevealOptions() {
                 const selectedIndices = [];
                 const checkboxes = autoRevealOptionsContainer.querySelectorAll('input[type="checkbox"]:checked');
-                checkboxes.forEach(cb => {
-                    selectedIndices.push(parseInt(cb.value, 10));
-                });
-                
+                checkboxes.forEach(cb => { selectedIndices.push(parseInt(cb.value, 10)); });
                 currentDeckSettings.autoRevealIndices = selectedIndices;
                 saveCurrentDeckSettings();
             }
@@ -1486,21 +1620,14 @@
 
             function renderTagList() {
                 tagListContainer.innerHTML = '';
-                tagListError.textContent = '';
                 if (allTags.length === 0) {
                     tagListContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">尚未建立任何標籤。</p>';
                     return;
                 }
-                
                 allTags.forEach(tag => {
                     const tagEl = document.createElement('div');
                     tagEl.className = "flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg";
-                    tagEl.innerHTML = `
-                        <span class="text-gray-800 dark:text-gray-200 break-all">${tag}</span>
-                        <button data-tag="${tag}" class="delete-tag-btn p-1 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-800 ml-2 flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                    `;
+                    tagEl.innerHTML = `<span class="text-gray-800 dark:text-gray-200 break-all">${tag}</span><button class="delete-tag-btn p-1 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-800 ml-2 flex-shrink-0"><span class="material-symbols-outlined">delete</span></button>`;
                     tagEl.querySelector('.delete-tag-btn').addEventListener('click', () => deleteTag(tag));
                     tagListContainer.appendChild(tagEl);
                 });
@@ -1508,278 +1635,120 @@
             
             function addNewTag(tagName) {
                 let newTagName = (typeof tagName === 'string') ? tagName : newTagInput.value.trim();
-                tagListError.textContent = '';
-                
-                if (!newTagName) {
-                    if (typeof tagName !== 'string') tagListError.textContent = '標籤名稱不可為空。';
-                    return;
-                }
-                
-                if (allTags.find(t => t.toLowerCase() === newTagName.toLowerCase())) {
-                    if (typeof tagName !== 'string') tagListError.textContent = '此標籤名稱已存在。';
-                    return false; 
-                }
-                
+                if (!newTagName || allTags.includes(newTagName)) return;
                 allTags.push(newTagName);
                 saveAllTags();
                 renderTagList(); 
                 renderFilterTags(); 
                 if (typeof tagName !== 'string') newTagInput.value = '';
-                return true; 
             }
             
             function deleteTag(tagName) {
                 allTags = allTags.filter(t => t !== tagName);
                 saveAllTags();
-                
                 deckList.forEach(deck => {
                     if (deck.category && deck.category.includes(tagName)) {
                         deck.category = deck.category.filter(t => t !== tagName);
                     }
                 });
                 saveDeckList();
-                
                 renderTagList(); 
                 renderHomeScreen(); 
             }
 
             // --- JSON 編輯器 ---
             function openEditDeckModal() {
-                jsonEditorError.textContent = '';
                 try {
                     const content = JSON.stringify(currentFullDeck, null, 2);
                     jsonEditorTextarea.value = content;
                     editDeckModal.classList.remove('hidden');
                     hideAllMenus();
-                } catch (e) {
-                    alert("無法序列化目前的單字集: " + e.message);
-                }
+                } catch (e) { alert("失敗: " + e.message); }
             }
             
             function saveDeckEdit() {
-                let newData;
                 try {
-                    newData = JSON.parse(jsonEditorTextarea.value);
-                    jsonEditorError.textContent = '';
-                } catch (e) {
-                    jsonEditorError.textContent = `JSON 格式錯誤: ${e.message}`;
-                    return;
-                }
-                
-                let validatedData;
-                try {
-                    validatedData = parseJsonFile(JSON.stringify(newData)); 
-                } catch (e) {
-                    jsonEditorError.textContent = `資料結構錯誤: ${e.message}`;
-                    return;
-                }
-                
-                const deckMeta = deckList.find(d => d.id === currentDeckId);
-                
-                processNewDeck(validatedData, currentDeckId, deckMeta.title, deckMeta.sourceFileName);
-                
-                editDeckModal.classList.add('hidden');
+                    const validatedData = parseJsonFile(jsonEditorTextarea.value); 
+                    const deckMeta = deckList.find(d => d.id === currentDeckId);
+                    processNewDeck(validatedData, currentDeckId, deckMeta.title, deckMeta.sourceFileName);
+                    editDeckModal.classList.add('hidden');
+                } catch (e) { jsonEditorError.textContent = e.message; }
             }
 
             // --- 單字集選項 Modal ---
             function openDeckOptionsModal(deckId) {
                 const deck = deckList.find(d => d.id === deckId);
                 if (!deck) return;
-                
                 deckOptionsTitle.textContent = `編輯 "${deck.title}"`;
                 deckTitleInput.value = deck.title;
-                deckTitleError.textContent = '';
-                
                 deckTagsContainer.innerHTML = '';
-                if (allTags.length === 0) {
-                     deckTagsContainer.innerHTML = `<span class="text-xs text-gray-500">沒有可用的標籤。請至 ☰ -> 🏷️ 標籤管理 新增。</span>`;
-                }
-                
                 allTags.forEach(tag => {
                     const isChecked = deck.category && deck.category.includes(tag);
                     const label = document.createElement('label');
                     label.className = "flex items-center space-x-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800";
-                    label.innerHTML = `
-                        <input type="checkbox" value="${tag}" ${isChecked ? 'checked' : ''}
-                               class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
-                        <span class="text-sm">${tag}</span>
-                    `;
+                    label.innerHTML = `<input type="checkbox" value="${tag}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"><span class="text-sm">${tag}</span>`;
                     deckTagsContainer.appendChild(label);
                 });
-
-                // 動態綁定儲存和刪除
                 const oldSaveBtn = document.getElementById('save-deck-options-btn');
                 const newSaveBtn = oldSaveBtn.cloneNode(true);
                 oldSaveBtn.parentNode.replaceChild(newSaveBtn, oldSaveBtn);
                 newSaveBtn.addEventListener('click', () => saveDeckOptions(deckId));
-
                 const oldDeleteBtn = document.getElementById('delete-deck-btn');
                 const newDeleteBtn = oldDeleteBtn.cloneNode(true);
                 oldDeleteBtn.parentNode.replaceChild(newDeleteBtn, oldDeleteBtn);
                 newDeleteBtn.addEventListener('click', () => handleDeleteDeck(deckId));
-
                 deckOptionsModal.classList.remove('hidden');
             }
 
             function saveDeckOptions(deckId) {
                 const deck = deckList.find(d => d.id === deckId);
                 if (!deck) return;
-
-                const newTitle = deckTitleInput.value.trim();
-                if (!newTitle) {
-                    deckTitleError.textContent = "標題不可為空。";
-                    return;
-                }
-                deck.title = newTitle;
-                
+                deck.title = deckTitleInput.value.trim();
                 const selectedTags = [];
-                const checkboxes = deckTagsContainer.querySelectorAll('input[type="checkbox"]:checked');
-                checkboxes.forEach(cb => {
-                    selectedTags.push(cb.value);
-                });
+                deckTagsContainer.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => { selectedTags.push(cb.value); });
                 deck.category = selectedTags;
-                
-                saveDeckList();
-                renderDeckList();
+                saveDeckList(); renderDeckList();
                 deckOptionsModal.classList.add('hidden');
             }
 
             function handleDeleteDeck(deckId) {
-                const deck = deckList.find(d => d.id === deckId);
-                if (!deck) return;
-                
-                // 使用自訂的確認框或瀏覽器預設
-                if (confirm(`您確定要刪除「${deck.title}」嗎？\n此操作無法復原，所有學習紀錄和卡片資料都將被刪除。`)) {
+                if (confirm("確定刪除？")) {
                     deckList = deckList.filter(d => d.id !== deckId);
                     saveDeckList();
                     localStorage.removeItem(`${STORAGE_KEYS.DECK_DATA_PREFIX}${deckId}`);
                     localStorage.removeItem(`${STORAGE_KEYS.DECK_STATE_PREFIX}${deckId}`);
-                    renderHomeScreen();
-                    deckOptionsModal.classList.add('hidden');
+                    renderHomeScreen(); deckOptionsModal.classList.add('hidden');
                 }
             }
 
-
-            // --- 全螢幕 ---
             function toggleFullScreen() {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen()
-                        .catch(err => console.error(`無法進入全螢幕: ${err.message}`));
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    }
-                }
+                if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+                else document.exitFullscreen();
                 hideAllMenus();
             }
 
-            
-            // =================================================================
-            // ===== 儲存 (localStorage) 輔助函式
-            // =================================================================
-            
             function migrateDeckListSettings() {
-                let needsSave = false;
                 deckList.forEach(deck => {
-                    if (!deck.settings) { 
-                        console.log(`遷移單字集 (settings): ${deck.title}`);
-                        deck.settings = { ...DEFAULT_DECK_SETTINGS };
-                        needsSave = true;
-                    }
-                    if (deck.settings.autoRevealIndex !== undefined) {
-                        console.log(`遷移單字集 (autoReveal): ${deck.title}`);
-                        const oldIndex = deck.settings.autoRevealIndex;
-                        deck.settings.autoRevealIndices = (oldIndex > -1) ? [oldIndex] : [];
-                        delete deck.settings.autoRevealIndex;
-                        needsSave = true;
-                    }
-                     if (!Array.isArray(deck.settings.autoRevealIndices)) {
-                        deck.settings.autoRevealIndices = [];
-                        needsSave = true;
-                    }
+                    if (!deck.settings) deck.settings = { ...DEFAULT_DECK_SETTINGS };
+                    if (!Array.isArray(deck.settings.autoRevealIndices)) deck.settings.autoRevealIndices = [];
                 });
-                if (needsSave) {
-                    console.log("遷移完成，儲存更新後的 deckList...");
-                    saveDeckList();
-                }
+                saveDeckList();
             }
             
-            function loadDeckList() {
-                const savedDecks = localStorage.getItem(STORAGE_KEYS.DECK_LIST);
-                deckList = savedDecks ? JSON.parse(savedDecks) : [];
-            }
-            function saveDeckList() {
-                localStorage.setItem(STORAGE_KEYS.DECK_LIST, JSON.stringify(deckList));
-            }
-            
-            function getDeckData(deckId) {
-                const dataString = localStorage.getItem(`${STORAGE_KEYS.DECK_DATA_PREFIX}${deckId}`);
-                return dataString ? JSON.parse(dataString) : null;
-            }
-            function saveDeckData(deckId, deckData) {
-                try {
-                    localStorage.setItem(`${STORAGE_KEYS.DECK_DATA_PREFIX}${deckId}`, JSON.stringify(deckData));
-                } catch (e) {
-                    showQuickStartError("儲存單字集資料失敗，可能是空間不足。");
-                    console.error("儲存失敗: ", e);
-                }
-            }
-            
-            function getDeckState(deckId) {
-                const savedState = localStorage.getItem(`${STORAGE_KEYS.DECK_STATE_PREFIX}${deckId}`);
-                if (savedState) {
-                    try {
-                        return new Map(JSON.parse(savedState));
-                    } catch (e) {
-                        console.error("解析學習狀態失敗", e);
-                        return new Map();
-                    }
-                }
-                return new Map();
-            }
-            function saveDeckState(deckId, stateMap) {
-                if (!deckId) return;
-                try {
-                    const serializableState = Array.from(stateMap.entries());
-                    localStorage.setItem(`${STORAGE_KEYS.DECK_STATE_PREFIX}${deckId}`, JSON.stringify(serializableState));
-                } catch (e) {
-                    console.warn("儲存學習狀態失敗 (可能空間已滿)", e);
-                }
-            }
-            function resetDeckState(deckId, deckData) {
-                const newMap = new Map();
-                deckData.forEach(card => newMap.set(card.card_id, 'unseen'));
-                saveDeckState(deckId, newMap);
-            }
-
-            // =================================================================
-            // ===== 其他輔助函式
-            // =================================================================
-            
-            function shuffleDeck(deckToShuffle) {
-                for (let i = deckToShuffle.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deckToShuffle[i], deckToShuffle[j]] = [deckToShuffle[j], deckToShuffle[i]]; }
-            }
-            
-            function showQuickStartError(message) { 
-                quickStartErrorMessage.textContent = message; 
-                setTimeout(() => quickStartErrorMessage.textContent = '', 5000);
-            }
-            
-            function formatTimeAgo(timestamp) {
-                const now = Date.now();
-                const seconds = Math.floor((now - timestamp) / 1000);
-                
-                let interval = seconds / 31536000;
-                if (interval > 1) return Math.floor(interval) + " 年前";
-                interval = seconds / 2592000;
-                if (interval > 1) return Math.floor(interval) + " 個月前";
-                interval = seconds / 86400;
-                if (interval > 1) return Math.floor(interval) + " 天前";
-                interval = seconds / 3600;
-                if (interval > 1) return Math.floor(interval) + " 小時前";
-                interval = seconds / 60;
-                if (interval > 1) return Math.floor(interval) + " 分鐘前";
-                return "剛剛";
+            function loadDeckList() { deckList = JSON.parse(localStorage.getItem(STORAGE_KEYS.DECK_LIST) || "[]"); }
+            function saveDeckList() { localStorage.setItem(STORAGE_KEYS.DECK_LIST, JSON.stringify(deckList)); }
+            function getDeckData(deckId) { return JSON.parse(localStorage.getItem(`${STORAGE_KEYS.DECK_DATA_PREFIX}${deckId}`)); }
+            function saveDeckData(deckId, deckData) { localStorage.setItem(`${STORAGE_KEYS.DECK_DATA_PREFIX}${deckId}`, JSON.stringify(deckData)); }
+            function getDeckState(deckId) { return new Map(JSON.parse(localStorage.getItem(`${STORAGE_KEYS.DECK_STATE_PREFIX}${deckId}`) || "[]")); }
+            function saveDeckState(deckId, stateMap) { localStorage.setItem(`${STORAGE_KEYS.DECK_STATE_PREFIX}${deckId}`, JSON.stringify(Array.from(stateMap.entries()))); }
+            function resetDeckState(deckId, deckData) { const newMap = new Map(); deckData.forEach(card => newMap.set(card.card_id, 'unseen')); saveDeckState(deckId, newMap); }
+            function shuffleDeck(d) { for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; } }
+            function formatTimeAgo(t) {
+                const s = Math.floor((Date.now() - t) / 1000);
+                if (s < 60) return "剛剛";
+                if (s < 3600) return Math.floor(s/60) + " 分鐘前";
+                if (s < 86400) return Math.floor(s/3600) + " 小時前";
+                return Math.floor(s/86400) + " 天前";
             }
         });
     </script>
