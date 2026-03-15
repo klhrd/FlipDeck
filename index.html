@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v3.3.0</title>
+    <title>FlipDeck v3.3.1</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -25,7 +25,7 @@
 
     <div id="app" class="w-full max-w-6xl mx-auto">
 
-        <!-- ===== 首頁 (v3.3.0) ===== -->
+        <!-- ===== 首頁 (v3.3.1) ===== -->
         <div id="home-screen" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
             
             <!-- 標題與選單 -->
@@ -55,8 +55,8 @@
                             <option value="progress">進度 (高-低)</option>
                         </select>
                     </div>
-                    <div id="filter-tag-container" class="w-full sm:w-auto text-right">
-                        <!-- 標籤過濾器將動態填入 -->
+                    <div id="filter-tag-container" class="hidden w-full sm:w-auto text-right">
+                        <!-- 標籤功能移至學習內部 -->
                     </div>
                 </div>
 
@@ -157,9 +157,17 @@
                 
                 <!-- 自動翻開 (多選) -->
                 <li class="w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200">
-                    <span class="mr-2"><span class="material-symbols-outlined mr-2">play_arrow</span>自動翻開</span>
+                    <span class="mr-2 font-semibold"><span class="material-symbols-outlined mr-2">play_arrow</span>自動翻開</span>
                     <div id="auto-reveal-options-container" class="mt-2 space-y-1 pl-2 border-l-2 border-gray-200 dark:border-gray-600">
                         <!-- JS 動態填入複選框 -->
+                    </div>
+                </li>
+
+                <!-- 單字標籤篩選 (多選) - v3.3.1 新增 -->
+                <li class="w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200 border-t border-gray-100 dark:border-gray-700">
+                    <span class="mr-2 font-semibold"><span class="material-symbols-outlined mr-2">filter_alt</span>單字標籤篩選</span>
+                    <div id="card-tag-filter-container" class="mt-2 space-y-1 pl-2 border-l-2 border-gray-200 dark:border-gray-600 max-h-40 overflow-y-auto">
+                        <!-- JS 動態填入單字標籤複選框 -->
                     </div>
                 </li>
                 
@@ -244,7 +252,7 @@
                 </button>
             </div>
             <div class="flex-grow overflow-y-auto p-6 space-y-4 text-gray-700 dark:text-gray-300">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">程式總覽 (v3.3.0)</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">程式總覽 (v3.3.1)</h3>
                 <p>歡迎使用「FlipDeck」！這是一款以單字集為中心的學習程式，能幫您管理、學習並編輯您的單字集。</p>
 
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">一、首頁 (單字集列表)</h3>

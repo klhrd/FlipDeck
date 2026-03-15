@@ -11,7 +11,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== 應用程式腳本 (v3.3.0) =====
+// ===== 應用程式腳本 (v3.3.1) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素 ---
@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editDeckBtn = document.getElementById('edit-deck-btn');
     const toggleLayoutBtn = document.getElementById('toggle-layout-btn');
     const autoRevealOptionsContainer = document.getElementById('auto-reveal-options-container'); 
+    const cardTagFilterContainer = document.getElementById('card-tag-filter-container'); // v3.3.1 新增
     const fontSizeDecrease = document.getElementById('font-size-decrease');
     const fontSizeIncrease = document.getElementById('font-size-increase');
     const fontSizeValue = document.getElementById('font-size-value');
@@ -130,8 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let deckList = []; 
     let allTags = [];
     let currentFilter = {
-        sortBy: 'lastOpened',
-        filterTags: [] // 改為陣列以支援多選
+        sortBy: 'lastOpened'
     };
     let currentDeckId = null;
     let currentFullDeck = [];
@@ -148,7 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const DEFAULT_DECK_SETTINGS = { 
         fontSize: 2.5,
-        autoRevealIndices: [] 
+        autoRevealIndices: [],
+        filterTags: [] // v3.3.1 新增：學習中的標籤篩選
     };
     const FONT_SIZE_STEP = 0.2;
     const MIN_FONT_SIZE = 1.0;
@@ -322,57 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
         deckList.forEach(deck => totalCards += deck.totalCards);
         statsTotalDecks.textContent = deckList.length;
         statsTotalCards.textContent = totalCards;
-        renderFilterTags();
+        // renderFilterTags(); // v3.3.1 移除首頁標籤篩選
         renderDeckList();
-    }
-
-    function renderFilterTags() {
-        filterTagContainer.innerHTML = '';
-        
-        // 「全部」按鈕
-        const allTagBtn = createTagBadge("全部", null);
-        filterTagContainer.appendChild(allTagBtn);
-
-        // 「無標籤」按鈕
-        const untaggedBtn = createTagBadge("無標籤", "untagged");
-        filterTagContainer.appendChild(untaggedBtn);
-        
-        allTags.forEach(tag => {
-            const tagBtn = createTagBadge(tag, tag);
-            filterTagContainer.appendChild(tagBtn);
-        });
-    }
-    
-    function createTagBadge(tagName, filterValue) {
-        const tagEl = document.createElement('span');
-        tagEl.className = 'tag-badge';
-        tagEl.textContent = tagName;
-        tagEl.dataset.tag = filterValue || 'all';
-        
-        const isAll = filterValue === null;
-        const isActive = isAll 
-            ? currentFilter.filterTags.length === 0 
-            : currentFilter.filterTags.includes(filterValue);
-
-        if (isActive) {
-            tagEl.classList.add('active-filter');
-        }
-        
-        tagEl.addEventListener('click', () => {
-            if (isAll) {
-                currentFilter.filterTags = [];
-            } else {
-                const index = currentFilter.filterTags.indexOf(filterValue);
-                if (index > -1) {
-                    currentFilter.filterTags.splice(index, 1);
-                } else {
-                    currentFilter.filterTags.push(filterValue);
-                }
-            }
-            renderDeckList();
-            renderFilterTags(); // 重新渲染以更新視覺狀態
-        });
-        return tagEl;
     }
 
     function renderDeckList() {
@@ -386,18 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         let filteredDecks = decksWithProgress;
-        
-        // 多重標籤篩選邏輯 (OR 邏輯：符合任一選中標籤即顯示)
-        if (currentFilter.filterTags.length > 0) {
-            filteredDecks = filteredDecks.filter(deck => {
-                return currentFilter.filterTags.some(tag => {
-                    if (tag === 'untagged') {
-                        return !deck.category || deck.category.length === 0;
-                    }
-                    return deck.category && deck.category.includes(tag);
-                });
-            });
-        }
         
         filteredDecks.sort((a, b) => {
             switch (currentFilter.sortBy) {
@@ -413,11 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (filteredDecks.length === 0) {
             noRecentDecks.classList.remove('hidden');
-            if (currentFilter.filterTag) {
-                noRecentDecks.textContent = `沒有符合「${currentFilter.filterTag}」標籤的單字集。`;
-            } else {
-                noRecentDecks.innerHTML = `尚未開啟任何單字集。<br>點擊左上角選單中的 ＋ 按鈕來新增。`;
-            }
+            noRecentDecks.innerHTML = `尚未開啟任何單字集。<br>點擊左上角選單中的 ＋ 按鈕來新增。`;
             return;
         }
         
@@ -655,7 +591,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDeckId = deckId;
         currentFullDeck = deckData;
         currentCardStatus = getDeckState(deckId);
-        currentDeckSettings = { ...DEFAULT_DECK_SETTINGS, ...deckMeta.settings };
+        
+        // 確保設定包含過濾標籤陣列
+        currentDeckSettings = { 
+            ...DEFAULT_DECK_SETTINGS, 
+            filterTags: [], // 預設空，顯示全部
+            ...deckMeta.settings 
+        };
         
         if (!Array.isArray(currentDeckSettings.autoRevealIndices)) {
                 currentDeckSettings.autoRevealIndices = [];
@@ -670,28 +612,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (stateChanged) saveDeckState(currentDeckId, currentCardStatus);
 
-        currentLearningDeck = currentFullDeck.filter(card => {
-            const status = currentCardStatus.get(card.card_id);
-            return status !== 'correct';
-        });
-        shuffleDeck(currentLearningDeck);
+        applyCurrentDeckSettings(); 
+        updateLearningDeck(); 
         
         deckMeta.lastOpened = Date.now();
         saveDeckList();
         
         history = [];
         historyIndex = -1;
-        applyCurrentDeckSettings(); 
         showScreen('main');
         showNextCard('new_game');
+    }
+
+    function updateLearningDeck() {
+        // 基於標籤過濾卡片
+        let filteredFullDeck = currentFullDeck;
+        
+        if (currentDeckSettings.filterTags && currentDeckSettings.filterTags.length > 0) {
+            filteredFullDeck = currentFullDeck.filter(card => {
+                const cardTags = card.tags || [];
+                return currentDeckSettings.filterTags.some(tag => {
+                    if (tag === 'untagged') return cardTags.length === 0;
+                    return cardTags.includes(tag);
+                });
+            });
+        }
+
+        // 僅學習尚未標記為「正確」的卡片
+        currentLearningDeck = filteredFullDeck.filter(card => {
+            const status = currentCardStatus.get(card.card_id);
+            return status !== 'correct';
+        });
+        shuffleDeck(currentLearningDeck);
     }
     
     function restartGame() {
         resetDeckState(currentDeckId, currentFullDeck);
         currentCardStatus = getDeckState(currentDeckId);
         
-        currentLearningDeck = [...currentFullDeck];
-        shuffleDeck(currentLearningDeck);
+        updateLearningDeck(); // 考慮目前標籤過濾
         
         history = [];
         historyIndex = -1;
@@ -780,7 +739,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayEndOfDeck() {
-        cardContainer.innerHTML = `<div class="col-span-full row-span-full flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-gray-700 rounded-xl"><h2 class="text-3xl font-bold mb-4">🎉 恭喜！</h2><p class="text-xl">您已學會所有卡片！</p><button id="restart-btn" class="mt-8 px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition-colors">重新開始</button></div>`;
+        cardContainer.innerHTML = `<div class="col-span-full row-span-full flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-gray-700 rounded-xl"><h2 class="text-3xl font-bold mb-4">🎉 恭喜！</h2><p class="text-xl">您已學會所有符合篩選條件的卡片！</p><button id="restart-btn" class="mt-8 px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition-colors">重新開始</button></div>`;
         document.getElementById('restart-btn').addEventListener('click', restartGame);
         [prevBtn, nextBtn, correctBtn, incorrectBtn].forEach(btn => btn.disabled = true);
         deckInfo.textContent = '完成!';
@@ -1019,9 +978,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadGlobalPreferences() {
         const savedPrefs = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
         globalPreferences = savedPrefs ? { ...DEFAULT_GLOBAL_PREFERENCES, ...JSON.parse(savedPrefs) } : { ...DEFAULT_GLOBAL_PREFERENCES };
-        delete globalPreferences.fontSize;
-        delete globalPreferences.autoRevealFirstCard;
-        delete globalPreferences.autoRevealIndices;
     }
     
     function saveCurrentDeckSettings() {
@@ -1035,13 +991,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyCurrentDeckSettings() {
         updateCardFontSize(); 
         populateAutoRevealOptions(); 
-        if (!Array.isArray(currentDeckSettings.autoRevealIndices)) {
-            currentDeckSettings.autoRevealIndices = [];
-        }
+        populateCardTagFilters(); // v3.3.1 新增
+        
+        // 套用自動翻開勾選
         currentDeckSettings.autoRevealIndices.forEach(index => {
             const checkbox = document.getElementById(`reveal-check-${index}`);
             if (checkbox) checkbox.checked = true;
         });
+
+        // 套用標籤過濾勾選
+        if (currentDeckSettings.filterTags) {
+            currentDeckSettings.filterTags.forEach(tag => {
+                const checkbox = document.getElementById(`tag-filter-check-${tag}`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
     }
 
     function toggleCardLayout() {
@@ -1060,7 +1024,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fieldCount === 0) return;
         for (let i = 0; i < fieldCount; i++) {
             const label = document.createElement('label');
-            label.innerHTML = `<input type="checkbox" id="reveal-check-${i}" value="${i}"><span>卡片 ${i + 1}</span>`;
+            label.className = "flex items-center space-x-2 cursor-pointer py-1";
+            label.innerHTML = `<input type="checkbox" id="reveal-check-${i}" value="${i}" class="w-4 h-4 text-teal-600 rounded"><span>卡片 ${i + 1}</span>`;
             autoRevealOptionsContainer.appendChild(label);
         }
     }
@@ -1071,6 +1036,42 @@ document.addEventListener('DOMContentLoaded', () => {
         checkboxes.forEach(cb => { selectedIndices.push(parseInt(cb.value, 10)); });
         currentDeckSettings.autoRevealIndices = selectedIndices;
         saveCurrentDeckSettings();
+    }
+
+    function populateCardTagFilters() {
+        cardTagFilterContainer.innerHTML = '';
+        // 從目前的單字集中提取所有唯一標籤
+        const tagsInDeck = [...new Set(currentFullDeck.flatMap(card => card.tags || []))];
+        tagsInDeck.sort();
+
+        // 無標籤選項
+        const untaggedLabel = createTagFilterCheckbox("未分類", "untagged");
+        cardTagFilterContainer.appendChild(untaggedLabel);
+
+        tagsInDeck.forEach(tag => {
+            const label = createTagFilterCheckbox(tag, tag);
+            cardTagFilterContainer.appendChild(label);
+        });
+    }
+
+    function createTagFilterCheckbox(labelName, tagValue) {
+        const label = document.createElement('label');
+        label.className = "flex items-center space-x-2 cursor-pointer py-1";
+        label.innerHTML = `<input type="checkbox" id="tag-filter-check-${tagValue}" value="${tagValue}" class="w-4 h-4 text-teal-600 rounded"><span>${labelName}</span>`;
+        label.querySelector('input').addEventListener('change', saveCardTagFilters);
+        return label;
+    }
+
+    function saveCardTagFilters() {
+        const selectedTags = [];
+        const checkboxes = cardTagFilterContainer.querySelectorAll('input[type="checkbox"]:checked');
+        checkboxes.forEach(cb => { selectedTags.push(cb.value); });
+        currentDeckSettings.filterTags = selectedTags;
+        saveCurrentDeckSettings();
+        
+        // 重新計算學習清單
+        updateLearningDeck();
+        updateUI(); // 更新待學數量顯示
     }
     
     function changeDeckFontSize(step) {
@@ -1128,7 +1129,6 @@ document.addEventListener('DOMContentLoaded', () => {
         allTags.push(newTagName);
         saveAllTags();
         renderTagList(); 
-        renderFilterTags(); 
         if (typeof tagName !== 'string') newTagInput.value = '';
     }
     
