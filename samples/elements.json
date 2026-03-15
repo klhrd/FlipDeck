@@ -1,0 +1,1064 @@
+[
+  {
+    "card_id": "card_0_ead1ddb1-ff3c-4f0f-b637-68d938a5e347",
+    "fields": [
+      "氫",
+      "H"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_1_ea347efe-2ed3-4669-b780-7c38a840a9ce",
+    "fields": [
+      "氦",
+      "He"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_2_9606c8ae-fc05-4c3f-8664-152f66aeed21",
+    "fields": [
+      "鋰",
+      "Li"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_3_a7a3ef61-f1d4-4f57-b71d-19eed2e03602",
+    "fields": [
+      "鈹",
+      "Be"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_4_b5d4b3d3-28c0-4310-aa02-6f98d3b406fb",
+    "fields": [
+      "硼",
+      "B"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_5_f6ea8081-b805-4293-afdb-cdd859c7d124",
+    "fields": [
+      "碳",
+      "C"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_6_6043510f-b765-4976-aacd-c577df3ef3d5",
+    "fields": [
+      "氮",
+      "N"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_7_651977c4-47f5-4b39-8e21-a1547e1b2fa2",
+    "fields": [
+      "氧",
+      "O"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_8_ef7d9514-b84d-46c4-979f-4b117c0a4720",
+    "fields": [
+      "氟",
+      "F"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_9_fcc57c4e-9a14-4647-bdee-0e5e4c7845a1",
+    "fields": [
+      "氖",
+      "Ne"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_10_9106e320-2c27-434e-b237-2899f64a09a2",
+    "fields": [
+      "鈉",
+      "Na"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_11_26afbc31-8fe6-4796-b852-6566384a7ec4",
+    "fields": [
+      "鎂",
+      "Mg"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_12_0bf5df74-36ff-4be5-9920-76c03e15c6ca",
+    "fields": [
+      "鋁",
+      "Al"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_13_44fa764b-6a49-45fa-8bc9-d61e0eda5f4c",
+    "fields": [
+      "矽",
+      "Si"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_14_e2ebcdb9-9497-4c94-81d2-0aca123049af",
+    "fields": [
+      "磷",
+      "P"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_15_b33388ad-2e59-4f66-ba32-5ae691414980",
+    "fields": [
+      "硫",
+      "S"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_16_7c23a272-56cc-4a4a-bb77-de625609f98f",
+    "fields": [
+      "氯",
+      "Cl"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_17_63487075-7e9f-41e5-8273-4d9bed9d6511",
+    "fields": [
+      "氬",
+      "Ar"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_18_38f46bf5-5f7b-46d2-9420-e79936af182c",
+    "fields": [
+      "鉀",
+      "K"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_19_794b2570-b5fa-40d0-afc8-6e6f09867db7",
+    "fields": [
+      "鈣",
+      "Ca"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_20_b67458e9-be3c-464e-9220-6ef15044440e",
+    "fields": [
+      "鈧",
+      "Sc"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_21_16d5dde1-1df9-41dc-ad43-c594ffa61b59",
+    "fields": [
+      "鈦",
+      "Ti"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_22_376a2863-7022-467b-8e1a-1b67e50be2a1",
+    "fields": [
+      "釩",
+      "V"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_23_6f6f6428-bef2-4170-8e8c-ce3e763e7999",
+    "fields": [
+      "鉻",
+      "Cr"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_24_36d3f615-f534-41c8-899f-792ed8e8134f",
+    "fields": [
+      "錳",
+      "Mn"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_25_f2cbdd10-8c83-4c3f-95b2-1395fce5a043",
+    "fields": [
+      "鐵",
+      "Fe"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_26_9fe8a290-eb96-4d06-b956-3597004bd247",
+    "fields": [
+      "鈷",
+      "Co"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_27_a8790b9a-3e2d-487e-a0c1-c408ed7737b6",
+    "fields": [
+      "鎳",
+      "Ni"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_28_162661b4-7814-41ce-8873-32d79f655ab4",
+    "fields": [
+      "銅",
+      "Cu"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_29_2818b98a-e1c0-4aae-aa89-26aa12db0bcc",
+    "fields": [
+      "鋅",
+      "Zn"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_30_d61e9874-444e-47e9-83b5-e1efef1ed5f0",
+    "fields": [
+      "鎵",
+      "Ga"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_31_aeb3a871-bcd7-4fbe-b748-44c858527859",
+    "fields": [
+      "鍺",
+      "Ge"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_32_583a2370-6fdd-40dc-a430-1f7bb0a71d65",
+    "fields": [
+      "砷",
+      "As"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_33_8dc769ad-8400-44b5-935f-291e1f81f498",
+    "fields": [
+      "硒",
+      "Se"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_34_4d310ec0-0920-41ed-a6dc-d7a762b68cdb",
+    "fields": [
+      "溴",
+      "Br"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_35_9b2096ae-36d1-45fe-93f4-3733bf521f5e",
+    "fields": [
+      "氪",
+      "Kr"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_36_f754191c-1ec5-44c6-8d7b-41ed0eccc1e7",
+    "fields": [
+      "銣",
+      "Rb"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_37_c7884d8f-6538-4721-8858-fc30a184bc9a",
+    "fields": [
+      "鍶",
+      "Sr"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_38_24496779-4f1e-4c23-a36e-dc5cfaa33f31",
+    "fields": [
+      "釔",
+      "Y"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_39_1ca1ff0e-1fd5-415e-b90b-699d617fc576",
+    "fields": [
+      "鋯",
+      "Zr"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_40_e92bc8e8-346e-457b-8f0f-4b74a9b7cb2d",
+    "fields": [
+      "鈮",
+      "Nb"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_41_4875ec62-ec77-48e7-93a8-0a2d832d2167",
+    "fields": [
+      "鉬",
+      "Mo"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_42_e5901fc2-330c-49f9-98fc-aac58f02c74e",
+    "fields": [
+      "鎝",
+      "Tc"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_43_a2819bfa-598a-425f-8191-acee16e94e94",
+    "fields": [
+      "釕",
+      "Ru"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_44_17822f24-76ae-4f76-917c-8479edb05857",
+    "fields": [
+      "銠",
+      "Rh"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_45_9835b793-2db9-4cc4-b55c-7c468c470b1e",
+    "fields": [
+      "鈀",
+      "Pd"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_46_9b28c647-199c-426a-a3ed-3e851eee8d5e",
+    "fields": [
+      "銀",
+      "Ag"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_47_47d179fb-488a-403c-85eb-db3379d26205",
+    "fields": [
+      "鎘",
+      "Cd"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_48_a55de193-eb13-4761-a724-908716e0fd70",
+    "fields": [
+      "銦",
+      "In"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_49_98ead0f6-95d1-4d21-9c4c-74265a9b5245",
+    "fields": [
+      "錫",
+      "Sn"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_50_b6c480f3-2f02-4b68-b620-ab6e7aaf0b44",
+    "fields": [
+      "銻",
+      "Sb"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_51_6459c154-98dc-48a3-a5bd-b2639753751f",
+    "fields": [
+      "碲",
+      "Te"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_52_7626fabf-fdca-446c-a7d5-aacfcf44c96b",
+    "fields": [
+      "碘",
+      "I"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_53_0404e015-e61f-46b1-9487-78b99f63f3df",
+    "fields": [
+      "氙",
+      "Xe"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_54_d0a5d7cf-6eef-47df-8f22-35dbeea916b0",
+    "fields": [
+      "銫",
+      "Cs"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_55_737681d4-d86a-4c6e-80c5-0d6b410b6c8f",
+    "fields": [
+      "鋇",
+      "Ba"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_56_a37354a8-4db8-480d-b053-257187a72f3c",
+    "fields": [
+      "鑭",
+      "La"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_57_51ff8859-007f-4002-81ec-a2d8a9a00eab",
+    "fields": [
+      "鈰",
+      "Ce"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_58_393f9649-b4d6-4baf-a5a1-e784d7ce9f41",
+    "fields": [
+      "鐠",
+      "Pr"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_59_89271682-d554-406a-81ed-4e7853f0f791",
+    "fields": [
+      "釹",
+      "Nd"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_60_79ac59bc-e236-48fc-84f6-bd4d127eac2b",
+    "fields": [
+      "鉕",
+      "Pm"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_61_8ce0c9a5-3e86-482e-956e-72d4f328a778",
+    "fields": [
+      "釤",
+      "Sm"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_62_5d87b4af-232d-4058-858f-3bd39e764b08",
+    "fields": [
+      "銪",
+      "Eu"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_63_e18c695d-66a0-4dcc-aa25-6f9aeb47d584",
+    "fields": [
+      "釓",
+      "Gd"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_64_264c9cf5-c626-4f56-b574-47518cf7b672",
+    "fields": [
+      "鋱",
+      "Tb"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_65_11db207d-29b5-4c34-95ef-29a3a822c3da",
+    "fields": [
+      "鏑",
+      "Dy"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_66_1a9b3ad9-9e3d-4ad2-8ec7-969f6ebdba72",
+    "fields": [
+      "鈥",
+      "Ho"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_67_e1920f39-0623-40f4-b0be-abfb095e14de",
+    "fields": [
+      "鉺",
+      "Er"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_68_3c3c4c72-080f-46f9-a166-d9b2ab6ae5ed",
+    "fields": [
+      "銩",
+      "Tm"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_69_ba3ec644-fa56-44fc-b0bd-bc962f9ee461",
+    "fields": [
+      "鐿",
+      "Yb"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_70_8373070a-70a1-4782-852c-c907dd3e57bf",
+    "fields": [
+      "鎦",
+      "Lu"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_71_aa7469d9-0f9e-4efe-8e38-aeab19980fa0",
+    "fields": [
+      "鉿",
+      "Hf"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_72_82d2bbbd-1bea-419b-b199-f713ce532232",
+    "fields": [
+      "鉭",
+      "Ta"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_73_3eb13113-1335-402d-be0f-df87130cf58a",
+    "fields": [
+      "鎢",
+      "W"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_74_e9197576-9e85-4d9a-b9fe-8250c4bd1d28",
+    "fields": [
+      "錸",
+      "Re"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_75_4365fc2b-d115-4b3c-86e9-6f4ce603f4b3",
+    "fields": [
+      "鋨",
+      "Os"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_76_62f3b210-f460-4c73-9936-84ebeb7e1183",
+    "fields": [
+      "銥",
+      "Ir"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_77_1fe2e02e-c3b2-4066-b6ce-525be725862f",
+    "fields": [
+      "鉑",
+      "Pt"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_78_0b6b1fcd-81ff-44f4-a59a-bdae28909f7c",
+    "fields": [
+      "金",
+      "Au"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_79_e3f65a13-7c1c-4283-af27-a632c1d83b7c",
+    "fields": [
+      "汞",
+      "Hg"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_80_30998cb7-137e-4915-a28a-c8b6d63ae850",
+    "fields": [
+      "鉈",
+      "Tl"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_81_1d56348c-54a4-4be0-b369-a6a8d560499a",
+    "fields": [
+      "鉛",
+      "Pb"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_82_a89300cf-4f08-46d1-8882-80d7affb9ac5",
+    "fields": [
+      "鉍",
+      "Bi"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_83_0257219c-0233-4a56-8d2a-81de91e28e67",
+    "fields": [
+      "釙",
+      "Po"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_84_79eb9416-efc1-4939-a2e2-d445ff866dce",
+    "fields": [
+      "砈",
+      "At"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_85_ab3efd11-074b-4578-b6a2-6cc72c1f317e",
+    "fields": [
+      "氡",
+      "Rn"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_86_9e180eed-1072-4ea2-83b2-38a5058c61ad",
+    "fields": [
+      "鍅",
+      "Fr"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_87_4b575cd6-f05f-4a41-93cd-f91e6a3318d7",
+    "fields": [
+      "鐳",
+      "Ra"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_88_7e23c968-f5e8-4c0f-b62f-6ce97fde450b",
+    "fields": [
+      "錒",
+      "Ac"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_89_d97f7375-8573-459f-b009-601010dbc3f0",
+    "fields": [
+      "釷",
+      "Th"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_90_fe3f6971-c1bd-4804-b776-0aaf5542a2b6",
+    "fields": [
+      "鏷",
+      "Pa"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_91_bda03953-cead-413b-ab2d-fccc7813e705",
+    "fields": [
+      "鈾",
+      "U"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_92_aa6539ee-638f-4d39-b1f0-b6db62a5ecf2",
+    "fields": [
+      "鎿",
+      "Np"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_93_b812274d-f70c-4e6c-beef-4e9ce9d9b550",
+    "fields": [
+      "鈽",
+      "Pu"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_94_90493523-278d-4e86-9b81-cc22272e5ff3",
+    "fields": [
+      "鋂",
+      "Am"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_95_ea1e664c-6607-46cd-a7b9-1130897ce2b6",
+    "fields": [
+      "鋦",
+      "Cm"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_96_cd7bfdef-fc49-4cc9-a9df-32bdd4691f8f",
+    "fields": [
+      "鉳",
+      "Bk"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_97_15590310-c4b3-49ad-a3fc-0751ea323fb4",
+    "fields": [
+      "鉲",
+      "Cf"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_98_3519a24f-df05-4218-a640-c659a1e468ce",
+    "fields": [
+      "鎄",
+      "Es"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_99_3e71fd14-0907-4c3a-be95-6431a98a7bf9",
+    "fields": [
+      "鐨",
+      "Fm"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_100_1f188426-1c2e-4bf9-9bb7-27e0f74f8192",
+    "fields": [
+      "鍆",
+      "Md"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_101_36d2c239-98a9-45b6-b75f-694a5dd8aca5",
+    "fields": [
+      "鍩",
+      "No"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_102_832fc8de-f2d1-4706-8842-6b5ac1245f6c",
+    "fields": [
+      "鐒",
+      "Lr"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_103_81387f78-da42-4cb2-9d8a-c24dd83b1dde",
+    "fields": [
+      "鑪",
+      "Rf"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_104_9222a238-fa90-42c6-991c-ca16fc75ace5",
+    "fields": [
+      "𨧀",
+      "Db"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_105_22dc2995-c4b9-4f4c-a585-9ddd3d3150e4",
+    "fields": [
+      "𨭎",
+      "Sg"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_106_aff0604a-1e0c-49dc-b3d2-e53d26e8ee11",
+    "fields": [
+      "𨨏",
+      "Bh"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_107_b8f3b50f-3cbb-41b1-b72d-aee1f8c6ce1d",
+    "fields": [
+      "𨭆",
+      "Hs"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_108_c1447a3c-ba45-4385-85f0-844bd2b64c83",
+    "fields": [
+      "䥑",
+      "Mt"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_109_05b7cc2c-fcb6-4ee2-85ba-a299ac0aaa3b",
+    "fields": [
+      "鐽",
+      "Ds"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_110_56215c2b-3825-40e8-919a-5de9b9278f11",
+    "fields": [
+      "錀",
+      "Rg"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_111_d5aa0600-5a45-42de-aac0-5207d21e72bb",
+    "fields": [
+      "鎶",
+      "Cn"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_112_88059bf2-ed21-438f-8f53-9352bd60b763",
+    "fields": [
+      "鉨",
+      "Nh"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_113_02f0cfd6-6338-4de8-9189-6d4336dc85e3",
+    "fields": [
+      "鈇",
+      "Fl"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_114_9e68438f-37a4-4b89-9d8b-f0affac0fa5a",
+    "fields": [
+      "鏌",
+      "Mc"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_115_da46e3f0-d775-47c7-aeee-8199b0304cf5",
+    "fields": [
+      "鉝",
+      "Lv"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_116_e6e3e4c6-fc7b-49bf-a321-ebf46f0ba83d",
+    "fields": [
+      "鿬",
+      "Ts"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_117_ab093a70-6e50-4940-989b-0be022f19cee",
+    "fields": [
+      "鿫",
+      "Og"
+    ],
+    "tags": [],
+    "notes": ""
+  }
+]

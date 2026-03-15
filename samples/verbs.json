@@ -1,0 +1,902 @@
+[
+  {
+    "card_id": "card_0_999636c2-21ce-4afa-8e30-ee0c665ee225",
+    "fields": [
+      "拜訪",
+      "visit-visited-visited"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_1_481d6024-764b-4172-9a2c-2295caca82f2",
+    "fields": [
+      "觀看",
+      "watch-watched-watched"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_2_19c234d3-0b63-4241-b1da-1cf54822fb87",
+    "fields": [
+      "玩",
+      "play-played-played"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_3_8119e69e-3f25-4878-8180-9e30dbaa728e",
+    "fields": [
+      "洗、演奏",
+      "wash-washed-washed"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_4_4afab896-f689-4a7c-931f-4503c40da177",
+    "fields": [
+      "喜歡",
+      "like-liked-liked"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_5_4aac1e3b-d56f-4a47-9e45-6ac3891c095e",
+    "fields": [
+      "愛",
+      "love-loved-loved"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_6_6b781251-f0ed-46aa-a83a-4ea2d1e70589",
+    "fields": [
+      "恨",
+      "hate-hated-hated"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_7_999c43e8-e3ba-4470-8f07-13efd1b186fb",
+    "fields": [
+      "停止",
+      "stop-stopped-stopped"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_8_a38c5751-602a-4d57-aecb-f8a3323b2f92",
+    "fields": [
+      "計畫",
+      "plan-planned-planned"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_9_801ae6ed-f188-43e2-8eb8-bafd2235be3b",
+    "fields": [
+      "哭泣",
+      "cry-cried-cried"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_10_5c7525ff-02b1-4c1f-8d61-b4c2b2c4f3e9",
+    "fields": [
+      "嘗試",
+      "try-tried-tried"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_11_7bfa74a4-d612-4c04-9c47-09a4c7044d44",
+    "fields": [
+      "研讀",
+      "study-studied-studied"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_12_41f6bd13-d2c8-4d6c-ba50-21cd2e650603",
+    "fields": [
+      "價值、花費",
+      "cost-cost-cost"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_13_103ee8f8-daf6-4050-aad7-6fb936f2b79c",
+    "fields": [
+      "切、割",
+      "cut-cut-cut"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_14_93e3f034-36ee-4988-90c7-48cd2b30c212",
+    "fields": [
+      "撞、打",
+      "hit-hit-hit"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_15_2ed63ca1-7812-4ee4-a8e5-540154f138c1",
+    "fields": [
+      "傷害",
+      "hurt-hurt-hurt"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_16_1de962f8-f29f-44f9-8862-785ba2e367ee",
+    "fields": [
+      "讓",
+      "let-let-let"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_17_3fb19fff-fa13-4140-81cd-b426c3d88af9",
+    "fields": [
+      "放置、樹立",
+      "put-put-put"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_18_3f47cecf-39ee-4bd3-b197-853ef4a00920",
+    "fields": [
+      "設置",
+      "set-set-set"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_19_7c593b39-59a8-4b76-93b3-dc2aa239e7a8",
+    "fields": [
+      "閱讀",
+      "read-read-read"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_20_82a304dd-9f49-4da5-9daa-bf333e39fec1",
+    "fields": [
+      "打賭",
+      "bet-bet-bet"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_21_efbffb80-8bf6-4e57-a18a-72d13250fa3b",
+    "fields": [
+      "適合、合身",
+      "fit-fit-fit"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_22_36312ae5-d2c3-4ccf-ac9d-8f6ffa3f0bb7",
+    "fields": [
+      "停止、放棄",
+      "quit-quit-quit"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_23_cd92fe90-5084-40e8-ad11-702f245571c9",
+    "fields": [
+      "來",
+      "come-came-come"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_24_d9ee73e3-ba59-4fcc-a93f-1636dc38e26b",
+    "fields": [
+      "變成",
+      "become-became-become"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_25_aa60dd64-c912-444f-b975-3b3c2ab063d7",
+    "fields": [
+      "跑步",
+      "run-ran-run"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_26_dd82042c-54e6-4b85-8dd2-f65d21bc3410",
+    "fields": [
+      "帶來",
+      "bring-brought-brought"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_27_87220a8b-df69-477f-83d0-27d79e977312",
+    "fields": [
+      "買",
+      "buy-bought-bought"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_28_08ca4a4b-a405-40ce-a6b5-5f3dc72790f0",
+    "fields": [
+      "想、認為",
+      "think-thought-thought"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_29_2e3d3354-9e6c-4987-80b8-aed36023745d",
+    "fields": [
+      "打架、爭吵",
+      "fight-fought-fought"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_30_26fdfaaa-2078-4fbd-802c-a0f5676e86e6",
+    "fields": [
+      "抓、接、染上",
+      "catch-caught-caught"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_31_0421e8e8-1207-41c0-9eb3-90975b1d6893",
+    "fields": [
+      "教書",
+      "teach-taught-taught"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_32_b96282eb-9527-4029-9d74-aae09fc746b1",
+    "fields": [
+      "覺得",
+      "feel-felt-felt"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_33_3bcfb10c-b315-44ef-a928-04e3e1b68d09",
+    "fields": [
+      "保持",
+      "keep-kept-kept"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_34_94a7baf7-e817-467f-93cd-46fd8a4e0659",
+    "fields": [
+      "睡覺",
+      "sleep-slept-slept"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_35_778345cc-8f8d-46d6-b785-aac5d79c9888",
+    "fields": [
+      "哭泣",
+      "weep-wept-wept"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_36_1b79e2ad-d171-48fa-8ad8-f8a4339ff8b9",
+    "fields": [
+      "離開",
+      "leave-left-left"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_37_dbd976ed-b6e6-4ea4-ad52-7c13d6ceb6e0",
+    "fields": [
+      "建造",
+      "build-built-built"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_38_4ca2827a-6223-4878-8857-6fe8c515960c",
+    "fields": [
+      "借出",
+      "lend-lent-lent"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_39_0bb5eb5f-ea27-445d-bb56-b8be89964165",
+    "fields": [
+      "寄送",
+      "send-sent-sent"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_40_399e9367-58c5-451c-a3fe-ec3789b3b308",
+    "fields": [
+      "（人）花費",
+      "spend-spent-spent"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_41_f1a9b436-ff2e-4867-a35e-16fdcb8acbbc",
+    "fields": [
+      "有",
+      "have-had-had"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_42_718a478a-f398-4200-8267-8756f8eaf4fa",
+    "fields": [
+      "做",
+      "make-made-made"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_43_31567993-5f5d-4855-850e-1e7715634f6d",
+    "fields": [
+      "輸掉",
+      "lose-lost-lost"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_44_1ebaed12-a687-4abb-8aaa-6a2d300ff962",
+    "fields": [
+      "聽見",
+      "hear-heard-heard"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_45_a0742c4c-1e24-4453-813e-3d7803d3834a",
+    "fields": [
+      "意指",
+      "mean-meant-meant"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_46_ed8d222f-cf84-4f48-af23-1c9d424038d1",
+    "fields": [
+      "付錢",
+      "pay-paid-paid"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_47_6bededb6-b163-4b81-9858-e1f9b70b091a",
+    "fields": [
+      "說（的話）",
+      "say-said-said"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_48_5c080bac-504c-42e6-bf36-7f5745777ad9",
+    "fields": [
+      "餵",
+      "feed-fed-fed"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_49_7dbf14f1-0a8e-471b-a9f3-f69a0ffcfbe4",
+    "fields": [
+      "領導",
+      "lead-led-led"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_50_c6670e49-bec8-4bb2-a750-1f67a88fd186",
+    "fields": [
+      "遇見",
+      "meet-met-met"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_51_d4c06f26-8162-4989-bad8-26d4ba82dddc",
+    "fields": [
+      "挖",
+      "dig-dug-dug"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_52_5559781e-2d42-4423-bbba-09a19e99c841",
+    "fields": [
+      "搖擺",
+      "swing-swung-swung"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_53_8f79c9a6-ff2b-4497-b965-913ab74549eb",
+    "fields": [
+      "懸吊",
+      "hang-hung-hung"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_54_fa236063-d4fa-4938-8a11-e468c6e554f2",
+    "fields": [
+      "發現",
+      "find-found-found"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_55_1386e4b2-c649-4f78-9fae-3534b5eca378",
+    "fields": [
+      "得到",
+      "get-got-gotten"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_56_2695d7ef-f08c-4f5f-82bb-44f958760687",
+    "fields": [
+      "忘記",
+      "forget-forgot-forgotten"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_57_9ff6ee39-8293-44c8-a881-68d3e3a6a2a5",
+    "fields": [
+      "握住、舉辦",
+      "hold-held-held"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_58_417bd0e2-24b9-47ba-af24-17fd8bca7034",
+    "fields": [
+      "坐",
+      "sit-sat-sat"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_59_d5886f4a-02e2-4917-8967-eaee08b5f0a0",
+    "fields": [
+      "賣出",
+      "sell-sold-sold"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_60_f8120e5d-4c27-4718-b9a8-06de7f6e359d",
+    "fields": [
+      "告訴",
+      "tell-told-told"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_61_847e1cdb-9d90-4fe5-a1e4-0596beb56f50",
+    "fields": [
+      "贏",
+      "win-won-won"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_62_deb0982c-ac5e-4e53-b977-34484e32bd32",
+    "fields": [
+      "站、起立",
+      "stand-stood-stood"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_63_f2ba22d4-4437-4050-95da-0d306a5e807a",
+    "fields": [
+      "了解",
+      "understand-understood-understood"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_64_4a26acdf-4533-4826-a980-ac0abb6057f9",
+    "fields": [
+      "躺",
+      "lie-lay-lain"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_65_063c9a31-8460-4c12-afd0-2cca8852aea4",
+    "fields": [
+      "說謊",
+      "lie-lied-lied"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_66_f08e1845-71bf-4226-8e48-a2c087ed052d",
+    "fields": [
+      "開始",
+      "begin-began-begun"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_67_9013b209-0c8c-4b09-9026-3397d00e3c73",
+    "fields": [
+      "喝",
+      "drink-drank-drunk"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_68_84cfc0a3-8dcb-4fcf-afd5-15ff0521aba1",
+    "fields": [
+      "按鈴",
+      "ring-rang-rung"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_69_14528b44-0acc-48d7-8e22-47ed9d08db94",
+    "fields": [
+      "唱歌",
+      "sing-sang-sung"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_70_5115d330-5514-4af0-bbf6-cb6fa71de03c",
+    "fields": [
+      "游泳",
+      "swim-swam-swum"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_71_030df757-492f-4444-b5c3-170bd02740e2",
+    "fields": [
+      "打破",
+      "break-broke-broken"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_72_22640d28-3d7c-4d8c-bb20-84c79200405d",
+    "fields": [
+      "說、講話",
+      "speak-spoke-spoken"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_73_275c2d98-4a67-4c5b-b0bc-b9920cae9ed0",
+    "fields": [
+      "偷",
+      "steal-stole-stolen"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_74_adb8130d-c5f6-4458-9a3e-d4c804b7b9fc",
+    "fields": [
+      "醒來",
+      "wake-woke-woken"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_75_8b226e51-e744-46de-a950-84d040698fb3",
+    "fields": [
+      "出生",
+      "bear-bore-born"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_76_7043e951-f75f-4dab-8eb6-ee769c07a75c",
+    "fields": [
+      "穿、戴",
+      "wear-wore-worn"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_77_8f0c9c6d-78ce-40bf-91fa-c750297a76d7",
+    "fields": [
+      "做",
+      "do-did-done"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_78_28051115-10f9-493a-b73a-6158c8566e6c",
+    "fields": [
+      "去",
+      "go-went-gone"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_79_3b7c2a8d-833b-4b38-b38f-aa5dfca24a54",
+    "fields": [
+      "咬",
+      "bite-bit-bitten"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_80_3b02ded5-0f89-4d06-8909-c50f5e1dcfb0",
+    "fields": [
+      "躲藏",
+      "hide-hid-hidden"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_81_72e2867a-5a80-43d9-b516-fb2cc0b8f816",
+    "fields": [
+      "騎",
+      "ride-rode-ridden"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_82_772896aa-ee16-42ec-9d36-d1a7df4f7eb3",
+    "fields": [
+      "寫",
+      "write-wrote-written"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_83_ba34e549-13df-427a-bc2f-93b6cbc133db",
+    "fields": [
+      "是",
+      "be-was-were-been"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_84_0cd0aefb-09a4-49b6-aee4-fd029e97c3f6",
+    "fields": [
+      "跌倒、掉落",
+      "fall-fell-fallen"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_85_9c106f77-8ec2-4d97-83a8-9d81e941f865",
+    "fields": [
+      "吃",
+      "eat-ate-eaten"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_86_6643c454-8ff1-4ab1-aa2c-23b04aa56996",
+    "fields": [
+      "選擇",
+      "choose-chose-chosen"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_87_9da18519-2ad1-4378-897f-d48e43a8f505",
+    "fields": [
+      "開車",
+      "drive-drove-driven"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_88_a94a203f-d72d-4580-bfb8-bf8617a19dad",
+    "fields": [
+      "給",
+      "give-gave-given"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_89_9c2b1c39-0241-4586-a52d-1d4f7a55c090",
+    "fields": [
+      "搖動、震動",
+      "shake-shook-shaken"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_90_8561972c-4ab5-4508-887f-08e1ee34d32f",
+    "fields": [
+      "拿走、搭乘",
+      "take-took-taken"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_91_4f7be129-7459-4560-b078-5f85e42971cd",
+    "fields": [
+      "看到",
+      "see-saw-seen"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_92_86ecfc34-0c0b-4bc4-80e7-0fced224e9c3",
+    "fields": [
+      "畫圖",
+      "draw-drew-drawn"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_93_4779e2c5-f4f4-4e12-a43c-74f94fc8d464",
+    "fields": [
+      "吹、爆炸",
+      "blow-blew-blown"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_94_61a1b4b5-926a-493b-ad20-02dd5eb99b84",
+    "fields": [
+      "種、成長",
+      "grow-grew-grown"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_95_5017ce89-5f8e-42eb-88cc-69949a2059e3",
+    "fields": [
+      "知道、認識",
+      "know-knew-known"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_96_123f4dc1-d609-4741-9150-0829dde73953",
+    "fields": [
+      "丟",
+      "throw-threw-thrown"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_97_0aa2361a-4cf1-4adb-acf4-cd4205a186d6",
+    "fields": [
+      "飛",
+      "fly-flew-flown"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_98_182cf98e-774f-4e87-b4e3-d444452fc294",
+    "fields": [
+      "結凍",
+      "freeze-froze-frozen"
+    ],
+    "tags": [],
+    "notes": ""
+  },
+  {
+    "card_id": "card_99_20e18238-61e0-4fe2-a8fc-dca90a7b98db",
+    "fields": [
+      "原諒",
+      "forgive-forgave-forgiven"
+    ],
+    "tags": [],
+    "notes": ""
+  }
+]
