@@ -11,7 +11,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== 應用程式腳本 (v3.1.0) =====
+// ===== 應用程式腳本 (v3.3.0) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素 ---
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let allTags = [];
     let currentFilter = {
         sortBy: 'lastOpened',
-        filterTag: null
+        filterTags: [] // 改為陣列以支援多選
     };
     let currentDeckId = null;
     let currentFullDeck = [];
@@ -328,10 +328,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderFilterTags() {
         filterTagContainer.innerHTML = '';
-        if (allTags.length === 0) return;
         
+        // 「全部」按鈕
         const allTagBtn = createTagBadge("全部", null);
         filterTagContainer.appendChild(allTagBtn);
+
+        // 「無標籤」按鈕
+        const untaggedBtn = createTagBadge("無標籤", "untagged");
+        filterTagContainer.appendChild(untaggedBtn);
         
         allTags.forEach(tag => {
             const tagBtn = createTagBadge(tag, tag);
@@ -343,18 +347,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const tagEl = document.createElement('span');
         tagEl.className = 'tag-badge';
         tagEl.textContent = tagName;
-        tagEl.dataset.tag = filterValue || 'null';
+        tagEl.dataset.tag = filterValue || 'all';
         
-        if (currentFilter.filterTag === filterValue) {
+        const isAll = filterValue === null;
+        const isActive = isAll 
+            ? currentFilter.filterTags.length === 0 
+            : currentFilter.filterTags.includes(filterValue);
+
+        if (isActive) {
             tagEl.classList.add('active-filter');
         }
         
         tagEl.addEventListener('click', () => {
-            currentFilter.filterTag = filterValue;
-            renderDeckList(); 
-            document.querySelectorAll('#filter-tag-container .tag-badge').forEach(btn => {
-                btn.classList.toggle('active-filter', btn.dataset.tag === (filterValue || 'null'));
-            });
+            if (isAll) {
+                currentFilter.filterTags = [];
+            } else {
+                const index = currentFilter.filterTags.indexOf(filterValue);
+                if (index > -1) {
+                    currentFilter.filterTags.splice(index, 1);
+                } else {
+                    currentFilter.filterTags.push(filterValue);
+                }
+            }
+            renderDeckList();
+            renderFilterTags(); // 重新渲染以更新視覺狀態
         });
         return tagEl;
     }
@@ -370,10 +386,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         let filteredDecks = decksWithProgress;
-        if (currentFilter.filterTag) {
-            filteredDecks = filteredDecks.filter(deck => 
-                deck.category && deck.category.includes(currentFilter.filterTag)
-            );
+        
+        // 多重標籤篩選邏輯 (OR 邏輯：符合任一選中標籤即顯示)
+        if (currentFilter.filterTags.length > 0) {
+            filteredDecks = filteredDecks.filter(deck => {
+                return currentFilter.filterTags.some(tag => {
+                    if (tag === 'untagged') {
+                        return !deck.category || deck.category.length === 0;
+                    }
+                    return deck.category && deck.category.includes(tag);
+                });
+            });
         }
         
         filteredDecks.sort((a, b) => {
