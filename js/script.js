@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- 範例檔案 ---
     const EXAMPLES = [
+        { name: "高中 6000 單字", file: "hs_6000.json" },
         { name: "動詞三態", file: "verbs.json" },
         { name: "元素週期表", file: "elements.json" },
         { name: "國家與首都", file: "capitals.json" }
