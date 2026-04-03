@@ -58,7 +58,8 @@
             { id: 'split', name: '並排/模糊', icon: 'eye', desc: '答案預設模糊，點擊後清晰。' },
             { id: 'toggle', name: '瞬間切換', icon: 'mouse-pointer-click', desc: '零延遲切換，背景微調。' },
             { id: 'swipe', name: '左右滑動', icon: 'arrow-left-right', desc: '左滑忘記，右滑學會。' },
-            { id: 'stack', name: '堆疊抽卡', icon: 'layers', desc: '點擊飛走，露出下一張。' }
+            { id: 'stack', name: '堆疊抽卡', icon: 'layers', desc: '點擊飛走，露出下一張。' },
+            { id: 'combo', name: '綜合模式', icon: 'layout-stack', desc: '堆疊 + 點擊翻轉 + 左右滑動判定。' }
         ];
 
         // ==========================================
@@ -67,7 +68,7 @@
         let activeMode = 'flip';
         let currentIndex = 0;
         
-        // 用來清理 Swipe 模式的全域事件
+        // 用來清理 Swipe/Combo 模式的全域事件
         let swipeMoveHandler = null;
         let swipeUpHandler = null;
 
@@ -162,6 +163,7 @@
                 case 'toggle': html = getToggleCardHTML(word); break;
                 case 'swipe': html = getSwipeCardHTML(word); break;
                 case 'stack': html = getStackDeckHTML(); break;
+                case 'combo': html = getComboCardHTML(); break;
             }
 
             container.innerHTML = html;
@@ -169,6 +171,433 @@
 
             // 特殊模式初始化
             if (activeMode === 'swipe') initSwipeLogic();
+            if (activeMode === 'combo') initComboLogic();
+        }
+
+        // ==========================================
+        // 1. 經典 3D 翻轉式 (Flip Card)
+        // ==========================================
+        function getFlipCardHTML(word) {
+            // HTML 注入 onClick，點擊切換 class
+            return `
+                <div class="w-full h-full perspective-1000 relative group" onclick="this.querySelector('.card-inner').classList.toggle('rotate-y-180')">
+                    <div class="card-inner w-full h-full absolute top-0 left-0 transition-all duration-500 preserve-3d cursor-pointer">
+                        <!-- Front -->
+                        <div class="absolute inset-0 backface-hidden bg-white border border-neutral-200 rounded-3xl shadow-sm flex flex-col items-center justify-center p-8 hover:shadow-md transition-shadow">
+                            <span class="text-neutral-400 text-xs tracking-widest uppercase mb-6 absolute top-8">Tap to flip</span>
+                            <h2 class="text-4xl font-light text-neutral-900 tracking-wide">${word.word}</h2>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 text-white rounded-3xl shadow-lg flex flex-col items-center justify-center p-8">
+                            <h3 class="text-2xl font-medium mb-4">${word.meaning}</h3>
+                            <p class="text-neutral-400 text-center text-sm leading-relaxed mb-8">"${word.example}"</p>
+                            <button onclick="event.stopPropagation(); nextCard()" class="absolute bottom-8 px-6 py-2 bg-white text-neutral-900 rounded-full text-sm font-medium hover:bg-neutral-100 transition-colors">
+                                下一張
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 2. 並排展開式 (Split View with Blur)
+        // ==========================================
+        window.revealSplitCard = function(el) {
+            el.querySelector('.blur-content').className = 'transition-all duration-500 w-full h-full flex flex-col items-center justify-center opacity-100 filter-none';
+            el.querySelector('.hint-overlay').style.display = 'none';
+            el.querySelector('.btn-container').innerHTML = `
+                <button onclick="event.stopPropagation(); nextCard()" class="absolute bottom-4 right-4 px-4 py-1.5 bg-neutral-900 text-white rounded-full text-xs font-medium hover:bg-neutral-800 transition-colors">
+                    下一張
+                </button>
+            `;
+        };
+
+        function getSplitCardHTML(word) {
+            return `
+                <div class="w-full h-full bg-white border border-neutral-200 rounded-3xl shadow-sm flex flex-col overflow-hidden">
+                    <div class="flex-1 flex items-center justify-center p-8 border-b border-neutral-100">
+                        <h2 class="text-4xl font-light text-neutral-900 tracking-wide">${word.word}</h2>
+                    </div>
+                    <div class="flex-1 relative cursor-pointer group bg-neutral-50/50 p-8 flex flex-col items-center justify-center" onclick="revealSplitCard(this)">
+                        <div class="blur-content transition-all duration-500 w-full h-full flex flex-col items-center justify-center opacity-60 blur-md pointer-events-none">
+                            <h3 class="text-xl font-medium text-neutral-800 mb-3">${word.meaning}</h3>
+                            <p class="text-neutral-500 text-center text-sm leading-relaxed">${word.example}</p>
+                        </div>
+                        <div class="hint-overlay absolute inset-0 flex items-center justify-center group-hover:bg-black/5 transition-colors">
+                            <div class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2 text-neutral-700 text-sm font-medium shadow-sm border border-neutral-200/50">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                                <span>點擊查看解答</span>
+                            </div>
+                        </div>
+                        <div class="btn-container"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 3. 點擊瞬間切換 (Toggle / Instant Swap)
+        // ==========================================
+        window.toggleInstantCard = function(el) {
+            if (el.dataset.revealed === 'true') return;
+            el.dataset.revealed = 'true';
+            
+            // 瞬間切換樣式與內容
+            el.className = "w-full h-full rounded-3xl shadow-sm flex flex-col items-center justify-center p-8 cursor-pointer select-none border bg-blue-50/50 border-blue-100";
+            el.innerHTML = `
+                <div class="flex flex-col items-center w-full h-full justify-between">
+                    <div class="flex-1 flex flex-col items-center justify-center">
+                        <h3 class="text-2xl font-medium text-blue-900 mb-4">${WORDS[currentIndex].meaning}</h3>
+                        <p class="text-blue-700/70 text-center text-sm leading-relaxed max-w-xs">"${WORDS[currentIndex].example}"</p>
+                    </div>
+                    <button onclick="event.stopPropagation(); nextCard()" class="mt-auto px-8 py-2.5 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 active:bg-blue-800">
+                        下一張 (Space)
+                    </button>
+                </div>
+            `;
+        };
+
+        function getToggleCardHTML(word) {
+            return `
+                <div data-revealed="false" class="w-full h-full rounded-3xl shadow-sm flex flex-col items-center justify-center p-8 cursor-pointer select-none border bg-white border-neutral-200 hover:border-neutral-300" onclick="toggleInstantCard(this)">
+                    <div class="flex flex-col items-center">
+                        <span class="text-neutral-300 flex items-center gap-1 text-xs tracking-widest uppercase mb-8">
+                            <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5"></i> 瞬間切換
+                        </span>
+                        <h2 class="text-5xl font-light text-neutral-900 tracking-wide">${word.word}</h2>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 4. 左右滑動判定 (Tinder Swipe)
+        // ==========================================
+        window.revealSwipeAnswer = function(e) {
+            e.stopPropagation();
+            const word = WORDS[currentIndex];
+            const content = document.getElementById('swipe-content');
+            content.innerHTML = `
+                <h3 class="text-2xl font-medium text-neutral-900 mb-4">${word.meaning}</h3>
+                <p class="text-neutral-500 text-center text-sm leading-relaxed max-w-xs">"${word.example}"</p>
+                <div class="absolute bottom-6 text-neutral-400 text-xs font-medium flex items-center gap-2 pointer-events-none animate-pulse">
+                    <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i> 左右滑動判定
+                </div>
+            `;
+            lucide.createIcons();
+        };
+
+        function getSwipeCardHTML(word) {
+            return `
+                <div class="w-full h-full relative flex items-center justify-center">
+                    <!-- Background hint indicators -->
+                    <div class="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-0">
+                        <div id="hint-forgot" class="w-16 h-16 rounded-full bg-red-100 text-red-500 flex items-center justify-center transition-opacity opacity-0">
+                            <span class="font-medium text-sm">忘記</span>
+                        </div>
+                        <div id="hint-learned" class="w-16 h-16 rounded-full bg-green-100 text-green-500 flex items-center justify-center transition-opacity opacity-0">
+                            <span class="font-medium text-sm">學會</span>
+                        </div>
+                    </div>
+
+                    <!-- Swipeable Card -->
+                    <div id="swipe-card" class="absolute w-full h-full bg-white border border-neutral-200 rounded-3xl shadow-sm flex flex-col items-center justify-center p-8 select-none touch-none cursor-grab active:cursor-grabbing z-10 transition-all duration-300 ease-out">
+                        
+                        <!-- Status Stamps -->
+                        <div id="stamp-forgot" class="absolute top-8 left-8 border-2 border-red-500 text-red-500 font-bold px-3 py-1 rounded -rotate-12" style="opacity: 0;">忘記</div>
+                        <div id="stamp-learned" class="absolute top-8 right-8 border-2 border-green-500 text-green-500 font-bold px-3 py-1 rounded rotate-12" style="opacity: 0;">學會</div>
+
+                        <div id="swipe-content" class="w-full h-full flex flex-col items-center justify-center">
+                            <h2 class="text-4xl font-light text-neutral-900 tracking-wide mb-8">${word.word}</h2>
+                            <button onclick="revealSwipeAnswer(event)" class="mt-4 px-6 py-2 bg-neutral-100 text-neutral-600 rounded-full text-xs font-medium hover:bg-neutral-200 transition-colors pointer-events-auto">
+                                點擊看答案
+                            </button>
+                            <div class="absolute bottom-6 flex gap-12 text-neutral-300 text-xs mt-8 pointer-events-none">
+                                <span class="flex items-center gap-1"><i data-lucide="arrow-left-right" class="w-3 h-3"></i> 左滑忘記</span>
+                                <span class="flex items-center gap-1">右滑學會 <i data-lucide="arrow-left-right" class="w-3 h-3"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initSwipeLogic() {
+            const card = document.getElementById('swipe-card');
+            if (!card) return;
+
+            let isDragging = false;
+            let startX = 0;
+            let dragX = 0;
+
+            card.addEventListener('pointerdown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                card.classList.remove('transition-all', 'duration-300', 'ease-out');
+            });
+
+            swipeMoveHandler = (e) => {
+                if (!isDragging) return;
+                dragX = e.clientX - startX;
+                const rotation = dragX * 0.05;
+                card.style.transform = `translateX(${dragX}px) rotate(${rotation}deg)`;
+
+                // 背景提示圓點
+                document.getElementById('hint-forgot').style.opacity = dragX < -20 ? 1 : 0;
+                document.getElementById('hint-learned').style.opacity = dragX > 20 ? 1 : 0;
+
+                // 卡片上的印章
+                document.getElementById('stamp-forgot').style.opacity = Math.min(Math.max(-dragX / 100, 0), 1);
+                document.getElementById('stamp-learned').style.opacity = Math.min(Math.max(dragX / 100, 0), 1);
+            };
+
+            swipeUpHandler = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                card.classList.add('transition-all', 'duration-300', 'ease-out');
+
+                const threshold = 100;
+                if (dragX > threshold) {
+                    // 往右滑出
+                    card.style.transform = `translateX(500px) rotate(25deg)`;
+                    card.style.opacity = '0';
+                    setTimeout(nextCard, 300);
+                } else if (dragX < -threshold) {
+                    // 往左滑出
+                    card.style.transform = `translateX(-500px) rotate(-25deg)`;
+                    card.style.opacity = '0';
+                    setTimeout(nextCard, 300);
+                } else {
+                    // 彈回原位
+                    dragX = 0;
+                    card.style.transform = `translateX(0px) rotate(0deg)`;
+                    document.getElementById('stamp-forgot').style.opacity = 0;
+                    document.getElementById('stamp-learned').style.opacity = 0;
+                }
+            };
+
+            window.addEventListener('pointermove', swipeMoveHandler);
+            window.addEventListener('pointerup', swipeUpHandler);
+        }
+
+        // ==========================================
+        // 5. 堆疊抽卡式 (Stack Deck)
+        // ==========================================
+        window.handleStackClick = function(el) {
+            if (el.dataset.animating === 'true') return;
+            el.dataset.animating = 'true';
+            
+            // 飛走動畫
+            el.style.transform = 'translateY(-100px) rotate(5deg) scale(0.9)';
+            el.style.opacity = '0';
+            
+            // 動畫結束後切換下一題，因為切換會整組重建 DOM，所以下層卡片會自動浮上來
+            setTimeout(nextCard, 400);
+        };
+
+        function getStackDeckHTML() {
+            const visibleWords = WORDS.slice(currentIndex, currentIndex + 3);
+            let cardsHTML = '';
+
+            // 從下往上渲染，確保 z-index 正確
+            visibleWords.forEach((wordObj, index) => {
+                const isTop = index === 0;
+                const translateY = index * 16;
+                const scale = 1 - index * 0.05;
+                const zIndex = 30 - index;
+                const opacity = 1 - index * 0.2;
+
+                const topCardContent = `
+                    <div class="flex flex-col items-center h-full justify-center w-full relative">
+                        <span class="absolute top-0 text-neutral-300 text-xs tracking-widest uppercase flex items-center gap-1">
+                            <i data-lucide="hand" class="w-3.5 h-3.5"></i> Click to draw
+                        </span>
+                        <h2 class="text-4xl font-light text-neutral-900 tracking-wide mb-6">${wordObj.word}</h2>
+                        <div class="w-12 h-[1px] bg-neutral-200 mb-6"></div>
+                        <h3 class="text-lg font-medium text-neutral-600 mb-2">${wordObj.meaning}</h3>
+                    </div>
+                `;
+
+                const backCardContent = `
+                    <h2 class="text-4xl font-light text-neutral-300 tracking-wide">${wordObj.word}</h2>
+                `;
+
+                cardsHTML += `
+                    <div 
+                        data-animating="false"
+                        ${isTop ? 'onclick="handleStackClick(this)"' : ''}
+                        class="absolute w-full h-[85%] bg-white border border-neutral-200 rounded-3xl flex flex-col items-center justify-center p-8 transition-all duration-400 ease-out ${isTop ? 'cursor-pointer hover:border-neutral-300 shadow-sm' : 'pointer-events-none'}"
+                        style="transform: translateY(${translateY}px) scale(${scale}); opacity: ${opacity}; z-index: ${zIndex};"
+                    >
+                        ${isTop ? topCardContent : backCardContent}
+                    </div>
+                `;
+            });
+
+            return `<div class="w-full h-full relative flex items-center justify-center perspective-1000">${cardsHTML}</div>`;
+        }
+
+        // ==========================================
+        // 6. 綜合模式 (Combo: Stack + Flip + Swipe)
+        // ==========================================
+        function getComboCardHTML() {
+            const visibleWords = WORDS.slice(currentIndex, currentIndex + 3);
+            let cardsHTML = '';
+
+            visibleWords.forEach((wordObj, index) => {
+                const isTop = index === 0;
+                const translateY = index * 16;
+                const scale = 1 - index * 0.05;
+                const zIndex = 30 - index;
+                const opacity = 1 - index * 0.2;
+
+                if (isTop) {
+                    cardsHTML += `
+                        <div id="combo-card" class="absolute w-full h-[85%] perspective-1000 z-[30] touch-none">
+                            <!-- Minimalist Status Indicators -->
+                            <div id="stamp-forgot" class="absolute top-10 left-10 w-16 h-16 rounded-full border-2 border-red-500/80 text-red-500 flex items-center justify-center z-50 pointer-events-none -rotate-12" style="opacity: 0;">
+                                <i data-lucide="x" class="w-10 h-10 stroke-[3]"></i>
+                            </div>
+                            <div id="stamp-learned" class="absolute top-10 right-10 w-16 h-16 rounded-full border-2 border-green-500/80 text-green-500 flex items-center justify-center z-50 pointer-events-none rotate-12" style="opacity: 0;">
+                                <i data-lucide="check" class="w-10 h-10 stroke-[3]"></i>
+                            </div>
+                            
+                            <div class="card-inner w-full h-full relative transition-transform duration-500 preserve-3d cursor-grab active:cursor-grabbing">
+                                <!-- Front -->
+                                <div class="absolute inset-0 backface-hidden bg-white border border-neutral-200 rounded-3xl shadow-sm flex flex-col items-center justify-center p-8">
+                                    <span class="text-neutral-300 text-[10px] tracking-widest uppercase mb-6 absolute top-6">Tap to flip / Swipe to judge</span>
+                                    <h2 class="text-4xl font-light text-neutral-900 tracking-wide">${wordObj.word}</h2>
+                                </div>
+                                <!-- Back -->
+                                <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 text-white rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center">
+                                    <h3 class="text-2xl font-medium mb-4">${wordObj.meaning}</h3>
+                                    <p class="text-neutral-400 text-sm leading-relaxed">${wordObj.example}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    cardsHTML += `
+                        <div class="absolute w-full h-[85%] bg-white border border-neutral-200 rounded-3xl flex items-center justify-center p-8 pointer-events-none"
+                             style="transform: translateY(${translateY}px) scale(${scale}); opacity: ${opacity}; z-index: ${zIndex};">
+                            <h2 class="text-4xl font-light text-neutral-200 tracking-wide">${wordObj.word}</h2>
+                        </div>
+                    `;
+                }
+            });
+
+            return `
+                <div class="w-full h-full relative flex items-center justify-center">
+                    <div class="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-0">
+                        <div id="hint-forgot" class="w-20 h-20 rounded-full bg-red-50 text-red-400 flex items-center justify-center transition-opacity opacity-0">
+                            <i data-lucide="x" class="w-8 h-8"></i>
+                        </div>
+                        <div id="hint-learned" class="w-20 h-20 rounded-full bg-green-50 text-green-400 flex items-center justify-center transition-opacity opacity-0">
+                            <i data-lucide="check" class="w-8 h-8"></i>
+                        </div>
+                    </div>
+                    ${cardsHTML}
+                </div>
+            `;
+        }
+
+        function initComboLogic() {
+            const card = document.getElementById('combo-card');
+            const inner = card?.querySelector('.card-inner');
+            if (!card || !inner) return;
+
+            let isDragging = false;
+            let startX = 0;
+            let dragX = 0;
+            let startTime = 0;
+            let lastX = 0;
+            let lastTime = 0;
+            let velocity = 0;
+
+            card.addEventListener('pointerdown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                lastX = e.clientX;
+                lastTime = Date.now();
+                dragX = 0;
+                startTime = Date.now();
+                card.style.transition = 'none';
+                inner.style.transition = 'none';
+            });
+
+            swipeMoveHandler = (e) => {
+                if (!isDragging) return;
+                const now = Date.now();
+                const currentX = e.clientX;
+                
+                // 計算瞬時速度
+                const dt = now - lastTime;
+                if (dt > 0) {
+                    velocity = (currentX - lastX) / dt;
+                }
+                
+                dragX = currentX - startX;
+                lastX = currentX;
+                lastTime = now;
+
+                const rotation = dragX * 0.05;
+                card.style.transform = `translateX(${dragX}px) rotate(${rotation}deg)`;
+
+                document.getElementById('hint-forgot').style.opacity = dragX < -20 ? 1 : 0;
+                document.getElementById('hint-learned').style.opacity = dragX > 20 ? 1 : 0;
+                document.getElementById('stamp-forgot').style.opacity = Math.min(Math.max(-dragX / 100, 0), 1);
+                document.getElementById('stamp-learned').style.opacity = Math.min(Math.max(dragX / 100, 0), 1);
+            };
+
+            swipeUpHandler = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                const duration = Date.now() - startTime;
+                
+                // 決定是否飛出：距離超過 100px 或 甩動速度超過 0.5
+                const isFlick = Math.abs(velocity) > 0.5;
+                const isFarEnough = Math.abs(dragX) > 100;
+
+                if (isFlick || isFarEnough) {
+                    // 成功滑出
+                    const direction = velocity !== 0 ? Math.sign(velocity) : (dragX > 0 ? 1 : -1);
+                    
+                    // 使用順暢的慣性曲線
+                    card.style.transition = 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+                    
+                    // 立即隱藏提示
+                    document.getElementById('hint-forgot').style.opacity = 0;
+                    document.getElementById('hint-learned').style.opacity = 0;
+                    document.getElementById('stamp-forgot').style.opacity = 0;
+                    document.getElementById('stamp-learned').style.opacity = 0;
+                    
+                    // 飛得更遠，確保不會回彈
+                    card.style.transform = `translateX(${direction * 1000}px) rotate(${direction * 45}deg)`;
+                    card.style.opacity = '0';
+                    
+                    setTimeout(nextCard, 250);
+                } else {
+                    // 取消滑動，彈回原位
+                    card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    inner.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    
+                    card.style.transform = `translateX(0px) rotate(0deg)`;
+                    document.getElementById('stamp-forgot').style.opacity = 0;
+                    document.getElementById('stamp-learned').style.opacity = 0;
+                    document.getElementById('hint-forgot').style.opacity = 0;
+                    document.getElementById('hint-learned').style.opacity = 0;
+                    
+                    // 點擊翻轉判定
+                    if (Math.abs(dragX) < 15 && duration < 300) {
+                        inner.classList.toggle('rotate-y-180');
+                    }
+                }
+                velocity = 0; // 重置速度
+            };
+
+            window.addEventListener('pointermove', swipeMoveHandler);
+            window.addEventListener('pointerup', swipeUpHandler);
         }
 
         // ==========================================
