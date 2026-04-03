@@ -11,7 +11,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== 應用程式腳本 (v3.3.1) =====
+// ===== 應用程式腳本 (v3.4.0) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素 ---
@@ -393,9 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>欄位數: ${fieldCount}</p>
                         <p>上次閱讀: ${timeAgo}</p>
                     </div>
-                    <div class="text-left sm:text-right">
-                        ${tagsHTML}
-                    </div>
                 </div>
             `;
             
@@ -724,8 +721,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         cardFields.forEach((content, index) => {
             const card = document.createElement('div');
-            card.className = 'card bg-white dark:bg-gray-700 rounded-xl shadow-md flex items-center justify-center p-4 text-center cursor-pointer transition-transform transform hover:scale-105';
-            card.innerHTML = `<span class="placeholder text-5xl text-gray-400 dark:text-gray-500">?</span><div class="content">${content}</div>`;
+            card.className = 'card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center p-6 text-center cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-700';
+            card.innerHTML = `<span class="placeholder text-5xl text-gray-300 dark:text-gray-600 font-bold">?</span><div class="content">${content}</div>`;
             card.addEventListener('click', (e) => { e.stopPropagation(); card.classList.toggle('revealed'); });
             
             if (currentDeckSettings.autoRevealIndices.includes(index)) {
