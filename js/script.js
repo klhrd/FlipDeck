@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const selectedExample = EXAMPLES.find(ex => ex.file === selectedFile);
-        const filePath = `samples/${selectedFile}`;
+        const filePath = `data/${selectedFile}`;
         
         try {
             const response = await fetch(filePath);
