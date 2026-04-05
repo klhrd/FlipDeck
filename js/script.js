@@ -11,7 +11,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== 應用程式腳本 (v4.0.0 Mastery System) =====
+// ===== 應用程式腳本 (v4.0.0 Mastery System - Refined) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素 ---
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const deckTagsContainer = document.getElementById('deck-tags-container'); 
     const saveDeckOptionsBtn = document.getElementById('save-deck-options-btn'); 
     const deleteDeckBtn = document.getElementById('delete-deck-btn');
-    // 圖形編輯器 (v3.4.0)
+    // 圖形編輯器
     const deckEditorModal = document.getElementById('deck-editor-modal');
     const closeDeckEditorModalBtn = document.getElementById('close-deck-editor-modal-btn');
     const editorDeckTitle = document.getElementById('editor-deck-title');
@@ -383,7 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = visible.length - 1; i >= 0; i--) {
             const cardData = visible[i];
             const isTop = (i === 0);
-            const mastery = currentCardStatus.get(cardData.card_id).mastery;
 
             const cardEl = document.createElement('div');
             cardEl.className = `combo-card absolute w-full h-full transition-all duration-400 ease-out ${isTop ? 'z-[30]' : 'pointer-events-none'}`;
@@ -397,20 +396,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div id="stamp-forgot" class="stamp"><span class="material-symbols-outlined !text-5xl">close</span></div>
                     <div id="stamp-learned" class="stamp"><span class="material-symbols-outlined !text-5xl">check</span></div>
                     <div class="card-inner">
-                        <div class="absolute inset-0 backface-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl shadow-sm flex flex-col items-center justify-center p-8">
-                            <div class="mastery-bar">
-                                ${Array.from({length: 5}, (_, idx) => `<div class="mastery-segment ${idx < mastery ? 'active' : ''}"></div>`).join('')}
-                            </div>
-                            <span class="text-neutral-300 dark:text-gray-500 text-[10px] tracking-widest uppercase mb-6 absolute bottom-10">Swipe right to level up</span>
-                            <div class="card-content text-center text-gray-900 dark:text-white font-light" style="font-size: ${currentDeckSettings.fontSize}rem">
+                        <div class="absolute inset-0 backface-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-sm flex flex-col items-center justify-center p-8">
+                            <div class="card-content text-center text-neutral-900 dark:text-neutral-100 font-light" style="font-size: ${currentDeckSettings.fontSize}rem">
                                 ${cardData.fields[0]}
                             </div>
                         </div>
-                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 text-white rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center">
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center">
                             <div class="card-content font-medium mb-4" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">
                                 ${cardData.fields[1] || ''}
                             </div>
-                            <div class="text-neutral-400 text-sm leading-relaxed">${cardData.fields.slice(2).join('<br>')}</div>
+                            <div class="text-neutral-400 dark:text-neutral-500 text-sm leading-relaxed">${cardData.fields.slice(2).join('<br>')}</div>
                         </div>
                     </div>
                 `;
@@ -418,8 +413,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 initComboLogic(cardEl);
             } else {
                 cardEl.innerHTML = `
-                    <div class="w-full h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl flex items-center justify-center p-8">
-                        <div class="text-gray-200 dark:text-gray-700 font-light truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">
+                    <div class="w-full h-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl flex items-center justify-center p-8">
+                        <div class="text-neutral-200 dark:text-neutral-800 font-light truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">
                             ${cardData.fields[0]}
                         </div>
                     </div>
@@ -499,12 +494,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayEndOfDeck() {
         cardStackContainer.innerHTML = `
-            <div class="flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl shadow-lg animate-in zoom-in duration-300">
-                <div class="w-20 h-20 bg-teal-50 dark:bg-teal-900/30 text-teal-500 rounded-full flex items-center justify-center mb-6">
+            <div class="flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-lg animate-in zoom-in duration-300">
+                <div class="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-500 rounded-full flex items-center justify-center mb-6">
                     <span class="material-symbols-outlined !text-5xl">celebration</span>
                 </div>
-                <h2 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">複習完成！</h2>
-                <button id="restart-btn" class="px-8 py-3 bg-teal-500 text-white font-bold rounded-full shadow-md hover:bg-teal-600 transition-colors">重新開始</button>
+                <h2 class="text-3xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">複習完成！</h2>
+                <button id="restart-btn" class="px-8 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold rounded-full shadow-md hover:bg-neutral-800 transition-colors">重新開始</button>
             </div>
         `;
         document.getElementById('restart-btn').addEventListener('click', restartGame);
@@ -512,10 +507,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI() {
-        const correct = currentFullDeck.length - currentLearningDeck.length;
+        const mastered = Array.from(currentCardStatus.values()).filter(v => v.mastery === 5).length;
         const total = currentFullDeck.length;
         const title = deckList.find(d => d.id === currentDeckId)?.title || "單字集";
-        deckInfo.innerHTML = `<span class="font-bold">${title}</span> • ${correct} / ${total}`;
+        deckInfo.innerHTML = `<span class="font-bold">${title}</span> • ${mastered} / ${total}`;
     }
 
     function bindEventListeners() {
@@ -687,19 +682,19 @@ document.addEventListener('DOMContentLoaded', () => {
             totalCards += deck.totalCards;
             const progress = calculateProgress(deck.id);
             const card = document.createElement('div');
-            card.className = "bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-neutral-100 dark:border-gray-700 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden";
+            card.className = "bg-white dark:bg-neutral-900 p-6 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden";
             card.innerHTML = `
                 <div class="absolute top-0 left-0 w-1 h-full bg-teal-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-lg font-black text-gray-900 dark:text-white truncate pr-8">${deck.title}</h3>
-                    <button class="options-btn p-1 text-gray-400 hover:text-teal-500"><span class="material-symbols-outlined">more_vert</span></button>
+                    <h3 class="text-lg font-black text-neutral-900 dark:text-neutral-100 truncate pr-8">${deck.title}</h3>
+                    <button class="options-btn p-1 text-neutral-400 hover:text-teal-500"><span class="material-symbols-outlined">more_vert</span></button>
                 </div>
-                <div class="flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
+                <div class="flex items-center text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-4">
                     <span class="mr-3">${deck.totalCards} Cards</span>
-                    <span class="bg-teal-50 dark:bg-teal-900/20 text-teal-600 px-2 py-0.5 rounded-full">${progress}% Mastery</span>
+                    <span class="bg-green-50 dark:bg-green-900/20 text-green-600 px-2 py-0.5 rounded-full">${progress}% Mastered</span>
                 </div>
-                <div class="w-full h-1.5 bg-neutral-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div class="h-full bg-teal-500 transition-all duration-1000" style="width: ${progress}%"></div>
+                <div class="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-neutral-900 dark:bg-white transition-all duration-1000" style="width: ${progress}%"></div>
                 </div>
             `;
             card.addEventListener('click', () => startGame(deck.id));
@@ -713,12 +708,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function calculateProgress(deckId) {
         const state = getDeckState(deckId);
         if (state.size === 0) return 0;
-        let totalMastery = 0;
-        state.forEach(v => totalMastery += (v.mastery || 1));
-        return Math.floor((totalMastery / (state.size * 5)) * 100);
+        const mastered = Array.from(state.values()).filter(v => v.mastery === 5).length;
+        return Math.floor((mastered / state.size) * 100);
     }
 
-    // --- 其他功能 (簡化) ---
+    // --- 其他功能 ---
     function openQuickStartModal() { quickStartModal.classList.remove('hidden'); hideAllMenus(); }
     function openSettingsModal() { settingsModal.classList.remove('hidden'); hideAllMenus(); renderTagList(); }
     function openHowToUseModal() { howToUseModal.classList.remove('hidden'); hideAllMenus(); }
@@ -744,8 +738,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createTagFilterCheckbox(label, val) {
         const l = document.createElement('label');
-        l.className = "flex items-center space-x-3 cursor-pointer py-2 hover:bg-neutral-50 dark:hover:bg-gray-800 rounded-xl px-2 transition-colors";
-        l.innerHTML = `<input type="checkbox" value="${val}" id="tag-filter-check-${val}" class="w-5 h-5 rounded-lg border-neutral-300 text-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:border-gray-600"><span class="text-sm font-bold text-gray-600 dark:text-gray-300">${label}</span>`;
+        l.className = "flex items-center space-x-3 cursor-pointer py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl px-2 transition-colors";
+        l.innerHTML = `<input type="checkbox" value="${val}" id="tag-filter-check-${val}" class="w-5 h-5 rounded-lg border-neutral-300 dark:border-neutral-700 text-teal-500 focus:ring-teal-500 dark:bg-neutral-800"><span class="text-sm font-bold text-neutral-600 dark:text-neutral-400">${label}</span>`;
         l.querySelector('input').addEventListener('change', () => {
             const selected = [];
             cardTagFilterContainer.querySelectorAll('input:checked').forEach(cb => selected.push(cb.value));
@@ -767,21 +761,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); }
     function renderAllCardsTable() {
         const q = cardSearchInput.value.toLowerCase().trim();
-        let html = '<thead><tr class="text-neutral-400 text-[10px] uppercase tracking-widest"><th class="p-4">Status</th>';
+        let html = '<thead><tr class="text-neutral-400 dark:text-neutral-500 text-[10px] uppercase tracking-widest"><th class="p-4">Mastery</th>';
         const fields = currentFullDeck[0]?.fields.length || 0;
         for (let i = 1; i <= fields; i++) html += `<th class="p-4">Field ${i}</th>`;
         html += '</tr></thead><tbody>';
-        const filtered = currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || c.tags.some(t => t.toLowerCase().includes(q)));
+        const filtered = currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || (c.tags && c.tags.some(t => t.toLowerCase().includes(q))));
         filtered.forEach(c => {
             const m = currentCardStatus.get(c.card_id).mastery;
-            html += `<tr class="hover:bg-neutral-50 dark:hover:bg-gray-800/50 transition-colors"><td class="p-4"><div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-teal-500':'bg-neutral-200 dark:bg-gray-700'}"></div>`).join('')}</div></td>`;
-            c.fields.forEach(f => html += `<td class="p-4 text-gray-600 dark:text-gray-300 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
+            html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"><td class="p-4"><div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-green-500':'bg-neutral-200 dark:bg-neutral-700'}"></div>`).join('')}</div></td>`;
+            c.fields.forEach(f => html += `<td class="p-4 text-neutral-600 dark:text-neutral-400 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
             html += '</tr>';
         });
         allCardsTable.innerHTML = html + '</tbody>';
     }
 
-    // --- 圖形編輯器與標籤管理等其餘功能 (維持原樣並適配 v4.0.0) ---
+    // --- 其餘功能 ---
     function openDeckOptions(deckId) {
         const deck = deckList.find(d => d.id === deckId);
         deckOptionsTitle.textContent = `單字集選項: ${deck.title}`;
@@ -814,7 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteDeck() {
-        if (confirm("確定刪除此單字集？此動作無法復原。")) {
+        if (confirm("確定刪除此單字集？")) {
             deckList = deckList.filter(d => d.id !== editingDeckId);
             localStorage.removeItem(STORAGE_KEYS.DECK_DATA_PREFIX + editingDeckId);
             localStorage.removeItem(STORAGE_KEYS.DECK_STATE_PREFIX + editingDeckId);
@@ -841,15 +835,15 @@ document.addEventListener('DOMContentLoaded', () => {
             saveDeckList();
             startGame(currentDeckId);
             editDeckModal.classList.add('hidden');
-        } catch (e) { jsonEditorError.textContent = "JSON 格式錯誤: " + e.message; }
+        } catch (e) { jsonEditorError.textContent = "JSON 錯誤"; }
     }
 
     function renderTagList() {
         tagListContainer.innerHTML = '';
         allTags.forEach(tag => {
             const div = document.createElement('div');
-            div.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded-lg";
-            div.innerHTML = `<span>${tag}</span><button class="text-red-500 hover:text-red-700"><span class="material-symbols-outlined">delete</span></button>`;
+            div.className = "flex justify-between items-center bg-neutral-50 dark:bg-neutral-800 p-2 rounded-lg";
+            div.innerHTML = `<span>${tag}</span><button class="text-red-500"><span class="material-symbols-outlined">delete</span></button>`;
             div.querySelector('button').addEventListener('click', () => {
                 allTags = allTags.filter(t => t !== tag);
                 saveAllTags(); renderTagList();
@@ -879,12 +873,11 @@ document.addEventListener('DOMContentLoaded', () => {
         zip.generateAsync({type:"blob"}).then(content => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(content);
-            a.download = `FlipDeck_Backup_${new Date().toISOString().slice(0,10)}.zip`;
+            a.download = `FlipDeck_Backup.zip`;
             a.click();
         });
     }
 
-    // 圖形編輯器相關
     function openDeckEditor(deckId = null) {
         editingDeckId = deckId; editorRowsContainer.innerHTML = '';
         if (deckId) {
@@ -903,26 +896,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderEditorRow(vals = []) {
         const count = parseInt(editorFieldCount.value);
         const row = document.createElement('div');
-        row.className = "flex items-center space-x-2 p-2 border-b dark:border-gray-800";
+        row.className = "flex items-center space-x-2 p-2 border-b dark:border-neutral-800";
         let html = '';
-        for (let i=0; i<count; i++) html += `<input type="text" class="flex-grow p-2 border dark:bg-gray-900 dark:border-gray-700 rounded" value="${vals[i]||''}">`;
-        row.innerHTML = html + `<button class="text-red-500"><span class="material-symbols-outlined">delete</span></button>`;
+        for (let i=0; i<count; i++) html += `<input type="text" class="flex-grow p-2 border dark:bg-neutral-900 dark:border-neutral-800 rounded text-sm" value="${vals[i]||''}">`;
+        row.innerHTML = html + `<button class="text-neutral-400"><span class="material-symbols-outlined">delete</span></button>`;
         row.querySelector('button').addEventListener('click', () => row.remove());
         editorRowsContainer.appendChild(row);
     }
 
     function saveDeckFromEditor() {
         const title = editorDeckTitle.value.trim();
-        if (!title) { editorStatusMsg.textContent = "請輸入標題"; return; }
+        if (!title) return;
         const cards = [];
         editorRowsContainer.querySelectorAll('.flex').forEach(row => {
             const fields = [];
             row.querySelectorAll('input').forEach(input => fields.push(input.value.trim()));
             if (fields.some(f => f)) cards.push({ card_id: `card_${Date.now()}_${crypto.randomUUID()}`, fields, tags: [], notes: "" });
         });
-        if (cards.length === 0) { editorStatusMsg.textContent = "請至少輸入一張卡片"; return; }
-        const id = editingDeckId || `deck_${Date.now()}`;
-        processNewDeck(cards, id, title, editingDeckId ? "editor_update" : "visual_editor");
+        if (cards.length === 0) return;
+        processNewDeck(cards, editingDeckId || `deck_${Date.now()}`, title, "editor");
         deckEditorModal.classList.add('hidden');
     }
 
@@ -935,7 +927,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const b = new Blob([content], {type:mime});
         const a = document.createElement("a");
         a.href = URL.createObjectURL(b);
-        a.download = `Deck_${currentDeckId}.${ext}`;
+        a.download = `Deck.${ext}`;
         a.click();
     }
 

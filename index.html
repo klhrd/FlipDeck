@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FlipDeck v4.0.0</title>
+    <title>FlipDeck v4.0.1</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -55,14 +55,19 @@
         </div>
 
         <!-- ===== 主學習畫面 (Combo Mode) ===== -->
-        <div id="main-screen" class="hidden w-full h-screen flex flex-col bg-neutral-50 dark:bg-gray-950 relative overflow-hidden">
+        <div id="main-screen" class="hidden w-full h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 relative overflow-hidden">
             
+            <!-- 漢堡選單固定於左上角 -->
+            <button id="menu-btn" class="fixed-top-left w-12 h-12 flex items-center justify-center bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all border border-neutral-200 dark:border-neutral-700">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+
             <!-- 背景提示指示器 -->
             <div class="absolute inset-0 flex justify-between items-center px-12 pointer-events-none z-0">
-                <div id="hint-forgot" class="w-32 h-32 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center opacity-0 transition-all scale-75">
+                <div id="hint-forgot" class="w-32 h-32 rounded-full bg-red-500/5 text-red-500 flex items-center justify-center opacity-0 transition-all scale-75">
                     <span class="material-symbols-outlined !text-6xl font-black">close</span>
                 </div>
-                <div id="hint-learned" class="w-32 h-32 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center opacity-0 transition-all scale-75">
+                <div id="hint-learned" class="w-32 h-32 rounded-full bg-green-500/5 text-green-500 flex items-center justify-center opacity-0 transition-all scale-75">
                     <span class="material-symbols-outlined !text-6xl font-black">check</span>
                 </div>
             </div>
@@ -74,13 +79,9 @@
                 </div>
             </div>
 
-            <!-- 頂部控制項 -->
-            <div class="absolute top-6 left-6 right-6 flex justify-between items-center z-50">
-                <button id="menu-btn" class="w-12 h-12 flex items-center justify-center bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all">
-                    <span class="material-symbols-outlined">menu</span>
-                </button>
+            <!-- 頂部資訊列 (僅顯示資訊) -->
+            <div class="absolute top-6 left-0 right-0 flex justify-center items-center pointer-events-none z-40">
                 <div id="deck-info" class="text-[10px] uppercase tracking-[0.2em] font-black bg-neutral-900 text-white px-5 py-2.5 rounded-full shadow-xl"></div>
-                <div class="w-12"></div>
             </div>
             
             <div id="history-alert" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 text-white px-8 py-4 rounded-2xl shadow-2xl z-[100] font-bold tracking-widest animate-bounce">
