@@ -12,12 +12,12 @@
 ### 基礎色調 (Base Colors)
 | 用途 | Tailwind 類別 | 十六進位 (近似) | 說明 |
 | :--- | :--- | :--- | :--- |
-| 全域背景 | `bg-neutral-50` | `#FAFAFA` | 極淡灰色，避免純白刺眼 |
-| 卡片背景 | `bg-white` | `#FFFFFF` | 純白，與背景形成微弱層次 |
-| 邊框 | `border-neutral-200` | `#E5E5E5` | 極細微邊界感 |
-| 主文字 (黑) | `text-neutral-900` | `#171717` | 標題與重點單字 |
-| 次文字 (灰) | `text-neutral-500` | `#737373` | 說明文字 |
-| 標籤文字 (淡) | `text-neutral-300` | `#D4D4D4` | 提示資訊與裝飾 |
+| 全域背景 | `bg-neutral-50` | #FAFAFA | 極淡灰色，避免純白刺眼 |
+| 卡片背景 | `bg-white` | #FFFFFF | 純白，與背景形成微弱層次 |
+| 邊框 | `border-neutral-200` | #E5E5E5 | 極細微邊界感 |
+| 主文字 (黑) | `text-neutral-900` | #171717 | 標題與重點單字 |
+| 次文字 (灰) | `text-neutral-500` | #737373 | 說明文字 |
+| 標籤文字 (淡) | `text-neutral-300` | #D4D4D4 | 提示資訊與裝飾 |
 
 ### 狀態色調 (State Colors)
 *   **正確/學會 (Green)**：

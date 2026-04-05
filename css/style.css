@@ -1,23 +1,123 @@
 body {
     font-family: 'Noto Sans TC', 'Inter', sans-serif;
     touch-action: manipulation;
+    overflow: hidden; /* 防止滑動時頁面滾動 */
 }
 .material-symbols-outlined {
     vertical-align: middle;
     font-size: 1.25em;
 }
-.card {
-    line-height: 1.2;
+
+/* ===== 綜合模式 (Combo Mode) 核心樣式 ===== */
+.perspective-1000 { perspective: 1000px; }
+.preserve-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
+
+.card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+}
+
+.combo-card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    max-width: 400px;
+    max-height: 500px;
+    z-index: 10;
+}
+
+/* ===== 狀態配色 (v4.0.0 State Colors) ===== */
+.bg-mastery-learned { background-color: #f0fdf4; } /* bg-green-50 */
+.dark .bg-mastery-learned { background-color: rgba(20, 184, 166, 0.1); }
+.text-mastery-learned { color: #16a34a; } /* text-green-600 */
+.border-mastery-learned { border-color: #22c55e; } /* border-green-500 */
+
+.bg-mastery-forgot { background-color: #fef2f2; } /* bg-red-50 */
+.dark .bg-mastery-forgot { background-color: rgba(239, 68, 68, 0.1); }
+.text-mastery-forgot { color: #ef4444; } /* text-red-500 */
+.border-mastery-forgot { border-color: #ef4444; } /* border-red-500 */
+
+.bg-interact { background-color: rgba(239, 246, 255, 0.5); } /* bg-blue-50/50 */
+.text-interact { color: #1e3a8a; } /* text-blue-900 */
+
+/* ===== 熟練度指示條 (Mastery Bar) ===== */
+.mastery-bar {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    height: 4px;
+    padding: 0 2rem;
+    position: absolute;
+    top: 2.5rem;
+}
+.mastery-segment {
+    flex: 1;
+    height: 100%;
+    border-radius: 9999px;
+    background-color: #e5e7eb; /* bg-gray-200 */
+    transition: background-color 0.3s ease;
+}
+.dark .mastery-segment { background-color: #374151; }
+.mastery-segment.active { background-color: #14b8a6; } /* bg-teal-500 */
+
+/* 狀態印章 (Stamps) - v4.0.0 Icon Only */
+.stamp {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 80px;
+    border: 4px solid;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease, transform 0.1s ease;
+}
+#stamp-forgot {
+    left: 2rem;
+    color: #ef4444;
+    border-color: #ef4444;
+}
+#stamp-learned {
+    right: 2rem;
+    color: #22c55e;
+    border-color: #22c55e;
+}
+
+/* 互動提示 (Hints) */
+#hint-forgot, #hint-learned {
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 物理動畫曲線 */
+.transition-snap-back {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease !important;
+}
+.transition-exit {
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease !important;
+}
+
+/* 介面層級修復 */
+#main-screen .z-50 { z-index: 100 !important; } /* 確保選單按鈕高於卡片與印章 */
+.menu-panel { z-index: 200 !important; }
+#menu-overlay { z-index: 150 !important; }
+
+/* 舊有的 .card 樣式已不再適用於綜合模式，若有需要可保留基礎排版 */
+.card-content {
+    line-height: 1.4;
     overflow-wrap: break-word;
     word-break: break-word;
 }
-.card .placeholder { display: block; }
-.card .content { display: none; }
-.card.revealed .placeholder { display: none; }
-.card.revealed .content { display: block; }
-button, .card, #main-screen, a {
-    -webkit-tap-highlight-color: transparent;
-}
+
 /* 通用選單面板樣式 */
 .menu-panel {
     transition: transform 0.3s ease-in-out;
