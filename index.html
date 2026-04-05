@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FlipDeck v4.0.1</title>
+    <title>FlipDeck v4.1.0</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -34,7 +34,7 @@
                     <h1 class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white">FlipDeck</h1>
                 </div>
                 <div id="stats-summary" class="text-right text-gray-400 dark:text-gray-500 hidden sm:block">
-                    <p class="text-xs uppercase tracking-widest font-bold">Total Cards: <span id="stats-total-cards" class="text-teal-500">0</span></p>
+                    <p class="text-xs uppercase tracking-widest font-bold">Total Cards: <span id="stats-total-cards" class="text-teal-500 font-black">0</span></p>
                 </div>
             </div>
 
@@ -49,28 +49,22 @@
                 </div>
 
                 <div id="deck-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
-                    <p id="no-recent-decks" class="col-span-full text-gray-400 text-center py-20 italic">尚未開啟任何單字集</p>
+                    <p id="no-recent-decks" class="col-span-full text-gray-400 text-center py-20 italic font-medium">尚未開啟任何單字集</p>
                 </div>
             </div>
         </div>
 
-        <!-- ===== 主學習畫面 (Combo Mode) ===== -->
+        <!-- ===== 主學習畫面 (Combo Mode v4.1.0) ===== -->
         <div id="main-screen" class="hidden w-full h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 relative overflow-hidden">
             
+            <!-- 漸層背景指示器 -->
+            <div id="bg-forgot" class="swipe-bg"></div>
+            <div id="bg-learned" class="swipe-bg"></div>
+
             <!-- 漢堡選單固定於左上角 -->
             <button id="menu-btn" class="fixed-top-left w-12 h-12 flex items-center justify-center bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all border border-neutral-200 dark:border-neutral-700">
                 <span class="material-symbols-outlined">menu</span>
             </button>
-
-            <!-- 背景提示指示器 -->
-            <div class="absolute inset-0 flex justify-between items-center px-12 pointer-events-none z-0">
-                <div id="hint-forgot" class="w-32 h-32 rounded-full bg-red-500/5 text-red-500 flex items-center justify-center opacity-0 transition-all scale-75">
-                    <span class="material-symbols-outlined !text-6xl font-black">close</span>
-                </div>
-                <div id="hint-learned" class="w-32 h-32 rounded-full bg-green-500/5 text-green-500 flex items-center justify-center opacity-0 transition-all scale-75">
-                    <span class="material-symbols-outlined !text-6xl font-black">check</span>
-                </div>
-            </div>
 
             <!-- 卡片堆疊區 -->
             <div id="card-area" class="flex-grow flex items-center justify-center w-full h-full p-6 relative perspective-1000">
@@ -79,7 +73,7 @@
                 </div>
             </div>
 
-            <!-- 頂部資訊列 (僅顯示資訊) -->
+            <!-- 頂部資訊列 -->
             <div class="absolute top-6 left-0 right-0 flex justify-center items-center pointer-events-none z-40">
                 <div id="deck-info" class="text-[10px] uppercase tracking-[0.2em] font-black bg-neutral-900 text-white px-5 py-2.5 rounded-full shadow-xl"></div>
             </div>
@@ -91,10 +85,10 @@
     </div>
 
     <!-- ===== 選單與彈出視窗 ===== -->
-    <div id="menu-overlay" class="hidden fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-[60]"></div>
+    <div id="menu-overlay" class="hidden fixed inset-0 backdrop-blur-sm"></div>
 
     <!-- 首頁選單 -->
-    <div id="home-menu-panel" class="menu-panel fixed top-0 left-0 h-full w-80 bg-white dark:bg-gray-900 shadow-2xl p-6 flex flex-col z-[70]">
+    <div id="home-menu-panel" class="menu-panel fixed top-0 left-0 h-full w-80 shadow-2xl p-6 flex flex-col overflow-hidden">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-xs uppercase tracking-widest font-black text-gray-400">FlipDeck Menu</h2>
             <button id="home-menu-close-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-gray-800 rounded-full transition-colors">
@@ -106,16 +100,16 @@
             <button id="home-menu-add-btn" class="p-3 text-gray-400"><span class="material-symbols-outlined">add_circle</span></button>
             <button id="home-menu-fullscreen-btn" class="p-3 text-gray-400"><span class="material-symbols-outlined">fullscreen</span></button>
         </div>
-        <ul class="space-y-2 flex-grow">
-            <li><button id="create-new-deck-btn" class="w-full text-left flex items-center px-4 py-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-gray-800 transition-colors font-bold"><span class="material-symbols-outlined mr-3">edit_note</span>建立新單字集</button></li>
-            <li><button id="backup-all-btn" class="w-full text-left flex items-center px-4 py-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-gray-800 transition-colors font-bold"><span class="material-symbols-outlined mr-3">backup</span>全域備份 (.zip)</button></li>
-            <li><button id="manage-tags-btn" class="w-full text-left flex items-center px-4 py-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-gray-800 transition-colors font-bold"><span class="material-symbols-outlined mr-3">label</span>標籤管理</button></li>
-            <li><button id="show-how-to-use-btn" class="w-full text-left flex items-center px-4 py-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-gray-800 transition-colors font-bold"><span class="material-symbols-outlined mr-3">help</span>操作教學</button></li>
+        <ul class="space-y-2 flex-grow overflow-y-auto">
+            <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span>建立新單字集</button></li>
+            <li><button id="backup-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">backup</span>全域備份 (.zip)</button></li>
+            <li><button id="manage-tags-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">label</span>標籤管理</button></li>
+            <li><button id="show-how-to-use-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">help</span>操作教學</button></li>
         </ul>
     </div>
     
     <!-- 學習中選單 -->
-    <div id="menu-panel" class="menu-panel fixed top-0 left-0 h-full w-80 bg-white dark:bg-gray-900 shadow-2xl p-6 flex flex-col z-[70]">
+    <div id="menu-panel" class="menu-panel fixed top-0 left-0 h-full w-80 shadow-2xl p-6 flex flex-col overflow-hidden">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-xs uppercase tracking-widest font-black text-gray-400">Deck Settings</h2>
             <button id="deck-menu-close-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-gray-800 rounded-full">
@@ -128,9 +122,9 @@
             <button id="deck-menu-download-btn" class="p-3 text-gray-400"><span class="material-symbols-outlined">download</span></button>
         </div>
         <ul class="space-y-2 flex-grow overflow-y-auto custom-scrollbar">
-            <li><button id="show-all-btn" class="w-full text-left flex items-center px-4 py-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-gray-800 transition-colors font-bold text-teal-600 dark:text-teal-400"><span class="material-symbols-outlined mr-3">list_alt</span>顯示全卡片 (搜尋)</button></li>
-            <li><button id="visual-edit-deck-btn" class="w-full text-left flex items-center px-4 py-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-gray-800 transition-colors font-bold"><span class="material-symbols-outlined mr-3">edit</span>圖形化編輯器</button></li>
-            <li><button id="edit-deck-btn" class="w-full text-left flex items-center px-4 py-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-gray-800 transition-colors font-bold opacity-50 text-[10px]"><span class="material-symbols-outlined !text-sm mr-3">code</span>JSON 原始碼</button></li>
+            <li><button id="show-all-btn" class="menu-item-btn active-text"><span class="material-symbols-outlined mr-3">list_alt</span>顯示全卡片 (搜尋)</button></li>
+            <li><button id="visual-edit-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit</span>圖形化編輯器</button></li>
+            <li><button id="edit-deck-btn" class="menu-item-btn opacity-50 text-[10px]"><span class="material-symbols-outlined !text-sm mr-3">code</span>JSON 原始碼</button></li>
             <li class="pt-4 border-t border-neutral-100 dark:border-gray-800">
                 <span class="text-[10px] uppercase tracking-widest font-black text-gray-400 block mb-3 pl-4">Filter by Tags</span>
                 <div id="card-tag-filter-container" class="space-y-1 pl-4 max-h-40 overflow-y-auto"></div>
@@ -184,32 +178,6 @@
             </div>
             <div class="flex-grow overflow-auto p-2 custom-scrollbar">
                 <table id="all-cards-table" class="w-full text-left text-sm border-separate border-spacing-y-2"></table>
-            </div>
-        </div>
-    </div>
-
-    <!-- 操作教學 Modal -->
-    <div id="how-to-use-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[100] backdrop-blur-sm">
-        <div class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
-            <div class="p-6 border-b border-neutral-100 dark:border-gray-800 flex justify-between items-center">
-                <h2 class="text-xl font-black">操作教學 (v4.0.0)</h2>
-                <button id="close-how-to-use-modal-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-gray-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            <div class="flex-grow overflow-y-auto p-8 space-y-6 text-sm leading-relaxed">
-                <div>
-                    <h3 class="text-teal-500 font-black uppercase tracking-widest text-[10px] mb-2">智慧熟練度系統 (Mastery)</h3>
-                    <p class="mb-4">版本 4.0 導入了五階熟練度追蹤，幫助您科學地掌握每個單字。</p>
-                    <ul class="space-y-3">
-                        <li class="flex items-start"><span class="w-6 h-6 bg-green-50 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center mr-3 text-[10px] font-bold">右滑</span><p><strong>晉級：</strong> 熟練度等級 +1。達到 L5 後該單字將暫時移出學習隊列。</p></li>
-                        <li class="flex items-start"><span class="w-6 h-6 bg-red-50 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mr-3 text-[10px] font-bold">左滑</span><p><strong>遺忘：</strong> 熟練度重置為 L1。系統將優先安排複習這些不熟的單字。</p></li>
-                        <li class="flex items-start"><span class="w-6 h-6 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-full flex items-center justify-center mr-3 text-[10px] font-bold">點擊</span><p><strong>翻轉：</strong> 查看卡片背面或例句資訊。</p></li>
-                    </ul>
-                </div>
-                <hr class="dark:border-gray-800">
-                <div>
-                    <h3 class="text-teal-500 font-black uppercase tracking-widest text-[10px] mb-2">視覺指示</h3>
-                    <p>卡片頂部的分段條代表目前的熟練等級。等級越高，分段條越滿。</p>
-                </div>
             </div>
         </div>
     </div>
