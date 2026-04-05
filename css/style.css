@@ -2,8 +2,8 @@ body {
     font-family: 'Noto Sans TC', 'Inter', sans-serif;
     touch-action: manipulation;
     overflow: hidden;
-    background-color: #FAFAFA; /* bg-neutral-50 */
-    color: #171717; /* text-neutral-900 */
+    background-color: #FAFAFA; /* neutral-50 */
+    color: #171717; /* neutral-900 */
 }
 
 .dark body {
@@ -11,12 +11,7 @@ body {
     color: #F5F5F5;
 }
 
-.material-symbols-outlined {
-    vertical-align: middle;
-    font-size: 1.25em;
-}
-
-/* ===== 綜合模式 (Combo Mode) 核心樣式 ===== */
+/* ===== 綜合模式 (Combo Mode) 核心 ===== */
 .perspective-1000 { perspective: 1000px; }
 .preserve-3d { transform-style: preserve-3d; }
 .backface-hidden { backface-visibility: hidden; }
@@ -49,13 +44,13 @@ body {
     z-index: 0;
 }
 #bg-forgot {
-    background: radial-gradient(circle at left, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle at left, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
 }
 #bg-learned {
-    background: radial-gradient(circle at right, rgba(22, 163, 74, 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle at right, rgba(22, 163, 74, 0.1) 0%, transparent 70%);
 }
 
-/* ===== 狀態配色 (v4.1.0) ===== */
+/* ===== 狀態配色 ===== */
 .bg-mastery-learned { background-color: #f0fdf4; } 
 .dark .bg-mastery-learned { background-color: rgba(22, 163, 74, 0.1); }
 .text-mastery-learned { color: #16a34a; }
@@ -66,7 +61,7 @@ body {
 .text-mastery-forgot { color: #ef4444; }
 .border-mastery-forgot { border-color: #ef4444; }
 
-/* 狀態印章 (Stamps) - 改為更輕量的邊框圖標 */
+/* 狀態印章 (Stamps) - 修正藍色殘留 */
 .stamp {
     position: absolute;
     top: 50%;
@@ -88,28 +83,29 @@ body {
 #stamp-forgot { left: 2rem; color: #ef4444; border-color: #ef4444; }
 #stamp-learned { right: 2rem; color: #16a34a; border-color: #16a34a; }
 
-/* 物理動畫優化 */
-.transition-snap-back {
-    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease !important;
-}
-.transition-exit {
-    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease !important;
-}
-
-/* 介面固定與層級 - 解決失效問題 */
+/* 介面固定與層級 - 極致修復 */
 .fixed-top-left {
     position: fixed;
     top: 1.25rem;
     left: 1.25rem;
-    z-index: 500; /* 極高層級 */
+    z-index: 1500; /* 高於一切 */
 }
 
-/* 選單面板樣式 - 修正蒙版遮蓋與顏色 */
+/* 選單面板 - 排除藍色並修正層級 */
 .menu-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 20rem; /* 80 */
+    background-color: white;
+    box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.25);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateX(-100%);
-    z-index: 1000; /* 高於遮罩 */
-    background-color: white;
+    z-index: 2500; /* 最高權限 */
+    padding: 1.5rem;
+    display: flex;
+    flex-col: column;
 }
 .dark .menu-panel { background-color: #171717; }
 
@@ -118,34 +114,34 @@ body {
 }
 
 #menu-overlay {
-    z-index: 900; /* 低於選單面板 */
-    background-color: rgba(0, 0, 0, 0.3);
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
+    z-index: 2000; /* 低於選單，高於內容 */
 }
 
-/* 移除鮮艷藍色，改用深色/中性色 */
 .menu-item-btn {
     width: 100%;
     text-align: left;
     display: flex;
     align-items: center;
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
     border-radius: 1rem;
     font-weight: 700;
-    transition: all 0.2s;
     color: #404040; /* neutral-700 */
+    transition: all 0.2s;
+    margin-bottom: 0.5rem;
 }
 .dark .menu-item-btn { color: #D4D4D4; }
 .menu-item-btn:hover { background-color: #F5F5F5; }
 .dark .menu-item-btn:hover { background-color: #262626; }
 
-.menu-item-btn.active-text { color: #16a34a; } /* 僅重點項用綠色 */
+/* 移除所有鮮艷藍色按鈕背景 */
+.bg-neutral-strong { background-color: #171717; color: white; }
+.dark .bg-neutral-strong { background-color: #F5F5F5; color: #171717; }
 
 /* 基礎元件 */
-.card-content {
-    line-height: 1.5;
-    letter-spacing: -0.01em;
-}
-
+.card-content { line-height: 1.5; font-weight: 400; }
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #D4D4D4; border-radius: 10px; }
