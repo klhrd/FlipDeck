@@ -385,6 +385,10 @@ document.addEventListener('DOMContentLoaded', () => {
         fontSizeDecrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(-0.2); };
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
+        // --- 融合 Modal 按鈕 ---
+        const modalJsonBtn = document.getElementById('modal-json-btn');
+        if (modalJsonBtn) modalJsonBtn.onclick = () => openEditDeckModal();
+
         // --- 其他全域事件 ---
         fileUpload.onchange = handleFileUpload;
         loadExampleBtn.onclick = handleExampleLoad;
@@ -404,10 +408,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Modal 關閉按鈕 ---
         closeQuickStartModalBtn.onclick = () => quickStartModal.classList.add('hidden');
         closeModalBtn.onclick = () => allCardsModal.classList.add('hidden');
-        closeHowToUseModalBtn.onclick = () => howToUseModal.classList.add('hidden');
-        closeSettingsModalBtn.onclick = () => settingsModal.classList.add('hidden');
-        closeEditDeckModalBtn.onclick = () => editDeckModal.classList.add('hidden');
-        closeDeckOptionsModalBtn.onclick = () => deckOptionsModal.classList.add('hidden');
+        const closeEditBtn = document.getElementById('close-edit-deck-modal-btn');
+        if (closeEditBtn) closeEditBtn.onclick = () => editDeckModal.classList.add('hidden');
+        const cancelEditBtn = document.getElementById('cancel-edit-deck-btn');
+        if (cancelEditBtn) cancelEditBtn.onclick = () => editDeckModal.classList.add('hidden');
+        const closeOptionsBtn = document.getElementById('close-deck-options-modal-btn');
+        if (closeOptionsBtn) closeOptionsBtn.onclick = () => deckOptionsModal.classList.add('hidden');
+        const closeHowToBtn = document.getElementById('close-how-to-use-modal-btn');
+        if (closeHowToBtn) closeHowToBtn.onclick = () => howToUseModal.classList.add('hidden');
+
         cardSearchInput.oninput = renderAllCardsTable;
     }
 
@@ -584,6 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
         saveDeckOptionsBtn.onclick = () => {
             d.title = deckTitleInput.value; saveDeckList();
             deckOptionsModal.classList.add('hidden'); renderHomeScreen();
+        };
+        const deckOptionsJsonBtn = document.getElementById('deck-options-json-btn');
+        if (deckOptionsJsonBtn) deckOptionsJsonBtn.onclick = () => {
+            deckOptionsModal.classList.add('hidden');
+            openEditDeckModal();
         };
         deleteDeckBtn.onclick = () => {
             if (confirm(`確定要刪除「${d.title}」嗎？`)) {
