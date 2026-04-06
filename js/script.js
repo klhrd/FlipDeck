@@ -242,12 +242,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayCardStack() {
         cardStackContainer.innerHTML = '';
         const visible = [];
-        if (historyIndex >= 0) visible.push(currentFullDeck.find(c => c.card_id === history[historyIndex]));
+        if (historyIndex >= 0) {
+            const top = currentFullDeck.find(c => c.card_id === history[historyIndex]);
+            if (top) visible.push(top);
+        }
         
         if (historyIndex === history.length - 1) {
-            for (let i = 0; i < 2 && upcomingQueue[i]; i++) visible.push(currentFullDeck.find(c => c.card_id === upcomingQueue[i]));
+            for (let i = 0; i < 2 && upcomingQueue[i]; i++) {
+                const q = currentFullDeck.find(c => c.card_id === upcomingQueue[i]);
+                if (q) visible.push(q);
+            }
         } else {
-            for (let i = 1; i <= 2 && history[historyIndex + i]; i++) visible.push(currentFullDeck.find(c => c.card_id === history[historyIndex + i]));
+            for (let i = 1; i <= 2 && history[historyIndex + i]; i++) {
+                const h = currentFullDeck.find(c => c.card_id === history[historyIndex + i]);
+                if (h) visible.push(h);
+            }
+        }
+
+        if (visible.length === 0 && currentLearningDeck.length > 0) {
+            fillUpcomingQueue(); showNextCard('new_game'); return;
         }
 
         for (let i = visible.length - 1; i >= 0; i--) {
@@ -263,12 +276,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div id="stamp-forgot" class="stamp"><span class="material-symbols-outlined !text-5xl">close</span></div>
                     <div id="stamp-learned" class="stamp"><span class="material-symbols-outlined !text-5xl">check</span></div>
                     <div class="card-inner">
-                        <div class="absolute inset-0 backface-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-sm flex items-center justify-center p-8">
-                            <div class="card-content text-center text-neutral-900 dark:text-neutral-100 font-bold" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
+                        <div class="absolute inset-0 backface-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
+                            <div class="card-content text-center text-neutral-900 dark:text-neutral-100 font-bold break-words w-full" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
                         </div>
-                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center">
-                            <div class="card-content font-bold mb-4" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${data.fields[1] || ''}</div>
-                            <div class="text-neutral-400 dark:text-neutral-500 text-sm leading-relaxed">${data.fields.slice(2).join('<br>')}</div>
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
+                            <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${data.fields[1] || ''}</div>
+                            <div class="text-neutral-400 dark:text-neutral-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${data.fields.slice(2).join('<br>')}</div>
                         </div>
                     </div>
                 `;
@@ -286,16 +299,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const sForgot = card.querySelector('#stamp-forgot'), sLearned = card.querySelector('#stamp-learned');
         let isDragging = false, startX = 0, dragX = 0, lastX = 0, lastTime = 0, velocity = 0, startTime = 0;
 
-        if (swipeMoveHandler) window.removeEventListener('pointermove', swipeMoveHandler);
-        if (swipeUpHandler) window.removeEventListener('pointerup', swipeUpHandler);
-
-        card.addEventListener('pointerdown', (e) => {
+        card.onpointerdown = (e) => {
             if (e.button !== 0) return;
             isDragging = true; startX = lastX = e.clientX; lastTime = startTime = Date.now();
             card.style.transition = 'none'; card.setPointerCapture(e.pointerId);
-        });
+        };
 
-        swipeMoveHandler = (e) => {
+        card.onpointermove = (e) => {
             if (!isDragging) return;
             const now = Date.now(), dt = now - lastTime;
             if (dt > 0) velocity = (e.clientX - lastX) / dt;
@@ -311,35 +321,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        swipeUpHandler = (e) => {
+        const handleEnd = () => {
             if (!isDragging) return;
             isDragging = false;
             if (Math.abs(velocity) > 0.5 || Math.abs(dragX) > 100) {
                 const dir = dragX > 0 ? 1 : -1;
-                card.classList.add('transition-exit');
+                card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
                 card.style.transform = `translateX(${dir * 1000}px) rotate(${dir * 45}deg)`;
                 card.style.opacity = '0';
                 bgForgot.style.opacity = bgLearned.style.opacity = 0;
                 setTimeout(() => showNextCard(dir > 0 ? 'correct' : 'incorrect'), 250);
             } else {
-                card.classList.add('transition-snap-back');
+                card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
                 card.style.transform = `translateX(0px) rotate(0deg)`;
                 sForgot.style.opacity = sLearned.style.opacity = bgForgot.style.opacity = bgLearned.style.opacity = 0;
                 if (Math.abs(dragX) < 10 && (Date.now() - startTime) < 300) inner.classList.toggle('rotate-y-180');
-                setTimeout(() => card.classList.remove('transition-snap-back'), 400);
             }
         };
-
-        card.addEventListener('pointermove', swipeMoveHandler);
-        card.addEventListener('pointerup', swipeUpHandler);
-        card.addEventListener('pointercancel', swipeUpHandler);
+        card.onpointerup = handleEnd;
+        card.onpointercancel = handleEnd;
     }
 
     function updateUI() {
         const states = Array.from(currentCardStatus.values());
         const total = currentFullDeck.length;
-        const totalMasteryPoints = states.reduce((acc, s) => acc + (s.mastery - 1), 0);
-        const progress = total > 0 ? Math.floor((totalMasteryPoints / (total * 4)) * 100) : 0;
+        const progress = calculateProgress(currentDeckId);
         
         const mastered = states.filter(v => v.mastery === 5).length;
         const meta = deckList.find(d => d.id === currentDeckId);
@@ -355,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function bindEventListeners() {
         // --- 選單開啟按鈕 ---
         homeMenuBtn.onclick = (e) => { e.stopPropagation(); toggleMenu('home'); };
-        menuBtn.onclick = (e) => { e.stopPropagation(); toggleMenu('deck'); };
+        menuBtn.onclick = (e) => { e.stopPropagation(); toggleMenu('deck'); applyCurrentDeckSettings(); };
         menuOverlay.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 首頁選單內按鈕 ---
@@ -371,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 學習選單內按鈕 ---
         deckMenuHomeBtn.onclick = (e) => { e.stopPropagation(); backToHomeScreen(); hideAllMenus(); };
         deckMenuAddBtn.onclick = (e) => { e.stopPropagation(); openQuickStartModal(); };
-        deckMenuDownloadBtn.onclick = (e) => { e.stopPropagation(); downloadModal.classList.remove('hidden'); hideAllMenus(); };
+        deckMenuDownloadBtn.onclick = (e) => { e.stopPropagation(); downloadData('json'); hideAllMenus(); };
         showAllBtn.onclick = (e) => { e.stopPropagation(); showAllCardsView(); };
         visualEditDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(currentDeckId); hideAllMenus(); };
         editDeckBtn.onclick = (e) => { e.stopPropagation(); openEditDeckModal(); };
@@ -398,7 +404,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Modal 關閉按鈕 ---
         closeQuickStartModalBtn.onclick = () => quickStartModal.classList.add('hidden');
         closeModalBtn.onclick = () => allCardsModal.classList.add('hidden');
-        closeDownloadModalBtn.onclick = () => downloadModal.classList.add('hidden');
         closeHowToUseModalBtn.onclick = () => howToUseModal.classList.add('hidden');
         closeSettingsModalBtn.onclick = () => settingsModal.classList.add('hidden');
         closeEditDeckModalBtn.onclick = () => editDeckModal.classList.add('hidden');
@@ -438,9 +443,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const f = e.target.files[0]; if (!f) return;
         const r = new FileReader();
         r.onload = (ev) => {
-            const data = f.name.endsWith('.json') ? JSON.parse(ev.target.result) : ev.target.result.trim().split('\n').map((l, i) => ({ card_id: `c_${Date.now()}_${i}`, fields: l.split(';').map(s => s.trim().replace(/\/\//g, '<br>')), tags: [] }));
-            processNewDeck(data, `d_${Date.now()}`, f.name.split('.')[0]);
-            quickStartModal.classList.add('hidden');
+            try {
+                const data = f.name.endsWith('.json') ? JSON.parse(ev.target.result) : ev.target.result.trim().split('\n').map((l, i) => ({ card_id: `c_${Date.now()}_${i}`, fields: l.split(';').map(s => s.trim().replace(/\/\//g, '<br>')), tags: [] }));
+                processNewDeck(data, `d_${Date.now()}`, f.name.split('.')[0]);
+                quickStartModal.classList.add('hidden');
+            } catch (err) { alert('檔案格式錯誤'); }
         };
         r.readAsText(f);
     }
@@ -450,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`data/${f}`).then(r => r.json()).then(data => {
             processNewDeck(data, `ex_${f.split('.')[0]}`, exampleSelector.selectedOptions[0].text);
             quickStartModal.classList.add('hidden');
-        });
+        }).catch(() => alert('載入範例失敗'));
     }
 
     function processNewDeck(data, id, title) {
@@ -468,25 +475,28 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let sorted = [...deckList];
         if (currentFilter.sortBy === 'title') sorted.sort((a,b) => a.title.localeCompare(b.title));
-        else if (currentFilter.sortBy === 'progress') sorted.sort((a,b) => b.progress - a.progress);
+        else if (currentFilter.sortBy === 'progress') sorted.sort((a,b) => calculateProgress(b.id) - calculateProgress(a.id));
         else sorted.sort((a,b) => b.lastOpened - a.lastOpened);
 
         sorted.forEach(d => {
+            const prog = calculateProgress(d.id);
             const card = document.createElement('div');
             card.className = "bg-white dark:bg-neutral-800 p-6 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800 cursor-pointer group relative overflow-hidden";
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-4">
                     <h3 class="text-lg font-black text-neutral-900 dark:text-neutral-100 truncate pr-8">${d.title}</h3>
-                    <button class="options-btn p-1 text-neutral-400 hover:text-neutral-900"><span class="material-symbols-outlined">more_vert</span></button>
+                    <button class="options-btn p-1 text-neutral-400 hover:text-neutral-900 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
                 </div>
                 <div class="flex items-center text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">
-                    <span>${d.totalCards} Cards • ${d.progress || 0}% Mastered</span>
+                    <span>${d.totalCards} Cards • ${prog}% Mastered</span>
                 </div>
                 <div class="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-                    <div class="h-full bg-neutral-900 dark:bg-white transition-all duration-1000" style="width: ${d.progress || 0}%"></div>
+                    <div class="h-full bg-neutral-900 dark:bg-white transition-all duration-1000" style="width: ${prog}%"></div>
                 </div>
             `;
-            card.onclick = () => startGame(d.id);
+            card.onclick = (e) => { if(!e.target.closest('.options-btn')) startGame(d.id); };
             card.querySelector('.options-btn').onclick = (e) => { e.stopPropagation(); openDeckOptions(d.id); };
             deckListContainer.appendChild(card);
         });
@@ -496,7 +506,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function calculateProgress(id) {
         const s = getDeckState(id); if (s.size === 0) return 0;
-        const points = Array.from(s.values()).reduce((acc, v) => acc + (v.mastery - 1), 0);
+        const points = Array.from(s.values()).reduce((acc, v) => {
+            const m = typeof v === 'object' ? v.mastery : 1;
+            return acc + (m - 1);
+        }, 0);
         return Math.floor((points / (s.size * 4)) * 100);
     }
 
@@ -512,6 +525,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateCardTagFilters() {
         cardTagFilterContainer.innerHTML = '';
         const tags = [...new Set(currentFullDeck.flatMap(c => c.tags || []))].sort();
+        if (tags.length === 0) {
+            cardTagFilterContainer.innerHTML = '<p class="text-xs text-neutral-400 pl-4 italic">無可用標籤</p>';
+            return;
+        }
         tags.forEach(t => {
             const l = document.createElement('label');
             l.className = "flex items-center space-x-3 cursor-pointer py-2 px-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl";
@@ -539,30 +556,85 @@ document.addEventListener('DOMContentLoaded', () => {
     function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); }
     function renderAllCardsTable() {
         const q = cardSearchInput.value.toLowerCase().trim();
-        let html = '<thead><tr class="text-neutral-400 text-[10px] uppercase tracking-widest"><th class="p-4">Mastery</th>';
+        let html = '<thead><tr class="text-neutral-400 text-[10px] uppercase tracking-widest"><th class="p-4">ID / Mastery</th>';
         const fields = currentFullDeck[0]?.fields.length || 0;
         for (let i = 1; i <= fields; i++) html += `<th class="p-4">Field ${i}</th>`;
-        html += '</tr></thead><tbody>';
-        currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q))).forEach(c => {
+        html += '<th class="p-4">Tags</th></tr></thead><tbody>';
+        
+        currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || (c.tags && c.tags.some(t => t.toLowerCase().includes(q)))).forEach(c => {
             const m = currentCardStatus.get(c.card_id).mastery;
-            html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"><td class="p-4"><div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-neutral-900 dark:bg-white':'bg-neutral-200 dark:bg-neutral-700'}"></div>`).join('')}</div></td>`;
+            html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                <td class="p-4">
+                    <div class="text-[9px] font-mono text-neutral-400 mb-1">${c.card_id}</div>
+                    <div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-neutral-900 dark:bg-white':'bg-neutral-200 dark:bg-neutral-700'}"></div>`).join('')}</div>
+                </td>`;
             c.fields.forEach(f => html += `<td class="p-4 text-neutral-600 dark:text-neutral-400 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
-            html += '</tr>';
+            html += `<td class="p-4"><div class="flex flex-wrap gap-1">${(c.tags || []).map(t => `<span class="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-bold">${t}</span>`).join('')}</div></td></tr>`;
         });
         allCardsTable.innerHTML = html + '</tbody>';
     }
 
-    // --- 其餘 Modal 邏輯 (簡化) ---
-    function openDeckOptions(id) { /* ... */ }
-    function saveDeckOptions() { /* ... */ }
-    function deleteDeck() { /* ... */ }
-    function openEditDeckModal() { /* ... */ }
-    function saveDeckEdit() { /* ... */ }
-    function openDeckEditor(id = null) { /* ... */ }
-    function renderEditorRow(vals = []) { /* ... */ }
-    function saveDeckFromEditor() { /* ... */ }
-    function backupAllData() { /* ... */ }
-    function downloadData(fmt) { /* ... */ }
+    // --- 其餘 Modal 邏輯 (修復實作) ---
+    function openDeckOptions(id) {
+        const d = deckList.find(x => x.id === id); if (!d) return;
+        currentDeckId = id;
+        deckOptionsModal.classList.remove('hidden');
+        deckOptionsTitle.textContent = '單字集設定';
+        deckTitleInput.value = d.title;
+        saveDeckOptionsBtn.onclick = () => {
+            d.title = deckTitleInput.value; saveDeckList();
+            deckOptionsModal.classList.add('hidden'); renderHomeScreen();
+        };
+        deleteDeckBtn.onclick = () => {
+            if (confirm(`確定要刪除「${d.title}」嗎？`)) {
+                deckList = deckList.filter(x => x.id !== id);
+                localStorage.removeItem(STORAGE_KEYS.DECK_DATA_PREFIX + id);
+                localStorage.removeItem(STORAGE_KEYS.DECK_STATE_PREFIX + id);
+                saveDeckList(); deckOptionsModal.classList.add('hidden'); renderHomeScreen();
+            }
+        };
+    }
+
+    function openEditDeckModal() {
+        const data = getDeckData(currentDeckId);
+        if (!data) return;
+        editDeckModal.classList.remove('hidden');
+        jsonEditorTextarea.value = JSON.stringify(data, null, 2);
+        saveEditDeckBtn.onclick = () => {
+            try {
+                const updated = JSON.parse(jsonEditorTextarea.value);
+                saveDeckData(currentDeckId, updated);
+                currentFullDeck = updated;
+                const meta = deckList.find(x => x.id === currentDeckId);
+                if (meta) { meta.totalCards = updated.length; saveDeckList(); }
+                editDeckModal.classList.add('hidden'); updateLearningDeck(); displayCardStack(); updateUI();
+            } catch (e) { alert('JSON 語法錯誤'); }
+        };
+    }
+
+    function openDeckEditor(id = null) {
+        alert('圖形化編輯器正在開發中，請先使用 JSON 原始碼編輯');
+    }
+
+    function backupAllData() {
+        const data = {
+            deckList, allTags,
+            decks: deckList.map(d => ({ id: d.id, data: getDeckData(d.id), state: Object.fromEntries(getDeckState(d.id)) }))
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `flipdeck_backup_${Date.now()}.json`;
+        a.click(); URL.revokeObjectURL(url);
+    }
+
+    function downloadData(fmt) {
+        const data = getDeckData(currentDeckId);
+        if (!data) return;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `deck_${currentDeckId}.json`;
+        a.click(); URL.revokeObjectURL(url);
+    }
 
     function displayEndOfDeck() {
         cardStackContainer.innerHTML = `
@@ -574,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h3 class="text-3xl font-black mb-2 text-neutral-900 dark:text-white">太棒了！</h3>
                     <p class="text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest text-xs">您已完成目前篩選下的所有卡片</p>
                 </div>
-                <button onclick="location.reload()" class="px-10 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">
+                <button onclick="backToHomeScreen()" class="px-10 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">
                     返回首頁
                 </button>
             </div>
