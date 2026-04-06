@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let swipeMoveHandler = null, swipeUpHandler = null;
 
     const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [] };
+    const MAX_HISTORY = 50;
 
     // =================================================================
     // ===== 核心儲存邏輯 =====
@@ -562,6 +563,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveDeckFromEditor() { /* ... */ }
     function backupAllData() { /* ... */ }
     function downloadData(fmt) { /* ... */ }
+
+    function displayEndOfDeck() {
+        cardStackContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
+                <div class="w-24 h-24 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full flex items-center justify-center shadow-2xl">
+                    <span class="material-symbols-outlined !text-5xl">celebration</span>
+                </div>
+                <div>
+                    <h3 class="text-3xl font-black mb-2 text-neutral-900 dark:text-white">太棒了！</h3>
+                    <p class="text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest text-xs">您已完成目前篩選下的所有卡片</p>
+                </div>
+                <button onclick="location.reload()" class="px-10 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">
+                    返回首頁
+                </button>
+            </div>
+        `;
+    }
 
     initializeApp();
 });
