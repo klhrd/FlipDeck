@@ -626,8 +626,84 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // [v4.1.3] 修復圖形化編輯器 (F14)
     function openDeckEditor(id = null) {
-        alert('圖形化編輯器正在開發中，請先使用 JSON 原始碼編輯');
+        const isNew = !id;
+        const data = isNew ? [{ card_id: `c_${Date.now()}_0`, fields: ["", "", ""], tags: [] }] : getDeckData(id);
+        if (!data) return;
+
+        currentDeckId = id;
+        deckEditorModal.classList.remove('hidden');
+        editorDeckTitle.textContent = isNew ? "建立新單字集" : (deckList.find(d => d.id === id)?.title || "編輯單字集");
+        editorRowsContainer.innerHTML = '';
+        editorStatusMsg.textContent = `共 ${data.length} 張卡片`;
+
+        data.forEach((card, idx) => renderEditorRow(card, idx));
+
+        editorAddRowBtn.onclick = () => {
+            const newCard = { card_id: `c_${Date.now()}_${editorRowsContainer.children.length}`, fields: ["", "", ""], tags: [] };
+            renderEditorRow(newCard, editorRowsContainer.children.length);
+            editorRowsContainer.scrollTo({ top: editorRowsContainer.scrollHeight, behavior: 'smooth' });
+            editorStatusMsg.textContent = `共 ${editorRowsContainer.children.length} 張卡片`;
+        };
+
+        editorSaveBtn.onclick = () => {
+            const newRows = Array.from(editorRowsContainer.children).map(row => {
+                const inputs = Array.from(row.querySelectorAll('input[type="text"]'));
+                return {
+                    card_id: row.dataset.id,
+                    fields: inputs.map(i => i.value.trim()),
+                    tags: row.querySelector('.tag-input')?.value.split(',').map(t => t.trim()).filter(t => t) || []
+                };
+            }).filter(r => r.fields[0]);
+
+            if (newRows.length === 0) return alert("請至少輸入一張卡片內容");
+
+            if (isNew) {
+                processNewDeck(newRows, `d_${Date.now()}`, "未命名單字集");
+            } else {
+                saveDeckData(id, newRows);
+                currentFullDeck = newRows;
+                const meta = deckList.find(d => d.id === id);
+                if (meta) { meta.totalCards = newRows.length; saveDeckList(); }
+                if (id === currentDeckId) { updateLearningDeck(); displayCardStack(); updateUI(); }
+            }
+            deckEditorModal.classList.add('hidden');
+            renderHomeScreen();
+        };
+
+        editorCancelBtn.onclick = () => deckEditorModal.classList.add('hidden');
+        closeDeckEditorModalBtn.onclick = () => deckEditorModal.classList.add('hidden');
+    }
+
+    function renderEditorRow(card, index) {
+        const row = document.createElement('div');
+        row.dataset.id = card.card_id;
+        row.className = "p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 flex flex-col gap-3 group animate-in slide-in-from-bottom-2 duration-300";
+        row.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">Card #${index + 1}</span>
+                <button class="delete-row-btn p-1 text-neutral-300 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined !text-sm">delete</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" placeholder="正面 (必填)" value="${card.fields[0] || ''}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900 font-bold">
+                <input type="text" placeholder="背面 (解釋/翻譯)" value="${card.fields[1] || ''}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
+            </div>
+            <div class="flex flex-col gap-2">
+                <input type="text" placeholder="補充備註 (Notes)" value="${card.fields.slice(2).join('; ')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 opacity-60">
+                <input type="text" placeholder="標籤 (用逗號隔開)" value="${(card.tags || []).join(', ')}" class="tag-input px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-400">
+            </div>
+        `;
+        row.querySelector('.delete-row-btn').onclick = () => {
+            row.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                row.remove();
+                editorStatusMsg.textContent = `共 ${editorRowsContainer.children.length} 張卡片`;
+            }, 200);
+        };
+        editorRowsContainer.appendChild(row);
     }
 
     function backupAllData() {
