@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v4.2.0 =====
+// ===== FlipDeck v4.3.0 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -86,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const swipeHintBar = document.getElementById('swipe-hint-bar');
     const undoPill = document.getElementById('undo-pill');
 
+    const editorSearchInput = document.getElementById('editor-search-input');
+    const editorPrevPageBtn = document.getElementById('editor-prev-page-btn');
+    const editorNextPageBtn = document.getElementById('editor-next-page-btn');
+    const editorPageIndicator = document.getElementById('editor-page-indicator');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingMsg = document.getElementById('loading-msg');
+
     // --- 狀態定義 ---
     const STORAGE_KEYS = {
         PREFERENCES: 'flashcardPWA_prefs_v2',
@@ -107,9 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentDeckId = null, currentFullDeck = [], currentLearningDeck = [], upcomingQueue = [];
     let currentCardStatus = new Map(), currentDeckSettings = {}, history = [], historyIndex = -1;
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
+    let editorConfirmClose = null;
 
     const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [] };
     const MAX_HISTORY = 50;
+    const RECENT_SKIP = 8; // v4.3.0 P5：排隊時排除最近 N 張已作答卡片，避免立即回鍋
 
     // =================================================================
     // ===== 核心儲存邏輯 =====
@@ -151,6 +160,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function markFirstInteraction() {
         if (!uxFlags.hinted) { uxFlags.hinted = true; saveUXFlags(); swipeHintBar.classList.add('hidden'); }
     }
+
+    // v4.3.0 P5：大牌組匯入/載入期間的 loading 狀態
+    function showLoading(msg = '載入中…') { loadingMsg.textContent = msg; loadingOverlay.classList.remove('hidden'); }
+    function hideLoading() { loadingOverlay.classList.add('hidden'); }
+    const nextPaint = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 20)));
 
     function saveDeckList() { localStorage.setItem(STORAGE_KEYS.DECK_LIST, JSON.stringify(deckList)); }
     function getDeckData(id) { const s = localStorage.getItem(STORAGE_KEYS.DECK_DATA_PREFIX + id); return s ? JSON.parse(s) : null; }
@@ -225,13 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateLearningDeck() {
-        let filtered = currentFullDeck;
-        if (currentDeckSettings.filterTags?.length > 0) {
-            filtered = currentFullDeck.filter(c => {
-                const ts = c.tags || [];
-                return currentDeckSettings.filterTags.some(t => t === 'untagged' ? ts.length === 0 : ts.includes(t));
-            });
-        }
+        const filtered = currentDeckSettings.filterTags?.length > 0 ? currentFullDeck.filter(matchesDeckFilter) : currentFullDeck;
         currentLearningDeck = filtered.filter(c => (currentCardStatus.get(c.card_id)?.mastery ?? 1) < 5);
         currentLearningDeck.sort((a, b) => {
             const mA = currentCardStatus.get(a.card_id)?.mastery ?? 1, mB = currentCardStatus.get(b.card_id)?.mastery ?? 1;
@@ -239,12 +247,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // v4.3.0：目前篩選條件判斷（updateLearningDeck 與「再讀一輪」共用）
+    function matchesDeckFilter(card) {
+        const f = currentDeckSettings.filterTags;
+        if (!f || f.length === 0) return true;
+        const ts = card.tags || [];
+        return f.some(t => t === 'untagged' ? ts.length === 0 : ts.includes(t));
+    }
+
     function fillUpcomingQueue() {
+        // v4.3.0 P5：排除最近答過的卡片，避免同一張卡立刻回鍋；牌組太小時退而求其次
+        const recent = new Set(history.slice(-RECENT_SKIP));
         while (upcomingQueue.length < 5 && currentLearningDeck.length > 0) {
-            const pool = currentLearningDeck.slice(0, 10);
-            const card = pool[Math.floor(Math.random() * pool.length)];
-            if (!upcomingQueue.includes(card.card_id)) upcomingQueue.push(card.card_id);
-            else if (currentLearningDeck.length <= upcomingQueue.length) break;
+            let pool = currentLearningDeck.filter(c => !upcomingQueue.includes(c.card_id) && !recent.has(c.card_id));
+            if (pool.length === 0) pool = currentLearningDeck.filter(c => !upcomingQueue.includes(c.card_id));
+            if (pool.length === 0) break;
+            const window = pool.slice(0, 10);
+            upcomingQueue.push(window[Math.floor(Math.random() * window.length)].card_id);
         }
     }
 
@@ -564,7 +583,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirmResolveFn) { confirmResolveFn(false); return; }
         const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, editDeckModal, deckEditorModal];
         for (let i = stack.length - 1; i >= 0; i--) {
-            if (!stack[i].classList.contains('hidden')) { stack[i].classList.add('hidden'); return; }
+            if (!stack[i].classList.contains('hidden')) {
+                // v4.3.0：編輯器有未儲存變更時，先經確認再關閉
+                if (stack[i] === deckEditorModal && editorConfirmClose) { editorConfirmClose(); return; }
+                stack[i].classList.add('hidden'); return;
+            }
         }
         hideAllMenus();
     }
@@ -577,12 +600,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFileUpload(e) {
         const f = e.target.files[0]; if (!f) return;
         const r = new FileReader();
-        r.onload = (ev) => {
+        r.onload = async (ev) => {
+            showLoading('解析檔案中…');
             try {
+                await nextPaint();
                 const data = f.name.endsWith('.json') ? JSON.parse(ev.target.result) : ev.target.result.trim().split('\n').map((l, i) => ({ card_id: `c_${Date.now()}_${i}`, fields: l.split(';').map(s => s.trim().replace(/\/\//g, '<br>')), tags: [] }));
                 processNewDeck(data, `d_${Date.now()}`, f.name.split('.')[0]);
                 quickStartModal.classList.add('hidden');
             } catch (err) { appAlert('檔案格式錯誤：JSON 無法解析；.txt/.csv 每行以「;」分隔欄位。', '無法匯入'); }
+            finally { hideLoading(); }
         };
         r.readAsText(f);
     }
@@ -604,11 +630,19 @@ document.addEventListener('DOMContentLoaded', () => {
         doLoadExample(f);
     }
 
-    function doLoadExample(f) {
-        fetch(`data/${f}`).then(r => r.json()).then(data => {
+    async function doLoadExample(f) {
+        showLoading('載入範例中…');
+        try {
+            const r = await fetch(`data/${f}`);
+            const data = await r.json();
+            await nextPaint();
             processNewDeck(data, `ex_${f.split('.')[0]}`, exampleSelector.selectedOptions[0].text);
             quickStartModal.classList.add('hidden');
-        }).catch(() => appAlert('載入範例失敗，請確認網路連線後再試。', '載入失敗'));
+        } catch (e) {
+            appAlert('載入範例失敗，請確認網路連線後再試。', '載入失敗');
+        } finally {
+            hideLoading();
+        }
     }
 
     function processNewDeck(data, id, title) {
@@ -792,37 +826,43 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // [v4.1.3] 圖形化編輯器 (F14)；v4.1.5 修正存檔同步
+    // [v4.1.3] 圖形化編輯器 (F14)；v4.1.5 修正存檔同步；v4.3.0 P5：分頁 + 搜尋 + 陣列工作副本
     function openDeckEditor(id = null) {
         const isNew = !id;
         const data = isNew ? [{ card_id: `c_${Date.now()}_0`, fields: ["", "", ""], tags: [] }] : getDeckData(id);
         if (!data) return;
 
+        // 工作副本：陣列為唯一資料來源，分頁後只有當頁存在於 DOM，輸入即時寫回（6498 張也不再卡）
+        const workingCards = data.map(c => ({
+            card_id: c.card_id,
+            fields: [c.fields[0] || '', c.fields[1] || '', c.fields.slice(2).join('; ')],
+            tags: (c.tags || []).join(', '),
+            notes: c.notes || ''
+        }));
+        const deletedIds = new Set();
+        const PAGE_SIZE = 100;
+        let editorPage = 0, editorDirty = false;
+
         deckEditorModal.classList.remove('hidden');
         editorDeckTitle.textContent = isNew ? "建立新單字集" : (deckList.find(d => d.id === id)?.title || "編輯單字集");
-        editorRowsContainer.innerHTML = '';
-        editorStatusMsg.textContent = `共 ${data.length} 張卡片`;
+        editorSearchInput.value = '';
+        renderEditorPage();
 
-        data.forEach((card, idx) => renderEditorRow(card, idx));
+        editorSearchInput.oninput = () => { editorPage = 0; renderEditorPage(); };
+        editorPrevPageBtn.onclick = () => { if (editorPage > 0) { editorPage--; renderEditorPage(); } };
+        editorNextPageBtn.onclick = () => { editorPage++; renderEditorPage(); };
 
         editorAddRowBtn.onclick = () => {
-            const newCard = { card_id: `c_${Date.now()}_${editorRowsContainer.children.length}`, fields: ["", "", ""], tags: [] };
-            renderEditorRow(newCard, editorRowsContainer.children.length);
+            workingCards.push({ card_id: `c_${Date.now()}_${workingCards.length}`, fields: ['', '', ''], tags: '', notes: '' });
+            editorDirty = true;
+            editorSearchInput.value = '';
+            editorPage = Math.floor((workingCards.length - 1) / PAGE_SIZE);
+            renderEditorPage();
             editorRowsContainer.scrollTo({ top: editorRowsContainer.scrollHeight, behavior: 'smooth' });
-            editorStatusMsg.textContent = `共 ${editorRowsContainer.children.length} 張卡片`;
         };
 
         editorSaveBtn.onclick = async () => {
-            const newRows = Array.from(editorRowsContainer.children).map(row => {
-                const inputs = Array.from(row.querySelectorAll('input[type="text"]'));
-                return {
-                    card_id: row.dataset.id,
-                    fields: inputs.map(i => i.value.trim()),
-                    tags: row.querySelector('.tag-input')?.value.split(',').map(t => t.trim()).filter(t => t) || [],
-                    notes: row.dataset.notes || ''
-                };
-            }).filter(r => r.fields[0]);
-
+            const newRows = serializeEditorRows(workingCards.filter(c => !deletedIds.has(c.card_id)));
             if (newRows.length === 0) { await appAlert('請至少輸入一張卡片內容（正面欄位必填）。', '無法儲存'); return; }
 
             if (isNew) {
@@ -838,12 +878,96 @@ document.addEventListener('DOMContentLoaded', () => {
                     resetSessionView();
                 }
             }
+            editorDirty = false;
+            editorConfirmClose = null;
             deckEditorModal.classList.add('hidden');
             renderHomeScreen();
         };
 
-        editorCancelBtn.onclick = () => deckEditorModal.classList.add('hidden');
-        closeDeckEditorModalBtn.onclick = () => deckEditorModal.classList.add('hidden');
+        // v4.3.0：有未儲存變更時，離開前先確認（含 Escape 路徑）
+        const tryCloseEditor = () => {
+            if (!editorDirty) { editorConfirmClose = null; deckEditorModal.classList.add('hidden'); return; }
+            appConfirm({
+                title: '放棄未儲存的變更？',
+                message: '您在編輯器中的修改尚未儲存，離開將全部遺失。',
+                okText: '放棄變更',
+                danger: true
+            }).then(ok => { if (ok) { editorDirty = false; editorConfirmClose = null; deckEditorModal.classList.add('hidden'); } });
+        };
+        editorCancelBtn.onclick = tryCloseEditor;
+        closeDeckEditorModalBtn.onclick = tryCloseEditor;
+        editorConfirmClose = tryCloseEditor;
+
+        // --- 分頁渲染（閉包持有工作副本） ---
+        function renderEditorPage(keepScroll = false) {
+            const prevScroll = editorRowsContainer.scrollTop;
+            editorRowsContainer.innerHTML = '';
+            const q = editorSearchInput.value.toLowerCase().trim();
+            const view = workingCards
+                .map((c, i) => ({ c, i }))
+                .filter(({ c }) => !deletedIds.has(c.card_id) &&
+                    (!q || (c.fields[0] || '').toLowerCase().includes(q) || (c.fields[1] || '').toLowerCase().includes(q)));
+            const totalPages = Math.max(1, Math.ceil(view.length / PAGE_SIZE));
+            editorPage = Math.min(Math.max(editorPage, 0), totalPages - 1);
+
+            const slice = view.slice(editorPage * PAGE_SIZE, (editorPage + 1) * PAGE_SIZE);
+            if (slice.length === 0) {
+                editorRowsContainer.innerHTML = '<p class="text-center text-neutral-400 py-12 text-sm font-bold">沒有符合的卡片</p>';
+            } else {
+                slice.forEach(({ c, i }) => renderEditorRow(c, i));
+            }
+            if (keepScroll) editorRowsContainer.scrollTop = prevScroll;
+
+            const liveCount = workingCards.length - deletedIds.size;
+            editorStatusMsg.textContent = `共 ${liveCount} 張卡片${q ? ` · 符合 ${view.length} 張` : ''}`;
+            editorPageIndicator.textContent = `${editorPage + 1} / ${totalPages}`;
+            editorPrevPageBtn.disabled = editorPage === 0;
+            editorNextPageBtn.disabled = editorPage >= totalPages - 1;
+        }
+
+        function renderEditorRow(card, globalIndex) {
+            const row = document.createElement('div');
+            row.dataset.id = card.card_id;
+            row.className = "p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 flex flex-col gap-3 group animate-in slide-in-from-bottom-2 duration-300";
+            row.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">Card #${globalIndex + 1}</span>
+                    <button class="delete-row-btn p-1 text-neutral-300 hover:text-red-500 transition-colors" aria-label="刪除此卡片">
+                        <span class="material-symbols-outlined !text-sm">delete</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="text" placeholder="正面 (必填)" value="${escapeAttr(card.fields[0] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900 font-bold">
+                    <input type="text" placeholder="背面 (解釋/翻譯)" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
+                </div>
+                <div class="flex flex-col gap-2">
+                    <input type="text" placeholder="補充備註 (Notes)" value="${escapeAttr(card.fields[2] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 opacity-60">
+                    <input type="text" placeholder="標籤 (用逗號隔開)" value="${escapeAttr(card.tags)}" class="tag-input px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-400">
+                </div>
+            `;
+            const inputs = row.querySelectorAll('input[type="text"]');
+            inputs[0].oninput = () => { card.fields[0] = inputs[0].value; editorDirty = true; };
+            inputs[1].oninput = () => { card.fields[1] = inputs[1].value; editorDirty = true; };
+            inputs[2].oninput = () => { card.fields[2] = inputs[2].value; editorDirty = true; };
+            inputs[3].oninput = () => { card.tags = inputs[3].value; editorDirty = true; };
+            row.querySelector('.delete-row-btn').onclick = () => {
+                deletedIds.add(card.card_id);
+                editorDirty = true;
+                row.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => renderEditorPage(true), 200);
+            };
+            editorRowsContainer.appendChild(row);
+        }
+    }
+
+    // v4.3.0：序列化編輯器工作副本 → 存檔格式（正面必填過濾、修剪、標籤解析）
+    function serializeEditorRows(rows) {
+        return rows.filter(c => (c.fields[0] || '').trim()).map(c => ({
+            card_id: c.card_id,
+            fields: [c.fields[0].trim(), (c.fields[1] || '').trim(), (c.fields[2] || '').trim()],
+            tags: (c.tags || '').split(',').map(t => t.trim()).filter(t => t),
+            notes: c.notes || ''
+        }));
     }
 
     // HTML 屬性跳脫：欄位含雙引號/角括號時不再破壞 input 標記
@@ -853,37 +977,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/"/g, '&' + 'quot;')
             .replace(/</g, '&' + 'lt;')
             .replace(/>/g, '&' + 'gt;');
-    }
-
-    function renderEditorRow(card, index) {
-        const row = document.createElement('div');
-        row.dataset.id = card.card_id;
-        row.dataset.notes = card.notes || '';
-        row.className = "p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 flex flex-col gap-3 group animate-in slide-in-from-bottom-2 duration-300";
-        row.innerHTML = `
-            <div class="flex items-center justify-between">
-                <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">Card #${index + 1}</span>
-                <button class="delete-row-btn p-1 text-neutral-300 hover:text-red-500 transition-colors" aria-label="刪除此卡片">
-                    <span class="material-symbols-outlined !text-sm">delete</span>
-                </button>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input type="text" placeholder="正面 (必填)" value="${escapeAttr(card.fields[0] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900 font-bold">
-                <input type="text" placeholder="背面 (解釋/翻譯)" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
-            </div>
-            <div class="flex flex-col gap-2">
-                <input type="text" placeholder="補充備註 (Notes)" value="${escapeAttr(card.fields.slice(2).join('; '))}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 opacity-60">
-                <input type="text" placeholder="標籤 (用逗號隔開)" value="${escapeAttr((card.tags || []).join(', '))}" class="tag-input px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-400">
-            </div>
-        `;
-        row.querySelector('.delete-row-btn').onclick = () => {
-            row.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                row.remove();
-                editorStatusMsg.textContent = `共 ${editorRowsContainer.children.length} 張卡片`;
-            }, 200);
-        };
-        editorRowsContainer.appendChild(row);
     }
 
     function backupAllData() {
@@ -916,13 +1009,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h3 class="text-3xl font-black mb-2 text-neutral-900 dark:text-white">太棒了！</h3>
                     <p class="text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest text-xs">您已完成目前篩選下的所有卡片</p>
                 </div>
-                <button id="back-to-home-btn" class="px-10 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">
-                    返回首頁
-                </button>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="restart-round-btn" class="px-8 py-3.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all">再讀一輪</button>
+                    <button id="back-to-home-btn" class="px-8 py-3.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">返回首頁</button>
+                </div>
             </div>
         `;
         const backHomeBtn = cardStackContainer.querySelector('#back-to-home-btn');
         if (backHomeBtn) backHomeBtn.onclick = () => backToHomeScreen();
+        const restartBtn = cardStackContainer.querySelector('#restart-round-btn');
+        if (restartBtn) restartBtn.onclick = restartDeckRound;
+    }
+
+    // v4.3.0 P7：完成後直接再讀一輪 —— 只重置「目前篩選下」的卡片熟練度
+    function restartDeckRound() {
+        const targets = currentFullDeck.filter(matchesDeckFilter);
+        if (targets.length === 0) return;
+        appConfirm({
+            title: '再讀一輪',
+            message: `將把目前篩選下的 ${targets.length} 張卡片熟練度重置為 1 並重新開始，其他卡片不受影響。`,
+            okText: '重置並開始',
+            danger: true
+        }).then(ok => {
+            if (!ok) return;
+            targets.forEach(c => {
+                const st = currentCardStatus.get(c.card_id);
+                if (st) { st.mastery = 1; st.lastTime = Date.now(); }
+            });
+            saveDeckState(currentDeckId, currentCardStatus);
+            startGame(currentDeckId);
+        });
     }
 
     initializeApp();
