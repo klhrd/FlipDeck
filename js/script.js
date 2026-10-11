@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v4.4.0 =====
+// ===== FlipDeck v4.5.0 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -94,6 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorPrevPageBtn = document.getElementById('editor-prev-page-btn');
     const editorNextPageBtn = document.getElementById('editor-next-page-btn');
     const editorPageIndicator = document.getElementById('editor-page-indicator');
+    const editorBulkBar = document.getElementById('editor-bulk-bar');
+    const editorSelectAllPage = document.getElementById('editor-select-all-page');
+    const editorSelectedCount = document.getElementById('editor-selected-count');
+    const editorBulkTagInput = document.getElementById('editor-bulk-tag-input');
+    const editorBulkAddBtn = document.getElementById('editor-bulk-add-btn');
+    const editorBulkRemoveBtn = document.getElementById('editor-bulk-remove-btn');
+    const editorBulkClearBtn = document.getElementById('editor-bulk-clear-btn');
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingMsg = document.getElementById('loading-msg');
 
@@ -159,10 +166,18 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmModalCancelBtn.classList.toggle('hidden', !showCancel);
             confirmModalOkBtn.className = "flex-1 py-3.5 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all " +
                 (danger ? "bg-red-500 text-white" : "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900");
-            confirmResolveFn = (v) => { confirmResolveFn = null; appConfirmModal.classList.add('hidden'); resolve(v); };
+            // v4.5.0 P6：焦點管理——危險操作聚焦「取消」，一般操作聚焦「確定」，關閉後還原焦點
+            const returnTo = document.activeElement;
+            confirmResolveFn = (v) => {
+                confirmResolveFn = null;
+                appConfirmModal.classList.add('hidden');
+                if (returnTo && document.contains(returnTo)) returnTo.focus?.();
+                resolve(v);
+            };
             appConfirmModal.classList.remove('hidden');
             confirmModalOkBtn.onclick = () => confirmResolveFn?.(true);
             confirmModalCancelBtn.onclick = () => confirmResolveFn?.(false);
+            (danger ? confirmModalCancelBtn : confirmModalOkBtn).focus();
         });
     }
     function appAlert(message, title = '提示') { return appConfirm({ title, message, showCancel: false, okText: '知道了' }); }
@@ -398,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-inner">
                         <div class="absolute inset-0 backface-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
                             <div class="card-content text-center text-neutral-900 dark:text-neutral-100 font-bold break-words w-full max-h-full overflow-y-auto" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
-                            <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-neutral-300 font-bold pointer-events-none select-none">點擊翻面</span>
+                            <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-neutral-400 font-bold pointer-events-none select-none">點擊翻面</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
                             <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${data.fields[1] || ''}</div>
@@ -533,6 +548,14 @@ document.addEventListener('DOMContentLoaded', () => {
         closeStatsModalBtn.onclick = () => statsModal.classList.add('hidden');
         if (emptyStateCta) emptyStateCta.onclick = () => openQuickStartModal();
 
+        // --- 顯示全部：跳至卡片（事件委派，表格重建後仍有效） ---
+        allCardsTable.onclick = (e) => {
+            const btn = e.target.closest('.jump-to-card-btn');
+            if (!btn) return;
+            allCardsModal.classList.add('hidden');
+            jumpToCard(btn.dataset.id);
+        };
+
         // --- 其他全域事件 ---
         fileUpload.onchange = handleFileUpload;
         loadExampleBtn.onclick = handleExampleLoad;
@@ -542,6 +565,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.onkeydown = (e) => {
             // v4.2.0 P6：Escape 依層級關閉（對話框 > 最上層 Modal > 選單）
             if (e.key === 'Escape') { handleEscape(); return; }
+
+            // v4.5.0 P6：Modal 開啟時 Tab 焦點鎖定在 Modal 內（focus trap）
+            if (e.key === 'Tab') {
+                const top = [appConfirmModal, deckEditorModal, editDeckModal, allCardsModal, deckOptionsModal, statsModal, howToUseModal, quickStartModal]
+                    .find(m => !m.classList.contains('hidden'));
+                if (top) trapTab(top, e);
+                return;
+            }
 
             // 任一 Modal 或選單開啟中（或焦點在輸入框）時，不攔截按鍵
             const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal, statsModal]
@@ -612,6 +643,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         hideAllMenus();
+    }
+
+    // v4.5.0 P6：將 Tab 焦點循環鎖在開啟的 Modal 內
+    function trapTab(modal, e) {
+        const items = Array.from(modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'))
+            .filter(el => el.getClientRects().length > 0);
+        if (items.length === 0) return;
+        const first = items[0], last = items[items.length - 1];
+        const active = document.activeElement;
+        if (!modal.contains(active)) { e.preventDefault(); first.focus(); return; }
+        if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
     }
 
     function toggleFullScreen() {
@@ -806,8 +849,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.floor((points / (data.length * 4)) * 100);
     }
 
-    function openQuickStartModal() { quickStartModal.classList.remove('hidden'); hideAllMenus(); }
-    function openHowToUseModal() { howToUseModal.classList.remove('hidden'); hideAllMenus(); }
+    function openQuickStartModal() { quickStartModal.classList.remove('hidden'); hideAllMenus(); exampleSelector.focus(); }
+    function openHowToUseModal() { howToUseModal.classList.remove('hidden'); hideAllMenus(); document.getElementById('close-how-to-use-modal-btn')?.focus(); }
     
     function applyCurrentDeckSettings() {
         fontSizeValue.textContent = currentDeckSettings.fontSize.toFixed(1);
@@ -845,11 +888,22 @@ document.addEventListener('DOMContentLoaded', () => {
         displayCardStack();
     }
 
-    function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); }
+    function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); cardSearchInput.focus(); }
+
+    // v4.5.0 P7：從「顯示全部」跳至特定卡片（含已熟練卡，直接排到佇列最前）
+    function jumpToCard(cardId) {
+        if (!currentFullDeck.some(c => c.card_id === cardId)) return;
+        upcomingQueue = upcomingQueue.filter(id => id !== cardId);
+        upcomingQueue.unshift(cardId);
+        hideUndoPill();
+        history = []; historyIndex = -1;
+        showNextCard('new_game');
+    }
 
     // v4.4.0 P7：熟練度分布統計（學習中選單入口）
     function showStatsView() {
         statsModal.classList.remove('hidden'); hideAllMenus();
+        closeStatsModalBtn.focus();
         const buckets = [1, 2, 3, 4, 5].map(lv => ({
             lv, count: currentFullDeck.filter(c => (currentCardStatus.get(c.card_id)?.mastery ?? 1) === lv).length
         }));
@@ -893,7 +947,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const m = currentCardStatus.get(c.card_id)?.mastery ?? 1;
             html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                 <td class="p-4">
-                    <div class="text-[9px] font-mono text-neutral-400 mb-1">${c.card_id}</div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <button class="jump-to-card-btn p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="跳至此卡片" title="跳至此卡片"><span class="material-symbols-outlined !text-sm">my_location</span></button>
+                        <div class="text-[9px] font-mono text-neutral-400">${c.card_id}</div>
+                    </div>
                     <div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-neutral-900 dark:bg-white':'bg-neutral-200 dark:bg-neutral-700'}"></div>`).join('')}</div>
                 </td>`;
             c.fields.forEach(f => html += `<td class="p-4 text-neutral-600 dark:text-neutral-400 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
@@ -908,6 +965,8 @@ document.addEventListener('DOMContentLoaded', () => {
         deckOptionsModal.classList.remove('hidden');
         deckOptionsTitle.textContent = '單字集設定';
         deckTitleInput.value = d.title;
+        deckTitleInput.focus();
+        deckTitleInput.select();
         saveDeckOptionsBtn.onclick = () => {
             d.title = deckTitleInput.value; saveDeckList();
             deckOptionsModal.classList.add('hidden'); renderHomeScreen();
@@ -939,6 +998,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!data) return;
         editDeckModal.classList.remove('hidden');
         jsonEditorTextarea.value = JSON.stringify(data, null, 2);
+        jsonEditorTextarea.focus();
         saveEditDeckBtn.onclick = async () => {
             try {
                 const updated = JSON.parse(jsonEditorTextarea.value);
@@ -975,17 +1035,38 @@ document.addEventListener('DOMContentLoaded', () => {
             notes: c.notes || ''
         }));
         const deletedIds = new Set();
+        const selectedIdx = new Set();
         const PAGE_SIZE = 100;
-        let editorPage = 0, editorDirty = false;
+        let editorPage = 0, editorDirty = false, lastView = [];
 
         deckEditorModal.classList.remove('hidden');
         editorDeckTitle.textContent = isNew ? "建立新單字集" : (deckList.find(d => d.id === id)?.title || "編輯單字集");
         editorSearchInput.value = '';
+        editorBulkTagInput.value = '';
         renderEditorPage();
 
         editorSearchInput.oninput = () => { editorPage = 0; renderEditorPage(); };
         editorPrevPageBtn.onclick = () => { if (editorPage > 0) { editorPage--; renderEditorPage(); } };
         editorNextPageBtn.onclick = () => { editorPage++; renderEditorPage(); };
+
+        // v4.5.0 P7：批次標籤操作
+        editorSelectAllPage.onchange = () => {
+            const pageIdxs = lastView.slice(editorPage * PAGE_SIZE, (editorPage + 1) * PAGE_SIZE).map(v => v.i);
+            pageIdxs.forEach(i => editorSelectAllPage.checked ? selectedIdx.add(i) : selectedIdx.delete(i));
+            renderEditorPage(true);
+        };
+        editorBulkAddBtn.onclick = () => applyEditorBatch('add');
+        editorBulkRemoveBtn.onclick = () => applyEditorBatch('remove');
+        editorBulkClearBtn.onclick = () => { selectedIdx.clear(); renderEditorPage(true); };
+
+        function applyEditorBatch(action) {
+            const idxs = [...selectedIdx].filter(i => workingCards[i] && !deletedIds.has(workingCards[i].card_id));
+            const touched = applyTagsToCards(workingCards, idxs, editorBulkTagInput.value, action);
+            if (touched === 0) { editorBulkTagInput.focus(); return; }
+            editorDirty = true;
+            editorBulkTagInput.value = '';
+            renderEditorPage(true);
+        };
 
         editorAddRowBtn.onclick = () => {
             workingCards.push({ card_id: `c_${Date.now()}_${workingCards.length}`, fields: ['', '', ''], tags: '', notes: '' });
@@ -1042,6 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .map((c, i) => ({ c, i }))
                 .filter(({ c }) => !deletedIds.has(c.card_id) &&
                     (!q || (c.fields[0] || '').toLowerCase().includes(q) || (c.fields[1] || '').toLowerCase().includes(q)));
+            lastView = view;
             const totalPages = Math.max(1, Math.ceil(view.length / PAGE_SIZE));
             editorPage = Math.min(Math.max(editorPage, 0), totalPages - 1);
 
@@ -1058,6 +1140,13 @@ document.addEventListener('DOMContentLoaded', () => {
             editorPageIndicator.textContent = `${editorPage + 1} / ${totalPages}`;
             editorPrevPageBtn.disabled = editorPage === 0;
             editorNextPageBtn.disabled = editorPage >= totalPages - 1;
+
+            // 批次列狀態同步
+            const pageIdxs = slice.map(v => v.i);
+            editorSelectAllPage.checked = pageIdxs.length > 0 && pageIdxs.every(i => selectedIdx.has(i));
+            const n = selectedIdx.size;
+            editorBulkBar.classList.toggle('hidden', n === 0);
+            editorSelectedCount.textContent = n > 0 ? `已選 ${n} 張` : '';
         }
 
         function renderEditorRow(card, globalIndex) {
@@ -1066,7 +1155,10 @@ document.addEventListener('DOMContentLoaded', () => {
             row.className = "p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 flex flex-col gap-3 group animate-in slide-in-from-bottom-2 duration-300";
             row.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">卡片 #${globalIndex + 1}</span>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" class="row-select-box w-4 h-4 accent-neutral-900" aria-label="選取此卡片" ${selectedIdx.has(globalIndex) ? 'checked' : ''}>
+                        <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">卡片 #${globalIndex + 1}</span>
+                    </div>
                     <button class="delete-row-btn p-1 text-neutral-300 hover:text-red-500 transition-colors" aria-label="刪除此卡片">
                         <span class="material-symbols-outlined !text-sm">delete</span>
                     </button>
@@ -1085,6 +1177,13 @@ document.addEventListener('DOMContentLoaded', () => {
             inputs[1].oninput = () => { card.fields[1] = inputs[1].value; editorDirty = true; };
             inputs[2].oninput = () => { card.fields[2] = inputs[2].value; editorDirty = true; };
             inputs[3].oninput = () => { card.tags = inputs[3].value; editorDirty = true; };
+            row.querySelector('.row-select-box').onchange = (e) => {
+                if (e.target.checked) selectedIdx.add(globalIndex);
+                else selectedIdx.delete(globalIndex);
+                const n = selectedIdx.size;
+                editorBulkBar.classList.toggle('hidden', n === 0);
+                editorSelectedCount.textContent = n > 0 ? `已選 ${n} 張` : '';
+            };
             row.querySelector('.delete-row-btn').onclick = () => {
                 deletedIds.add(card.card_id);
                 editorDirty = true;
@@ -1103,6 +1202,23 @@ document.addEventListener('DOMContentLoaded', () => {
             tags: (c.tags || '').split(',').map(t => t.trim()).filter(t => t),
             notes: c.notes || ''
         }));
+    }
+
+    // v4.5.0 P7：批次標籤運算（純函式：加入=聯集去重、移除=差集）
+    function applyTagsToCards(cards, indices, tagsStr, action) {
+        const tags = (tagsStr || '').split(',').map(t => t.trim()).filter(Boolean);
+        if (tags.length === 0) return 0;
+        let touched = 0;
+        indices.forEach(i => {
+            const c = cards[i];
+            if (!c) return;
+            const cur = (c.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+            c.tags = (action === 'add'
+                ? [...new Set([...cur, ...tags])]
+                : cur.filter(t => !tags.includes(t))).join(', ');
+            touched++;
+        });
+        return touched;
     }
 
     // HTML 屬性跳脫：欄位含雙引號/角括號時不再破壞 input 標記

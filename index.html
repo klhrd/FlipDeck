@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v4.4.0</title>
+    <title>FlipDeck v4.5.0</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -41,7 +41,7 @@
                     </button>
                     <h1 class="text-3xl font-black tracking-tighter text-neutral-900 dark:text-white">FlipDeck</h1>
                 </div>
-                <div id="stats-summary" class="text-right text-neutral-400 dark:text-neutral-500 hidden sm:block">
+                <div id="stats-summary" class="text-right text-neutral-500 dark:text-neutral-400 hidden sm:block">
                     <p class="text-xs uppercase tracking-widest font-black">卡片總數：<span id="stats-total-cards" class="text-neutral-900 dark:text-white">0</span></p>
                 </div>
             </div>
@@ -110,7 +110,7 @@
     <!-- 首頁選單 -->
     <div id="home-menu-panel" class="menu-panel">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-400">主選單</h2>
+            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-500">主選單</h2>
             <button id="home-menu-close-btn" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
@@ -129,7 +129,7 @@
     <!-- 學習中選單 -->
     <div id="menu-panel" class="menu-panel">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-400">設定</h2>
+            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-500">設定</h2>
             <button id="deck-menu-close-btn" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
@@ -145,12 +145,12 @@
             <li><button id="visual-edit-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit</span>圖形化編輯器</button></li>
             <li><button id="edit-deck-btn" class="menu-item-btn opacity-50 text-[10px]"><span class="material-symbols-outlined !text-sm mr-3">code</span>JSON 原始碼</button></li>
             <li class="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                <span class="text-[10px] uppercase tracking-widest font-black text-neutral-400 block mb-3 pl-4">標籤篩選</span>
+                <span class="text-[10px] uppercase tracking-widest font-black text-neutral-500 block mb-3 pl-4">標籤篩選</span>
                 <div id="card-tag-filter-container" class="space-y-1 pl-4 max-h-40 overflow-y-auto"></div>
             </li>
             <li class="pt-4 border-t border-neutral-100 dark:border-gray-800">
                 <div class="flex items-center justify-between px-4">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-neutral-400">字型大小</span>
+                    <span class="text-[10px] uppercase tracking-widest font-black text-neutral-500">字型大小</span>
                     <div class="flex items-center space-x-3">
                         <button id="font-size-decrease" aria-label="縮小字型" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">-</button>
                         <span id="font-size-value" class="text-xs font-bold w-8 text-center">2.5</span>
@@ -162,10 +162,10 @@
     </div>
 
     <!-- Modals -->
-    <div id="quick-start-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+    <div id="quick-start-modal" role="dialog" aria-modal="true" aria-labelledby="quick-start-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
-                <h2 class="text-xl font-black">新增單字集</h2>
+                <h2 id="quick-start-title" class="text-xl font-black">新增單字集</h2>
                 <button id="close-quick-start-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
@@ -185,11 +185,11 @@
     </div>
 
     <!-- 所有卡片列表 (含搜尋與編輯器融合) -->
-    <div id="all-cards-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+    <div id="all-cards-modal" role="dialog" aria-modal="true" aria-labelledby="all-cards-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-black">單字集管理</h2>
+                    <h2 id="all-cards-title" class="text-xl font-black">單字集管理</h2>
                     <div class="flex items-center space-x-2">
                         <button id="modal-editor-btn" aria-label="開啟圖形化編輯器" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">edit</span>圖形化編輯</button>
                         <button id="modal-json-btn" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">code</span>JSON 原始碼</button>
@@ -206,10 +206,10 @@
     </div>
 
     <!-- JSON 編輯器 Modal -->
-    <div id="edit-deck-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[4000] backdrop-blur-sm">
+    <div id="edit-deck-modal" role="dialog" aria-modal="true" aria-labelledby="edit-deck-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[4000] backdrop-blur-sm">
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
-                <h2 class="text-xl font-black">JSON 原始碼編輯</h2>
+                <h2 id="edit-deck-title" class="text-xl font-black">JSON 原始碼編輯</h2>
                 <button id="close-edit-deck-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="flex-grow p-4">
@@ -223,7 +223,7 @@
     </div>
 
     <!-- 單字集選項 (More) Modal -->
-    <div id="deck-options-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+    <div id="deck-options-modal" role="dialog" aria-modal="true" aria-labelledby="deck-options-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                 <h2 id="deck-options-title" class="text-xl font-black">設定</h2>
@@ -244,9 +244,9 @@
     </div>
 
     <!-- 教學 Modal -->
-    <div id="how-to-use-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+    <div id="how-to-use-modal" role="dialog" aria-modal="true" aria-labelledby="how-to-use-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center">
-            <h2 class="text-2xl font-black mb-4">操作教學</h2>
+            <h2 id="how-to-use-title" class="text-2xl font-black mb-4">操作教學</h2>
             <ul class="text-left space-y-4 text-sm font-medium mb-8">
                 <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">1</span> 點擊卡片即可翻面</li>
                 <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">2</span> 向右滑動表示「已學會」</li>
@@ -259,7 +259,7 @@
     </div>
 
     <!-- 圖形化編輯器 Modal (F14) -->
-    <div id="deck-editor-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[4500] backdrop-blur-sm">
+    <div id="deck-editor-modal" role="dialog" aria-modal="true" aria-labelledby="editor-deck-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[4500] backdrop-blur-sm">
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
@@ -271,6 +271,17 @@
                     <button id="editor-add-row-btn" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">add</span>新增卡片</button>
                     <button id="close-deck-editor-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
                 </div>
+            </div>
+            <!-- 批次標籤操作列 (v4.5.0 P7：選取卡片後浮現) -->
+            <div id="editor-bulk-bar" class="hidden p-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 flex flex-wrap items-center gap-2">
+                <label class="flex items-center gap-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300">
+                    <input type="checkbox" id="editor-select-all-page" class="w-4 h-4 accent-neutral-900">全選本頁
+                </label>
+                <span id="editor-selected-count" class="text-xs font-black text-neutral-900 dark:text-white"></span>
+                <input type="text" id="editor-bulk-tag-input" placeholder="標籤（用逗號隔開）" aria-label="批次標籤" class="flex-grow min-w-[140px] px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900">
+                <button id="editor-bulk-add-btn" class="px-3 py-1.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-xl text-xs font-black">加入</button>
+                <button id="editor-bulk-remove-btn" class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-xl text-xs font-bold">移除</button>
+                <button id="editor-bulk-clear-btn" aria-label="清除選取" class="p-1.5 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors"><span class="material-symbols-outlined !text-sm">close</span></button>
             </div>
             <div id="editor-rows-container" class="flex-grow overflow-auto p-4 space-y-3 custom-scrollbar">
                 <!-- 動態生成編輯行（v4.3.0 分頁渲染） -->
@@ -301,10 +312,10 @@
     </div>
 
     <!-- 學習統計 Modal (v4.4.0 P7) -->
-    <div id="stats-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+    <div id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
-                <h2 class="text-xl font-black">學習統計</h2>
+                <h2 id="stats-title" class="text-xl font-black">學習統計</h2>
                 <button id="close-stats-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div id="stats-body" class="p-6 space-y-4"></div>
