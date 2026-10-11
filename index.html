@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FlipDeck v4.1.4</title>
+    <title>FlipDeck v4.1.5</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#171717">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,10 +74,6 @@
             <div class="absolute top-6 left-0 right-0 flex justify-center items-center pointer-events-none z-40">
                 <div id="deck-info" class="text-[10px] uppercase tracking-[0.2em] font-black bg-neutral-900 text-white px-5 py-2.5 rounded-full shadow-xl"></div>
             </div>
-            
-            <div id="history-alert" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 text-white px-8 py-4 rounded-2xl shadow-2xl z-[100] font-bold tracking-widest animate-bounce">
-                無法再返回
-            </div>
         </div>
     </div>
 
@@ -98,7 +93,7 @@
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto">
             <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span>建立新單字集</button></li>
-            <li><button id="backup-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">backup</span>全域備份 (.zip)</button></li>
+            <li><button id="backup-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">backup</span>全域備份 (.json)</button></li>
             <li><button id="show-how-to-use-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">help</span>操作教學</button></li>
         </ul>
     </div>
@@ -154,7 +149,6 @@
                         <span class="material-symbols-outlined">play_arrow</span>
                     </button>
                 </div>
-                <div id="quick-start-error-message" class="text-xs text-red-500 font-bold text-center"></div>
             </div>
         </div>
     </div>

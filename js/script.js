@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v4.1.4 =====
+// ===== FlipDeck v4.1.5 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileUpload = document.getElementById('file-upload');
     const exampleSelector = document.getElementById('example-selector');
     const loadExampleBtn = document.getElementById('load-example-btn');
-    const quickStartErrorMessage = document.getElementById('quick-start-error-message');
     
     const homeMenuBtn = document.getElementById('home-menu-btn');
     const statsTotalDecks = document.getElementById('stats-total-decks');
@@ -31,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgForgot = document.getElementById('bg-forgot');
     const bgLearned = document.getElementById('bg-learned');
     const deckInfo = document.getElementById('deck-info');
-    const historyAlert = document.getElementById('history-alert');
     
     const menuOverlay = document.getElementById('menu-overlay');
     const homeMenuPanel = document.getElementById('home-menu-panel');
@@ -61,29 +59,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('close-modal-btn');
     const allCardsTable = document.getElementById('all-cards-table');
     const cardSearchInput = document.getElementById('card-search-input');
-    const downloadModal = document.getElementById('download-modal');
-    const closeDownloadModalBtn = document.getElementById('close-download-modal-btn');
     const howToUseModal = document.getElementById('how-to-use-modal');
-    const closeHowToUseModalBtn = document.getElementById('close-how-to-use-modal-btn');
     const editDeckModal = document.getElementById('edit-deck-modal');
-    const closeEditDeckModalBtn = document.getElementById('close-edit-deck-modal-btn');
     const jsonEditorTextarea = document.getElementById('json-editor-textarea');
-    const cancelEditDeckBtn = document.getElementById('cancel-edit-deck-btn');
     const saveEditDeckBtn = document.getElementById('save-edit-deck-btn');
-    const jsonEditorError = document.getElementById('json-editor-error');
     const deckOptionsModal = document.getElementById('deck-options-modal');
-    const closeDeckOptionsModalBtn = document.getElementById('close-deck-options-modal-btn');
     const deckOptionsTitle = document.getElementById('deck-options-title');
     const deckTitleInput = document.getElementById('deck-title-input');
-    const deckTagsContainer = document.getElementById('deck-tags-container'); 
     const saveDeckOptionsBtn = document.getElementById('save-deck-options-btn'); 
     const deleteDeckBtn = document.getElementById('delete-deck-btn');
     
     const deckEditorModal = document.getElementById('deck-editor-modal');
     const closeDeckEditorModalBtn = document.getElementById('close-deck-editor-modal-btn');
     const editorDeckTitle = document.getElementById('editor-deck-title');
-    const editorFieldCount = document.getElementById('editor-field-count');
-    const editorApplyFieldsBtn = document.getElementById('editor-apply-fields-btn');
     const editorRowsContainer = document.getElementById('editor-rows-container');
     const editorAddRowBtn = document.getElementById('editor-add-row-btn');
     const editorSaveBtn = document.getElementById('editor-save-btn');
@@ -109,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let deckList = [], allTags = [], currentFilter = { sortBy: 'lastOpened' };
     let currentDeckId = null, currentFullDeck = [], currentLearningDeck = [], upcomingQueue = [];
     let currentCardStatus = new Map(), currentDeckSettings = {}, history = [], historyIndex = -1;
-    let swipeMoveHandler = null, swipeUpHandler = null;
 
     const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [] };
     const MAX_HISTORY = 50;
@@ -130,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveDeckList() { localStorage.setItem(STORAGE_KEYS.DECK_LIST, JSON.stringify(deckList)); }
-    function saveAllTags() { localStorage.setItem(STORAGE_KEYS.ALL_TAGS, JSON.stringify(allTags)); }
     function getDeckData(id) { const s = localStorage.getItem(STORAGE_KEYS.DECK_DATA_PREFIX + id); return s ? JSON.parse(s) : null; }
     function saveDeckData(id, data) { localStorage.setItem(STORAGE_KEYS.DECK_DATA_PREFIX + id, JSON.stringify(data)); }
     
@@ -165,12 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDeckId = id; currentFullDeck = data;
         currentCardStatus = getDeckState(id);
         currentDeckSettings = { ...DEFAULT_DECK_SETTINGS, ...meta.settings };
-        
-        currentFullDeck.forEach(c => {
-            if (!currentCardStatus.has(c.card_id) || typeof currentCardStatus.get(c.card_id) !== 'object') {
-                currentCardStatus.set(c.card_id, { mastery: 1, lastTime: Date.now() });
-            }
-        });
+        syncCardStatus(currentFullDeck);
         
         updateLearningDeck(); 
         history = []; historyIndex = -1; upcomingQueue = [];
@@ -178,6 +159,29 @@ document.addEventListener('DOMContentLoaded', () => {
         
         meta.lastOpened = Date.now(); saveDeckList();
         showScreen('main'); showNextCard('new_game');
+    }
+
+    // 讓 state 與牌組資料一致：清除已不存在卡片的殘留 state（避免進度分母膨脹），補上缺漏的新卡
+    function syncCardStatus(deckData) {
+        const valid = new Set(deckData.map(c => c.card_id));
+        Array.from(currentCardStatus.keys()).forEach(key => {
+            if (!valid.has(key)) currentCardStatus.delete(key);
+        });
+        deckData.forEach(c => {
+            const v = currentCardStatus.get(c.card_id);
+            if (!v || typeof v !== 'object') {
+                currentCardStatus.set(c.card_id, { mastery: 1, lastTime: Date.now() });
+            }
+        });
+    }
+
+    // 牌組內容變更後重置本輪瀏覽佇列（mastery 保留），避免 history 指向已刪除的卡片
+    function resetSessionView() {
+        syncCardStatus(currentFullDeck);
+        updateLearningDeck();
+        history = []; historyIndex = -1; upcomingQueue = [];
+        fillUpcomingQueue();
+        showNextCard('new_game');
     }
 
     function updateLearningDeck() {
@@ -188,9 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return currentDeckSettings.filterTags.some(t => t === 'untagged' ? ts.length === 0 : ts.includes(t));
             });
         }
-        currentLearningDeck = filtered.filter(c => currentCardStatus.get(c.card_id).mastery < 5);
+        currentLearningDeck = filtered.filter(c => (currentCardStatus.get(c.card_id)?.mastery ?? 1) < 5);
         currentLearningDeck.sort((a, b) => {
-            const mA = currentCardStatus.get(a.card_id).mastery, mB = currentCardStatus.get(b.card_id).mastery;
+            const mA = currentCardStatus.get(a.card_id)?.mastery ?? 1, mB = currentCardStatus.get(b.card_id)?.mastery ?? 1;
             return mA !== mB ? mA - mB : Math.random() - 0.5;
         });
     }
@@ -207,14 +211,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function showNextCard(action) {
         if (historyIndex >= 0 && historyIndex < history.length) {
             const id = history[historyIndex], state = currentCardStatus.get(id);
-            if (action === 'correct') {
-                state.mastery = Math.min(state.mastery + 1, 5);
-                if (state.mastery === 5) updateLearningDeck();
-            } else if (action === 'incorrect') {
-                state.mastery = 1;
+            if (state) {
+                if (action === 'correct') {
+                    state.mastery = Math.min(state.mastery + 1, 5);
+                    if (state.mastery === 5) updateLearningDeck();
+                } else if (action === 'incorrect') {
+                    state.mastery = 1;
+                }
+                state.lastTime = Date.now();
+                currentCardStatus.set(id, state);
             }
-            state.lastTime = Date.now();
-            currentCardStatus.set(id, state);
         }
 
         if (historyIndex < history.length - 1) {
@@ -256,11 +262,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (visible.length === 0 && currentLearningDeck.length > 0) {
             fillUpcomingQueue(); showNextCard('new_game'); return;
         }
+        if (visible.length === 0) { displayEndOfDeck(); return; }
 
         for (let i = visible.length - 1; i >= 0; i--) {
             const data = visible[i], isTop = (i === 0);
             const cardEl = document.createElement('div');
-            cardEl.className = `combo-card absolute w-full h-full transition-all duration-400 ease-out ${isTop ? 'z-[30]' : 'pointer-events-none'}`;
+            cardEl.className = `combo-card absolute w-full h-full transition-all duration-300 ease-out ${isTop ? 'z-[30]' : 'pointer-events-none'}`;
             cardEl.style.transform = `translateY(${i * 16}px) scale(${1 - i * 0.05})`;
             cardEl.style.opacity = 1 - i * 0.2;
             
@@ -337,11 +344,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI() {
-        const states = Array.from(currentCardStatus.values());
         const total = currentFullDeck.length;
-        const progress = calculateProgress(currentDeckId);
-        
-        const mastered = states.filter(v => v.mastery === 5).length;
+        const mastered = currentFullDeck.filter(c => currentCardStatus.get(c.card_id)?.mastery === 5).length;
+        const progress = calculateProgress(currentDeckId, currentFullDeck);
         const meta = deckList.find(d => d.id === currentDeckId);
         if (meta) { meta.progress = progress; saveDeckList(); }
         
@@ -388,10 +393,18 @@ document.addEventListener('DOMContentLoaded', () => {
         sortBySelect.onchange = (e) => { currentFilter.sortBy = e.target.value; renderHomeScreen(); };
         
         window.onkeydown = (e) => {
+            // 任一 Modal 或選單開啟中（或焦點在輸入框）時，不攔截按鍵
+            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal]
+                .some(m => !m.classList.contains('hidden'))
+                || !menuOverlay.classList.contains('hidden')
+                || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName || '');
+            if (modalOpen) return;
+
             if (!mainScreen.classList.contains('hidden')) {
-                if (e.key === 'ArrowRight') showNextCard('correct');
-                else if (e.key === 'ArrowLeft') showNextCard('incorrect');
-                else if (e.key === ' ') { 
+                if (e.key === 'ArrowRight') { e.preventDefault(); showNextCard('correct'); }
+                else if (e.key === 'ArrowLeft') { e.preventDefault(); showNextCard('incorrect'); }
+                else if (e.key === ' ') {
+                    e.preventDefault();
                     const ac = document.getElementById('active-combo-card');
                     if (ac) ac.querySelector('.card-inner').classList.toggle('rotate-y-180');
                 }
@@ -475,13 +488,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (deckList.length === 0) { noRecentDecks.classList.remove('hidden'); return; }
         noRecentDecks.classList.add('hidden');
         
+        // 每個牌組只計算一次進度（大牌組 JSON parse 開銷高，sort comparator 內重複計算會卡）
+        const progressMap = new Map(deckList.map(d => [d.id, calculateProgress(d.id)]));
+        
         let sorted = [...deckList];
         if (currentFilter.sortBy === 'title') sorted.sort((a,b) => a.title.localeCompare(b.title));
-        else if (currentFilter.sortBy === 'progress') sorted.sort((a,b) => calculateProgress(b.id) - calculateProgress(a.id));
+        else if (currentFilter.sortBy === 'progress') sorted.sort((a,b) => progressMap.get(b.id) - progressMap.get(a.id));
         else sorted.sort((a,b) => b.lastOpened - a.lastOpened);
 
         sorted.forEach(d => {
-            const prog = calculateProgress(d.id);
+            const prog = progressMap.get(d.id);
             const card = document.createElement('div');
             card.className = "bg-white dark:bg-neutral-800 p-6 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800 cursor-pointer group relative overflow-hidden";
             card.innerHTML = `
@@ -506,13 +522,19 @@ document.addEventListener('DOMContentLoaded', () => {
         statsTotalCards.textContent = deckList.reduce((acc, d) => acc + d.totalCards, 0);
     }
 
-    function calculateProgress(id) {
-        const s = getDeckState(id); if (s.size === 0) return 0;
-        const points = Array.from(s.values()).reduce((acc, v) => {
-            const m = typeof v === 'object' ? v.mastery : 1;
-            return acc + (m - 1);
-        }, 0);
-        return Math.floor((points / (s.size * 4)) * 100);
+    // v4.1.5: 分母改用「牌組實際卡片數」，分子只統計牌組內現存卡片的點數
+    // —— 殘留的 stale state（如 hs_6000 換 card_id、JSON 編輯刪卡）不再汙染進度
+    function calculateProgress(id, deckData = null) {
+        const data = deckData || getDeckData(id);
+        if (!data || data.length === 0) return 0;
+        const s = getDeckState(id);
+        let points = 0;
+        data.forEach(c => {
+            const v = s.get(c.card_id);
+            const m = (v && typeof v === 'object') ? v.mastery : 1;
+            points += (m - 1);
+        });
+        return Math.floor((points / (data.length * 4)) * 100);
     }
 
     function openQuickStartModal() { quickStartModal.classList.remove('hidden'); hideAllMenus(); }
@@ -563,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
         html += '<th class="p-4">Tags</th></tr></thead><tbody>';
         
         currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || (c.tags && c.tags.some(t => t.toLowerCase().includes(q)))).forEach(c => {
-            const m = currentCardStatus.get(c.card_id).mastery;
+            const m = currentCardStatus.get(c.card_id)?.mastery ?? 1;
             html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                 <td class="p-4">
                     <div class="text-[9px] font-mono text-neutral-400 mb-1">${c.card_id}</div>
@@ -578,7 +600,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 其餘 Modal 邏輯 (修復實作) ---
     function openDeckOptions(id) {
         const d = deckList.find(x => x.id === id); if (!d) return;
-        currentDeckId = id;
         deckOptionsModal.classList.remove('hidden');
         deckOptionsTitle.textContent = '單字集設定';
         deckTitleInput.value = d.title;
@@ -589,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const deckOptionsJsonBtn = document.getElementById('deck-options-json-btn');
         if (deckOptionsJsonBtn) deckOptionsJsonBtn.onclick = () => {
             deckOptionsModal.classList.add('hidden');
-            openEditDeckModal();
+            openEditDeckModal(id);
         };
         deleteDeckBtn.onclick = () => {
             if (confirm(`確定要刪除「${d.title}」嗎？`)) {
@@ -601,30 +622,40 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function openEditDeckModal() {
-        const data = getDeckData(currentDeckId);
+    // v4.1.5: 明確傳入 deckId，只在使用中牌組 (= currentDeckId) 時同步 session，
+    // 否則只寫入 localStorage —— 修正從首頁選項開 JSON 編輯器造成的跨牌組混存與 TypeError
+    function openEditDeckModal(deckId = currentDeckId) {
+        const data = getDeckData(deckId);
         if (!data) return;
         editDeckModal.classList.remove('hidden');
         jsonEditorTextarea.value = JSON.stringify(data, null, 2);
         saveEditDeckBtn.onclick = () => {
             try {
                 const updated = JSON.parse(jsonEditorTextarea.value);
-                saveDeckData(currentDeckId, updated);
-                currentFullDeck = updated;
-                const meta = deckList.find(x => x.id === currentDeckId);
+                // 儲存前驗證形狀，避免壞資料寫入後弄壞學習畫面
+                const valid = Array.isArray(updated) && updated.length > 0
+                    && updated.every(c => c && typeof c.card_id === 'string' && Array.isArray(c.fields));
+                if (!valid) { alert('格式錯誤：需為非空卡片陣列，每張卡片須含 card_id (字串) 與 fields (陣列)'); return; }
+                saveDeckData(deckId, updated);
+                const meta = deckList.find(x => x.id === deckId);
                 if (meta) { meta.totalCards = updated.length; saveDeckList(); }
-                editDeckModal.classList.add('hidden'); updateLearningDeck(); displayCardStack(); updateUI();
+                editDeckModal.classList.add('hidden');
+                renderHomeScreen();
+                if (deckId === currentDeckId && currentFullDeck.length > 0) {
+                    currentFullDeck = updated;
+                    resetSessionView();
+                }
+                if (!allCardsModal.classList.contains('hidden')) renderAllCardsTable();
             } catch (e) { alert('JSON 語法錯誤'); }
         };
     }
 
-    // [v4.1.3] 修復圖形化編輯器 (F14)
+    // [v4.1.3] 圖形化編輯器 (F14)；v4.1.5 修正存檔同步
     function openDeckEditor(id = null) {
         const isNew = !id;
         const data = isNew ? [{ card_id: `c_${Date.now()}_0`, fields: ["", "", ""], tags: [] }] : getDeckData(id);
         if (!data) return;
 
-        currentDeckId = id;
         deckEditorModal.classList.remove('hidden');
         editorDeckTitle.textContent = isNew ? "建立新單字集" : (deckList.find(d => d.id === id)?.title || "編輯單字集");
         editorRowsContainer.innerHTML = '';
@@ -645,7 +676,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return {
                     card_id: row.dataset.id,
                     fields: inputs.map(i => i.value.trim()),
-                    tags: row.querySelector('.tag-input')?.value.split(',').map(t => t.trim()).filter(t => t) || []
+                    tags: row.querySelector('.tag-input')?.value.split(',').map(t => t.trim()).filter(t => t) || [],
+                    notes: row.dataset.notes || ''
                 };
             }).filter(r => r.fields[0]);
 
@@ -655,10 +687,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 processNewDeck(newRows, `d_${Date.now()}`, "未命名單字集");
             } else {
                 saveDeckData(id, newRows);
-                currentFullDeck = newRows;
                 const meta = deckList.find(d => d.id === id);
                 if (meta) { meta.totalCards = newRows.length; saveDeckList(); }
-                if (id === currentDeckId) { updateLearningDeck(); displayCardStack(); updateUI(); }
+                // 只有編輯「使用中」的牌組才同步 session，並重置瀏覽佇列避免指向已刪除的卡片
+                if (id === currentDeckId && currentFullDeck.length > 0) {
+                    currentFullDeck = newRows;
+                    resetSessionView();
+                }
             }
             deckEditorModal.classList.add('hidden');
             renderHomeScreen();
@@ -668,9 +703,19 @@ document.addEventListener('DOMContentLoaded', () => {
         closeDeckEditorModalBtn.onclick = () => deckEditorModal.classList.add('hidden');
     }
 
+    // HTML 屬性跳脫：欄位含雙引號/角括號時不再破壞 input 標記
+    function escapeAttr(s) {
+        return String(s ?? '')
+            .replace(/&/g, '&' + 'amp;')
+            .replace(/"/g, '&' + 'quot;')
+            .replace(/</g, '&' + 'lt;')
+            .replace(/>/g, '&' + 'gt;');
+    }
+
     function renderEditorRow(card, index) {
         const row = document.createElement('div');
         row.dataset.id = card.card_id;
+        row.dataset.notes = card.notes || '';
         row.className = "p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 flex flex-col gap-3 group animate-in slide-in-from-bottom-2 duration-300";
         row.innerHTML = `
             <div class="flex items-center justify-between">
@@ -680,12 +725,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input type="text" placeholder="正面 (必填)" value="${card.fields[0] || ''}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900 font-bold">
-                <input type="text" placeholder="背面 (解釋/翻譯)" value="${card.fields[1] || ''}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
+                <input type="text" placeholder="正面 (必填)" value="${escapeAttr(card.fields[0] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900 font-bold">
+                <input type="text" placeholder="背面 (解釋/翻譯)" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
             </div>
             <div class="flex flex-col gap-2">
-                <input type="text" placeholder="補充備註 (Notes)" value="${card.fields.slice(2).join('; ')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 opacity-60">
-                <input type="text" placeholder="標籤 (用逗號隔開)" value="${(card.tags || []).join(', ')}" class="tag-input px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-400">
+                <input type="text" placeholder="補充備註 (Notes)" value="${escapeAttr(card.fields.slice(2).join('; '))}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 opacity-60">
+                <input type="text" placeholder="標籤 (用逗號隔開)" value="${escapeAttr((card.tags || []).join(', '))}" class="tag-input px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-400">
             </div>
         `;
         row.querySelector('.delete-row-btn').onclick = () => {
