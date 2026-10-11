@@ -2,8 +2,8 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FlipDeck v4.1.5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlipDeck v4.2.0</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -27,7 +27,7 @@
             
             <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center space-x-3">
-                    <button id="home-menu-btn" class="p-2 -ml-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                    <button id="home-menu-btn" aria-label="開啟主選單" class="p-2 -ml-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
                         <span class="material-symbols-outlined !text-3xl">menu</span>
                     </button>
                     <h1 class="text-3xl font-black tracking-tighter text-neutral-900 dark:text-white">FlipDeck</h1>
@@ -60,8 +60,21 @@
             <div id="bg-forgot" class="swipe-bg"></div>
             <div id="bg-learned" class="swipe-bg"></div>
 
+            <!-- 首次操作提示列 (v4.2.0 P2：答題一次後自動收起) -->
+            <div id="swipe-hint-bar" class="hidden absolute bottom-10 left-0 right-0 z-30 flex flex-wrap justify-center gap-2 px-4 pointer-events-none">
+                <div class="px-3.5 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">close</span>左滑 忘記</div>
+                <div class="px-3.5 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">touch_app</span>點擊 翻面</div>
+                <div class="px-3.5 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">check</span>右滑 學會</div>
+                <div class="px-3.5 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">keyboard_arrow_up</span>上滑 跳過</div>
+            </div>
+
+            <!-- 復原膠囊 (v4.2.0 P3：判定後 3.5 秒內可復原) -->
+            <button id="undo-pill" class="hidden absolute bottom-10 left-1/2 -translate-x-1/2 z-40 px-5 py-2.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-full shadow-xl text-xs font-bold flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all" aria-label="復原上一次判定">
+                <span class="material-symbols-outlined !text-sm">undo</span>復原
+            </button>
+
             <!-- 選單按鈕 - 固定位置 -->
-            <button id="menu-btn" class="fixed-top-left w-12 h-12 flex items-center justify-center bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-neutral-200 dark:border-neutral-700">
+            <button id="menu-btn" aria-label="開啟設定選單" class="fixed-top-left w-12 h-12 flex items-center justify-center bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-neutral-200 dark:border-neutral-700">
                 <span class="material-symbols-outlined">menu</span>
             </button>
 
@@ -84,12 +97,12 @@
     <div id="home-menu-panel" class="menu-panel">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xs uppercase tracking-widest font-black text-neutral-400">Menu</h2>
-            <button id="home-menu-close-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
+            <button id="home-menu-close-btn" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
-            <button id="home-menu-home-btn" class="p-3 text-neutral-900 dark:text-white"><span class="material-symbols-outlined">home</span></button>
-            <button id="home-menu-add-btn" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
-            <button id="home-menu-fullscreen-btn" class="p-3 text-neutral-400"><span class="material-symbols-outlined">fullscreen</span></button>
+            <button id="home-menu-home-btn" aria-label="回到首頁" class="p-3 text-neutral-900 dark:text-white"><span class="material-symbols-outlined">home</span></button>
+            <button id="home-menu-add-btn" aria-label="新增單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
+            <button id="home-menu-fullscreen-btn" aria-label="切換全螢幕" class="p-3 text-neutral-400"><span class="material-symbols-outlined">fullscreen</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto">
             <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span>建立新單字集</button></li>
@@ -102,12 +115,12 @@
     <div id="menu-panel" class="menu-panel">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xs uppercase tracking-widest font-black text-neutral-400">Settings</h2>
-            <button id="deck-menu-close-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+            <button id="deck-menu-close-btn" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
-            <button id="deck-menu-home-btn" class="p-3 text-neutral-400"><span class="material-symbols-outlined">home</span></button>
-            <button id="deck-menu-add-btn" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
-            <button id="deck-menu-download-btn" class="p-3 text-neutral-400"><span class="material-symbols-outlined">download</span></button>
+            <button id="deck-menu-home-btn" aria-label="回到首頁" class="p-3 text-neutral-400"><span class="material-symbols-outlined">home</span></button>
+            <button id="deck-menu-add-btn" aria-label="新增單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
+            <button id="deck-menu-download-btn" aria-label="下載此單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">download</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto custom-scrollbar">
             <li><button id="show-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3 text-neutral-900 dark:text-white font-bold">list_alt</span>顯示全卡片 (搜尋)</button></li>
@@ -135,7 +148,7 @@
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                 <h2 class="text-xl font-black">新增單字集</h2>
-                <button id="close-quick-start-modal-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                <button id="close-quick-start-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
                 <label for="file-upload" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-3xl cursor-pointer hover:bg-neutral-50 transition-all group">
@@ -145,7 +158,7 @@
                 </label>
                 <div class="flex space-x-2">
                     <select id="example-selector" class="flex-grow px-4 py-3 bg-neutral-100 dark:bg-neutral-800 border-none rounded-2xl text-sm font-medium outline-none"></select>
-                    <button id="load-example-btn" class="w-12 h-12 flex items-center justify-center bg-neutral-900 text-white rounded-2xl hover:bg-black transition-colors">
+                    <button id="load-example-btn" aria-label="載入範例" class="w-12 h-12 flex items-center justify-center bg-neutral-900 text-white rounded-2xl hover:bg-black transition-colors">
                         <span class="material-symbols-outlined">play_arrow</span>
                     </button>
                 </div>
@@ -161,7 +174,7 @@
                     <h2 class="text-xl font-black">單字集管理</h2>
                     <div class="flex items-center space-x-2">
                         <button id="modal-json-btn" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">code</span>JSON 原始碼</button>
-                        <button id="close-modal-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                        <button id="close-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
                     </div>
                 </div>
                 <div class="relative flex-grow">
@@ -178,7 +191,7 @@
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                 <h2 class="text-xl font-black">JSON 原始碼編輯</h2>
-                <button id="close-edit-deck-modal-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                <button id="close-edit-deck-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="flex-grow p-4">
                 <textarea id="json-editor-textarea" class="w-full h-full p-4 font-mono text-xs bg-neutral-50 dark:bg-neutral-800 border-none rounded-2xl outline-none focus:ring-2 focus:ring-neutral-900 resize-none"></textarea>
@@ -195,7 +208,7 @@
         <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                 <h2 id="deck-options-title" class="text-xl font-black">設定</h2>
-                <button id="close-deck-options-modal-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                <button id="close-deck-options-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
                 <div>
@@ -219,8 +232,10 @@
                 <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">1</span> 點擊卡片即可翻面</li>
                 <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">2</span> 向右滑動表示「已學會」</li>
                 <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">3</span> 向左滑動表示「不熟悉」</li>
+                <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">4</span> 向上滑動可先「跳過」此卡片</li>
+                <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">↩</span> 判定後 3 秒內可點「復原」</li>
             </ul>
-            <button id="close-how-to-use-modal-btn" class="w-full py-4 bg-neutral-900 text-white font-black rounded-2xl">開始學習</button>
+            <button id="close-how-to-use-modal-btn" aria-label="開始學習" class="w-full py-4 bg-neutral-900 text-white font-black rounded-2xl">開始學習</button>
         </div>
     </div>
 
@@ -234,7 +249,7 @@
                 </div>
                 <div class="flex items-center space-x-2">
                     <button id="editor-add-row-btn" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">add</span>新增卡片</button>
-                    <button id="close-deck-editor-modal-btn" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                    <button id="close-deck-editor-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
                 </div>
             </div>
             <div id="editor-rows-container" class="flex-grow overflow-auto p-4 space-y-3 custom-scrollbar">
@@ -246,6 +261,19 @@
                     <button id="editor-cancel-btn" class="px-6 py-3 font-bold text-neutral-500 hover:bg-neutral-100 rounded-2xl transition-colors">取消</button>
                     <button id="editor-save-btn" class="px-8 py-3 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all">儲存全部變更</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用確認對話框 (v4.2.0 P4：取代原生 alert/confirm) -->
+    <div id="app-confirm-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[5000] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
+            <span class="material-symbols-outlined !text-4xl text-neutral-300 mb-3">info</span>
+            <h3 id="confirm-modal-title" class="text-xl font-black mb-3"></h3>
+            <p id="confirm-modal-message" class="text-sm text-neutral-500 dark:text-neutral-400 font-medium mb-8 whitespace-pre-line"></p>
+            <div class="flex gap-3">
+                <button id="confirm-modal-cancel-btn" class="flex-1 py-3.5 font-bold text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-2xl transition-colors">取消</button>
+                <button id="confirm-modal-ok-btn" class="flex-1 py-3.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all">確定</button>
             </div>
         </div>
     </div>

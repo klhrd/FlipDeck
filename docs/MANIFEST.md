@@ -15,6 +15,11 @@
 - [F12] 資料安全檢索機制 (Robust Data Fetching)
 - [F13] 響應式滾動與層級優化 (v4.1.3 修復選單捲動)
 - [F14] 圖形化單筆編輯介面 (v4.1.3 已實作)
+- [F15] 通用 in-app 對話框系統 appConfirm/appAlert (v4.2.0)
+- [F16] 範例覆載進度保護 (v4.2.0)
+- [F17] 首次啟動引導：自動教學、Tap to flip 提示、手勢提示列 (v4.2.0)
+- [F18] 判定復原 (Undo) 與上滑跳過 (Skip) (v4.2.0)
+- [F19] 無障礙基礎：縮放、Escape、aria-label、reduced-motion (v4.2.0)
 
 ## 筆記 (Note)
 - 開發者注重極簡設計 (Minimalist) 與流暢的手勢操作。

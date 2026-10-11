@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.0] - 2026-04-11
+### Added（UX Roadmap P1–P4 + P6 快速項，完整清單見 docs/TODO.md）
+- **範例覆載保護 (P1)**：重新載入已有進度的範例（如高中 6000 單字）前，以 in-app 對話框明示熟練度將重置，不再靜默清空。
+- **引導性 (P2)**：首次啟動自動開啟操作教學（關閉後不再打擾）；卡片正面加入「Tap to flip」提示（對齊 UI spec）；首次答題前顯示手勢提示列，首次操作後自動收起並記住。
+- **復原 (P3)**：判定後 3.5 秒內可點「復原」膠囊，回復該次熟練度變更並跳回上一張（含結束畫面前的最後一張）。
+- **上滑跳過 (P3)**：向上滑動（>80px 或快甩）不評分直接換下一張，卡片稍後自動再出現；鍵盤 ↑ 同效。
+- **通用對話框 (P4)**：新增 `appConfirm`/`appAlert`，全面取代原生 `alert()`/`confirm()`（上傳錯誤、JSON 錯誤、空牌組、刪除牌組）。
+- **無障礙快速項 (P6)**：開放雙指縮放（移除 `user-scalable=no`）、Escape 依層級關閉對話框/Modal/選單、icon 按鈕補 aria-label、支援 `prefers-reduced-motion`。
+
+### Changed
+- **教學內容**：操作教學新增「上滑跳過」與「復原」兩步。
+- **版本號升級**：v4.1.5 -> v4.2.0；SW `CACHE_NAME` 同步 bump 至 `flipdeck-cache-v4.2.0`。
+
 ## [4.1.5] - 2026-04-11
 ### Fixed
 - **編輯器存檔崩潰 (TypeError)**：圖形化/JSON 編輯器存檔後未同步 `currentCardStatus`，新增卡片即拋出例外、Modal 卡死。新增 `syncCardStatus()` 統一補新卡、清殘留；存檔後以 `resetSessionView()` 重置瀏覽佇列，避免 history 指向已刪除的卡片。

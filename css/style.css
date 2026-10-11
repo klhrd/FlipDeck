@@ -145,3 +145,12 @@ body {
 .card-content { line-height: 1.5; font-weight: 400; }
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #D4D4D4; border-radius: 10px; }
+
+/* v4.2.0 P6：尊重使用者的減少動態偏好 (prefers-reduced-motion) */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
