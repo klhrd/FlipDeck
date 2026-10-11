@@ -31,6 +31,7 @@ body {
     max-width: 400px;
     max-height: 500px;
     z-index: 10;
+    touch-action: none; /* v4.4.0 spec 對齊：防止拖曳與瀏覽器手勢（如下拉刷新）打架 */
 }
 
 /* ===== 滑動漸層背景 (Swipe Gradients) ===== */

@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v4.3.0 =====
+// ===== FlipDeck v4.4.0 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadExampleBtn = document.getElementById('load-example-btn');
     
     const homeMenuBtn = document.getElementById('home-menu-btn');
+    const homeMenuThemeBtn = document.getElementById('home-menu-theme-btn');
     const statsTotalDecks = document.getElementById('stats-total-decks');
     const statsTotalCards = document.getElementById('stats-total-cards');
     const sortBySelect = document.getElementById('sort-by');
@@ -41,13 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const backupAllBtn = document.getElementById('backup-all-btn');
     const showHowToUseBtn = document.getElementById('show-how-to-use-btn');
     
-    const menuBtn = document.getElementById('menu-btn'); 
-    const menuPanel = document.getElementById('menu-panel'); 
+    const menuBtn = document.getElementById('menu-btn');
+    const menuPanel = document.getElementById('menu-panel');
     const deckMenuHomeBtn = document.getElementById('deck-menu-home-btn');
     const deckMenuAddBtn = document.getElementById('deck-menu-add-btn');
     const deckMenuDownloadBtn = document.getElementById('deck-menu-download-btn');
+    const deckMenuFullscreenBtn = document.getElementById('deck-menu-fullscreen-btn');
+    const deckMenuThemeBtn = document.getElementById('deck-menu-theme-btn');
     const deckMenuCloseBtn = document.getElementById('deck-menu-close-btn');
     const showAllBtn = document.getElementById('show-all-btn');
+    const showStatsBtn = document.getElementById('show-stats-btn');
     const visualEditDeckBtn = document.getElementById('visual-edit-deck-btn');
     const editDeckBtn = document.getElementById('edit-deck-btn');
     const cardTagFilterContainer = document.getElementById('card-tag-filter-container');
@@ -93,6 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingMsg = document.getElementById('loading-msg');
 
+    const statsModal = document.getElementById('stats-modal');
+    const statsBody = document.getElementById('stats-body');
+    const closeStatsModalBtn = document.getElementById('close-stats-modal-btn');
+    const modalEditorBtn = document.getElementById('modal-editor-btn');
+    const emptyStateCta = document.getElementById('empty-state-cta');
+
     // --- 狀態定義 ---
     const STORAGE_KEYS = {
         PREFERENCES: 'flashcardPWA_prefs_v2',
@@ -130,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedTags = localStorage.getItem(STORAGE_KEYS.ALL_TAGS);
         allTags = savedTags ? JSON.parse(savedTags) : [];
         try { uxFlags = JSON.parse(localStorage.getItem(STORAGE_KEYS.UX_FLAGS)) || {}; } catch (e) { uxFlags = {}; }
-        
+
+        applyThemeIcons();
         populateExampleSelector();
         renderHomeScreen();
         bindEventListeners();
@@ -386,8 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div id="stamp-learned" class="stamp"><span class="material-symbols-outlined !text-5xl">check</span></div>
                     <div class="card-inner">
                         <div class="absolute inset-0 backface-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
-                            <div class="card-content text-center text-neutral-900 dark:text-neutral-100 font-bold break-words w-full" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
-                            <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-neutral-300 font-bold pointer-events-none select-none">Tap to flip</span>
+                            <div class="card-content text-center text-neutral-900 dark:text-neutral-100 font-bold break-words w-full max-h-full overflow-y-auto" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
+                            <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-neutral-300 font-bold pointer-events-none select-none">點擊翻面</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
                             <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${data.fields[1] || ''}</div>
@@ -440,27 +451,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const handleEnd = () => {
             if (!isDragging) return;
             isDragging = false;
-            // v4.2.0 P3：上滑跳過（位移 > 80px 或快速上甩）
+            // v4.4.0 P7：上滑跳過（位移 > 80px 或快速上甩）
             if (dragY < -80 || (velocityY < -0.7 && dragY < -20)) {
-                card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                card.style.transition = 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
                 card.style.transform = `translateY(-1000px) rotate(0deg)`;
                 card.style.opacity = '0';
                 bgForgot.style.opacity = bgLearned.style.opacity = 0;
+                navigator.vibrate?.(10);
                 setTimeout(() => showNextCard('skip'), 250);
                 return;
             }
             if (Math.abs(velocity) > 0.5 || Math.abs(dragX) > 100) {
                 const dir = dragX > 0 ? 1 : -1;
-                card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                card.style.transition = 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
                 card.style.transform = `translateX(${dir * 1000}px) rotate(${dir * 45}deg)`;
                 card.style.opacity = '0';
                 bgForgot.style.opacity = bgLearned.style.opacity = 0;
+                navigator.vibrate?.(10);
                 setTimeout(() => showNextCard(dir > 0 ? 'correct' : 'incorrect'), 250);
             } else {
                 card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
                 card.style.transform = `translateX(0px) rotate(0deg)`;
                 sForgot.style.opacity = sLearned.style.opacity = bgForgot.style.opacity = bgLearned.style.opacity = 0;
-                if (Math.abs(dragX) < 10 && Math.abs(dragY) < 10 && (Date.now() - startTime) < 300) inner.classList.toggle('rotate-y-180');
+                if (Math.abs(dragX) < 15 && Math.abs(dragY) < 15 && (Date.now() - startTime) < 300) inner.classList.toggle('rotate-y-180');
             }
         };
         card.onpointerup = handleEnd;
@@ -491,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
         homeMenuHomeBtn.onclick = (e) => { e.stopPropagation(); backToHomeScreen(); hideAllMenus(); };
         homeMenuAddBtn.onclick = (e) => { e.stopPropagation(); openQuickStartModal(); };
         homeMenuFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
+        homeMenuThemeBtn.onclick = (e) => { e.stopPropagation(); toggleTheme(); };
         createNewDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(); hideAllMenus(); };
         backupAllBtn.onclick = (e) => { e.stopPropagation(); backupAllData(); };
         showHowToUseBtn.onclick = (e) => { e.stopPropagation(); openHowToUseModal(); };
@@ -500,7 +514,10 @@ document.addEventListener('DOMContentLoaded', () => {
         deckMenuHomeBtn.onclick = (e) => { e.stopPropagation(); backToHomeScreen(); hideAllMenus(); };
         deckMenuAddBtn.onclick = (e) => { e.stopPropagation(); openQuickStartModal(); };
         deckMenuDownloadBtn.onclick = (e) => { e.stopPropagation(); downloadData('json'); hideAllMenus(); };
+        deckMenuFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
+        deckMenuThemeBtn.onclick = (e) => { e.stopPropagation(); toggleTheme(); };
         showAllBtn.onclick = (e) => { e.stopPropagation(); showAllCardsView(); };
+        showStatsBtn.onclick = (e) => { e.stopPropagation(); showStatsView(); };
         visualEditDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(currentDeckId); hideAllMenus(); };
         editDeckBtn.onclick = (e) => { e.stopPropagation(); openEditDeckModal(); };
         fontSizeIncrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(0.2); };
@@ -510,6 +527,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 融合 Modal 按鈕 ---
         const modalJsonBtn = document.getElementById('modal-json-btn');
         if (modalJsonBtn) modalJsonBtn.onclick = () => openEditDeckModal();
+        if (modalEditorBtn) modalEditorBtn.onclick = () => openDeckEditor(currentDeckId);
+
+        // --- 統計與空狀態 ---
+        closeStatsModalBtn.onclick = () => statsModal.classList.add('hidden');
+        if (emptyStateCta) emptyStateCta.onclick = () => openQuickStartModal();
 
         // --- 其他全域事件 ---
         fileUpload.onchange = handleFileUpload;
@@ -522,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Escape') { handleEscape(); return; }
 
             // 任一 Modal 或選單開啟中（或焦點在輸入框）時，不攔截按鍵
-            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal]
+            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal, statsModal]
                 .some(m => !m.classList.contains('hidden'))
                 || !menuOverlay.classList.contains('hidden')
                 || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName || '');
@@ -581,7 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // v4.2.0 P6：Escape 依 z-index 由高到低關閉最上層視窗
     function handleEscape() {
         if (confirmResolveFn) { confirmResolveFn(false); return; }
-        const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, editDeckModal, deckEditorModal];
+        const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, statsModal, editDeckModal, deckEditorModal];
         for (let i = stack.length - 1; i >= 0; i--) {
             if (!stack[i].classList.contains('hidden')) {
                 // v4.3.0：編輯器有未儲存變更時，先經確認再關閉
@@ -597,6 +619,22 @@ document.addEventListener('DOMContentLoaded', () => {
         else document.exitFullscreen();
     }
 
+    // v4.4.0 P7：深色模式手動切換（預設跟隨系統，切換後記住）
+    function toggleTheme() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('flipdeck_theme', isDark ? 'dark' : 'light');
+        applyThemeIcons();
+    }
+
+    function applyThemeIcons() {
+        const isDark = document.documentElement.classList.contains('dark');
+        [homeMenuThemeBtn, deckMenuThemeBtn].forEach(b => {
+            if (!b) return;
+            b.querySelector('span').textContent = isDark ? 'light_mode' : 'dark_mode';
+            b.setAttribute('aria-label', isDark ? '切換至淺色模式' : '切換至深色模式');
+        });
+    }
+
     function handleFileUpload(e) {
         const f = e.target.files[0]; if (!f) return;
         const r = new FileReader();
@@ -604,13 +642,74 @@ document.addEventListener('DOMContentLoaded', () => {
             showLoading('解析檔案中…');
             try {
                 await nextPaint();
-                const data = f.name.endsWith('.json') ? JSON.parse(ev.target.result) : ev.target.result.trim().split('\n').map((l, i) => ({ card_id: `c_${Date.now()}_${i}`, fields: l.split(';').map(s => s.trim().replace(/\/\//g, '<br>')), tags: [] }));
-                processNewDeck(data, `d_${Date.now()}`, f.name.split('.')[0]);
+                let parsed;
+                if (f.name.endsWith('.json')) {
+                    parsed = JSON.parse(ev.target.result);
+                } else {
+                    parsed = ev.target.result.trim().split('\n').map((l, i) => ({ card_id: `c_${Date.now()}_${i}`, fields: l.split(';').map(s => s.trim().replace(/\/\//g, '<br>')), tags: [] }));
+                }
+
+                // v4.4.0 P7：備份檔偵測 → 走還原流程
+                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.decks) && Array.isArray(parsed.deckList)) {
+                    const ids = parsed.decks.filter(d => d && typeof d.id === 'string').map(d => d.id);
+                    if (ids.length === 0) { await appAlert('備份檔中沒有可用的單字集。', '無法還原'); return; }
+                    const overlap = ids.filter(id => deckList.some(x => x.id === id)).length;
+                    const ok = await appConfirm({
+                        title: '還原備份？',
+                        message: `備份內含 ${ids.length} 個單字集，其中 ${overlap} 個將覆蓋現有資料與學習進度，其餘單字集不受影響。`,
+                        okText: '還原',
+                        danger: overlap > 0
+                    });
+                    if (!ok) return;
+                    const { restored, added } = restoreBackup(parsed);
+                    quickStartModal.classList.add('hidden');
+                    backToHomeScreen();
+                    await appAlert(`還原完成：覆蓋 ${restored} 個、新增 ${added} 個單字集。`, '備份還原');
+                    return;
+                }
+
+                if (!Array.isArray(parsed)) throw new Error('not a deck');
+                processNewDeck(parsed, `d_${Date.now()}`, f.name.split('.')[0]);
                 quickStartModal.classList.add('hidden');
             } catch (err) { appAlert('檔案格式錯誤：JSON 無法解析；.txt/.csv 每行以「;」分隔欄位。', '無法匯入'); }
             finally { hideLoading(); }
         };
         r.readAsText(f);
+    }
+
+    // v4.4.0 P7：還原全域備份 —— 依 id 合併：已存在者覆蓋（保留清單位置），新 id 新增至最前
+    function restoreBackup(backup) {
+        let restored = 0, added = 0;
+        backup.decks.forEach(d => {
+            if (!d || typeof d.id !== 'string' || !Array.isArray(d.data)) return;
+            const meta = (backup.deckList || []).find(m => m && m.id === d.id) || {};
+            const existing = deckList.find(x => x.id === d.id);
+            if (existing) {
+                if (meta.title) existing.title = meta.title;
+                existing.totalCards = d.data.length;
+                if (meta.settings) existing.settings = { ...DEFAULT_DECK_SETTINGS, ...meta.settings };
+                restored++;
+            } else {
+                deckList.unshift({
+                    id: d.id,
+                    title: meta.title || d.id,
+                    totalCards: d.data.length,
+                    lastOpened: meta.lastOpened || Date.now(),
+                    progress: 0,
+                    settings: { ...DEFAULT_DECK_SETTINGS, ...(meta.settings || {}) }
+                });
+                added++;
+            }
+            saveDeckData(d.id, d.data);
+            const stateMap = new Map(Object.entries(d.state || {}));
+            d.data.forEach(c => {
+                if (!stateMap.has(c.card_id)) stateMap.set(c.card_id, { mastery: 1, lastTime: Date.now() });
+            });
+            saveDeckState(d.id, stateMap);
+        });
+        if (Array.isArray(backup.allTags)) allTags = [...new Set([...allTags, ...backup.allTags])];
+        saveDeckList();
+        return { restored, added };
     }
 
     // v4.2.0 P1：範例覆載保護 —— 既有進度時先警告，避免靜默重置
@@ -678,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </button>
                 </div>
                 <div class="flex items-center text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">
-                    <span>${d.totalCards} Cards • ${prog}% Mastered</span>
+                    <span>${d.totalCards} 張卡片 • ${prog}% 已熟練</span>
                 </div>
                 <div class="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                     <div class="h-full bg-neutral-900 dark:bg-white transition-all duration-1000" style="width: ${prog}%"></div>
@@ -747,12 +846,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); }
+
+    // v4.4.0 P7：熟練度分布統計（學習中選單入口）
+    function showStatsView() {
+        statsModal.classList.remove('hidden'); hideAllMenus();
+        const buckets = [1, 2, 3, 4, 5].map(lv => ({
+            lv, count: currentFullDeck.filter(c => (currentCardStatus.get(c.card_id)?.mastery ?? 1) === lv).length
+        }));
+        const total = currentFullDeck.length;
+        const mastered = buckets[4].count;
+        const prog = calculateProgress(currentDeckId, currentFullDeck);
+        const maxCount = Math.max(...buckets.map(b => b.count), 1);
+        const bar = (count, label, color) => `
+            <div>
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-xs font-bold text-neutral-500 dark:text-neutral-400">${label}</span>
+                    <span class="text-xs font-black text-neutral-400">${count} 張</span>
+                </div>
+                <div class="w-full h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full ${color} transition-all duration-1000" style="width: ${(count / maxCount) * 100}%"></div>
+                </div>
+            </div>`;
+        statsBody.innerHTML = `
+            <div class="flex items-baseline justify-between">
+                <span class="text-4xl font-black text-neutral-900 dark:text-white">${prog}%</span>
+                <span class="text-xs font-bold text-neutral-400">已熟練 ${mastered} / ${total} 張</span>
+            </div>
+            <div class="pt-2 space-y-3">
+                ${bar(buckets[0].count, '第 1 級（新卡）', 'bg-neutral-300 dark:bg-neutral-600')}
+                ${bar(buckets[1].count, '第 2 級', 'bg-neutral-400 dark:bg-neutral-500')}
+                ${bar(buckets[2].count, '第 3 級', 'bg-neutral-500 dark:bg-neutral-400')}
+                ${bar(buckets[3].count, '第 4 級', 'bg-neutral-700 dark:bg-neutral-300')}
+                ${bar(buckets[4].count, '第 5 級（已熟練）', 'bg-neutral-900 dark:bg-white')}
+            </div>
+            <p class="text-[10px] text-neutral-400 font-bold text-center pt-1">每次答對提升一級，答錯回到第 1 級</p>
+        `;
+    }
     function renderAllCardsTable() {
         const q = cardSearchInput.value.toLowerCase().trim();
-        let html = '<thead><tr class="text-neutral-400 text-[10px] uppercase tracking-widest"><th class="p-4">ID / Mastery</th>';
+        let html = '<thead><tr class="text-neutral-400 text-[10px] uppercase tracking-widest"><th class="p-4">ID / 熟練度</th>';
         const fields = currentFullDeck[0]?.fields.length || 0;
-        for (let i = 1; i <= fields; i++) html += `<th class="p-4">Field ${i}</th>`;
-        html += '<th class="p-4">Tags</th></tr></thead><tbody>';
+        for (let i = 1; i <= fields; i++) html += `<th class="p-4">欄位 ${i}</th>`;
+        html += '<th class="p-4">標籤</th></tr></thead><tbody>';
         
         currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || (c.tags && c.tags.some(t => t.toLowerCase().includes(q)))).forEach(c => {
             const m = currentCardStatus.get(c.card_id)?.mastery ?? 1;
@@ -931,7 +1066,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.className = "p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 flex flex-col gap-3 group animate-in slide-in-from-bottom-2 duration-300";
             row.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">Card #${globalIndex + 1}</span>
+                    <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">卡片 #${globalIndex + 1}</span>
                     <button class="delete-row-btn p-1 text-neutral-300 hover:text-red-500 transition-colors" aria-label="刪除此卡片">
                         <span class="material-symbols-outlined !text-sm">delete</span>
                     </button>

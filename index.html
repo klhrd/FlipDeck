@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v4.3.0</title>
-    
+    <title>FlipDeck v4.4.0</title>
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#171717">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' };</script>
+    <!-- v4.4.0：主題初始化（避免閃白），支援手動切換與跟隨系統 -->
+    <script>
+        (function () {
+            var saved = localStorage.getItem('flipdeck_theme');
+            var dark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (dark) document.documentElement.classList.add('dark');
+        })();
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +42,7 @@
                     <h1 class="text-3xl font-black tracking-tighter text-neutral-900 dark:text-white">FlipDeck</h1>
                 </div>
                 <div id="stats-summary" class="text-right text-neutral-400 dark:text-neutral-500 hidden sm:block">
-                    <p class="text-xs uppercase tracking-widest font-black">Total Cards: <span id="stats-total-cards" class="text-neutral-900 dark:text-white">0</span></p>
+                    <p class="text-xs uppercase tracking-widest font-black">卡片總數：<span id="stats-total-cards" class="text-neutral-900 dark:text-white">0</span></p>
                 </div>
             </div>
 
@@ -47,8 +56,13 @@
                     <span id="stats-total-decks" class="hidden">0</span>
                 </div>
 
-                <div id="deck-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-10">
-                    <p id="no-recent-decks" class="col-span-full text-neutral-400 text-center py-20 italic font-medium">尚未開啟任何單字集</p>
+                <div id="deck-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-10"></div>
+
+                <!-- v4.4.0：空狀態移出 deck-list-container（原先會被 innerHTML='' 清掉而永遠不顯示），並補上 CTA -->
+                <div id="no-recent-decks" class="hidden text-center py-16">
+                    <span class="material-symbols-outlined !text-5xl text-neutral-200 dark:text-neutral-700">style</span>
+                    <p class="text-neutral-400 italic font-medium mb-6">尚未開啟任何單字集</p>
+                    <button id="empty-state-cta" class="px-8 py-3.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all">新增單字集</button>
                 </div>
             </div>
         </div>
@@ -79,7 +93,7 @@
             </button>
 
             <div id="card-area" class="flex-grow flex items-center justify-center w-full h-full p-6 relative perspective-1000">
-                <div id="card-stack-container" class="relative w-full max-sm:max-w-[320px] max-w-sm h-[520px] flex items-center justify-center">
+                <div id="card-stack-container" class="relative w-full max-sm:max-w-[320px] max-w-sm h-[520px] max-h-[68vh] flex items-center justify-center">
                     <!-- 動態生成卡片 -->
                 </div>
             </div>
@@ -96,13 +110,14 @@
     <!-- 首頁選單 -->
     <div id="home-menu-panel" class="menu-panel">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-400">Menu</h2>
+            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-400">主選單</h2>
             <button id="home-menu-close-btn" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
             <button id="home-menu-home-btn" aria-label="回到首頁" class="p-3 text-neutral-900 dark:text-white"><span class="material-symbols-outlined">home</span></button>
             <button id="home-menu-add-btn" aria-label="新增單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
             <button id="home-menu-fullscreen-btn" aria-label="切換全螢幕" class="p-3 text-neutral-400"><span class="material-symbols-outlined">fullscreen</span></button>
+            <button id="home-menu-theme-btn" aria-label="切換深淺色模式" class="p-3 text-neutral-400"><span class="material-symbols-outlined">dark_mode</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto">
             <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span>建立新單字集</button></li>
@@ -114,29 +129,32 @@
     <!-- 學習中選單 -->
     <div id="menu-panel" class="menu-panel">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-400">Settings</h2>
+            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-400">設定</h2>
             <button id="deck-menu-close-btn" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
             <button id="deck-menu-home-btn" aria-label="回到首頁" class="p-3 text-neutral-400"><span class="material-symbols-outlined">home</span></button>
             <button id="deck-menu-add-btn" aria-label="新增單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
             <button id="deck-menu-download-btn" aria-label="下載此單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">download</span></button>
+            <button id="deck-menu-fullscreen-btn" aria-label="切換全螢幕" class="p-3 text-neutral-400"><span class="material-symbols-outlined">fullscreen</span></button>
+            <button id="deck-menu-theme-btn" aria-label="切換深淺色模式" class="p-3 text-neutral-400"><span class="material-symbols-outlined">dark_mode</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto custom-scrollbar">
             <li><button id="show-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3 text-neutral-900 dark:text-white font-bold">list_alt</span>顯示全卡片 (搜尋)</button></li>
+            <li><button id="show-stats-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">insights</span>學習統計</button></li>
             <li><button id="visual-edit-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit</span>圖形化編輯器</button></li>
             <li><button id="edit-deck-btn" class="menu-item-btn opacity-50 text-[10px]"><span class="material-symbols-outlined !text-sm mr-3">code</span>JSON 原始碼</button></li>
             <li class="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                <span class="text-[10px] uppercase tracking-widest font-black text-neutral-400 block mb-3 pl-4">Filter by Tags</span>
+                <span class="text-[10px] uppercase tracking-widest font-black text-neutral-400 block mb-3 pl-4">標籤篩選</span>
                 <div id="card-tag-filter-container" class="space-y-1 pl-4 max-h-40 overflow-y-auto"></div>
             </li>
             <li class="pt-4 border-t border-neutral-100 dark:border-gray-800">
                 <div class="flex items-center justify-between px-4">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-neutral-400">Font Size</span>
+                    <span class="text-[10px] uppercase tracking-widest font-black text-neutral-400">字型大小</span>
                     <div class="flex items-center space-x-3">
-                        <button id="font-size-decrease" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">-</button>
+                        <button id="font-size-decrease" aria-label="縮小字型" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">-</button>
                         <span id="font-size-value" class="text-xs font-bold w-8 text-center">2.5</span>
-                        <button id="font-size-increase" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">+</button>
+                        <button id="font-size-increase" aria-label="放大字型" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">+</button>
                     </div>
                 </div>
             </li>
@@ -173,6 +191,7 @@
                 <div class="flex items-center justify-between">
                     <h2 class="text-xl font-black">單字集管理</h2>
                     <div class="flex items-center space-x-2">
+                        <button id="modal-editor-btn" aria-label="開啟圖形化編輯器" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">edit</span>圖形化編輯</button>
                         <button id="modal-json-btn" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">code</span>JSON 原始碼</button>
                         <button id="close-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
                     </div>
@@ -278,6 +297,17 @@
         <div class="flex flex-col items-center gap-4">
             <div class="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
             <p id="loading-msg" class="text-white text-[10px] font-black uppercase tracking-[0.2em]">載入中…</p>
+        </div>
+    </div>
+
+    <!-- 學習統計 Modal (v4.4.0 P7) -->
+    <div id="stats-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
+                <h2 class="text-xl font-black">學習統計</h2>
+                <button id="close-stats-modal-btn" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div id="stats-body" class="p-6 space-y-4"></div>
         </div>
     </div>
 
