@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v4.1.0 (Strict Fix Mode) =====
+// ===== FlipDeck v4.1.4 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -41,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeMenuFullscreenBtn = document.getElementById('home-menu-fullscreen-btn');
     const homeMenuCloseBtn = document.getElementById('home-menu-close-btn');
     const backupAllBtn = document.getElementById('backup-all-btn');
-    const manageTagsBtn = document.getElementById('manage-tags-btn');
     const showHowToUseBtn = document.getElementById('show-how-to-use-btn');
     
     const menuBtn = document.getElementById('menu-btn'); 
@@ -66,11 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeDownloadModalBtn = document.getElementById('close-download-modal-btn');
     const howToUseModal = document.getElementById('how-to-use-modal');
     const closeHowToUseModalBtn = document.getElementById('close-how-to-use-modal-btn');
-    const settingsModal = document.getElementById('settings-modal');
-    const closeSettingsModalBtn = document.getElementById('close-settings-modal-btn');
-    const newTagInput = document.getElementById('new-tag-input');
-    const addTagBtn = document.getElementById('add-tag-btn');
-    const tagListContainer = document.getElementById('tag-list-container');
     const editDeckModal = document.getElementById('edit-deck-modal');
     const closeEditDeckModalBtn = document.getElementById('close-edit-deck-modal-btn');
     const jsonEditorTextarea = document.getElementById('json-editor-textarea');
@@ -370,7 +364,6 @@ document.addEventListener('DOMContentLoaded', () => {
         homeMenuFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
         createNewDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(); hideAllMenus(); };
         backupAllBtn.onclick = (e) => { e.stopPropagation(); backupAllData(); };
-        manageTagsBtn.onclick = (e) => { e.stopPropagation(); openSettingsModal(); };
         showHowToUseBtn.onclick = (e) => { e.stopPropagation(); openHowToUseModal(); };
         homeMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
@@ -523,7 +516,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openQuickStartModal() { quickStartModal.classList.remove('hidden'); hideAllMenus(); }
-    function openSettingsModal() { settingsModal.classList.remove('hidden'); hideAllMenus(); }
     function openHowToUseModal() { howToUseModal.classList.remove('hidden'); hideAllMenus(); }
     
     function applyCurrentDeckSettings() {
@@ -736,11 +728,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h3 class="text-3xl font-black mb-2 text-neutral-900 dark:text-white">太棒了！</h3>
                     <p class="text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest text-xs">您已完成目前篩選下的所有卡片</p>
                 </div>
-                <button onclick="backToHomeScreen()" class="px-10 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">
+                <button id="back-to-home-btn" class="px-10 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">
                     返回首頁
                 </button>
             </div>
         `;
+        const backHomeBtn = cardStackContainer.querySelector('#back-to-home-btn');
+        if (backHomeBtn) backHomeBtn.onclick = () => backToHomeScreen();
     }
 
     initializeApp();
