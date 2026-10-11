@@ -14,6 +14,9 @@ All notable changes to this project will be documented in this file.
 - **熟練度保留為視覺指標**：5 級圓點、進度 %、統計圖含義不變；「再讀一輪」同時重置 mastery 與 SM-2 排程。
 - **版本號升級**：v4.5.0 -> v5.0.0（核心演算法變更）；SW `CACHE_NAME` 同步 bump。
 
+### Developer
+- 自動化測試收進 repo：`test/auto/` 七套零依賴 node 套件（SW 快取策略、session/進度、學習判定/undo、抽卡佇列、備份還原、批次標籤/跳轉、SM-2），抽取 `js/script.js` 真實函式原始碼驗證；`npm test` 一鍵執行。手動測試清單見 `test/MANUAL_TEST_CHECKLIST.md`。
+
 ## [4.5.0] - 2026-04-11
 ### Added（UX Roadmap 收尾：P6 進階無障礙 + P7 剩餘項）
 - **批次標籤編輯 (P7)**：圖形化編輯器每列可勾選，「全選本頁」快速圈選，選取後浮出批次操作列——一次對多張卡片**加入**（聯集去重）或**移除**標籤；搜尋 + 全選本頁 = 對特定範圍批次下標。

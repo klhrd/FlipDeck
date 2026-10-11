@@ -60,7 +60,7 @@
 
 ## 品質保證
 - [x] 手動測試清單 (`test/MANUAL_TEST_CHECKLIST.md`，涵蓋 v4.1.4 → v5.0.0 共 18 節)
-- [ ] 將七套 node 邏輯測試 harness（SW/session/UX/P5/P7/P6/SM-2）收進 repo 並提供 npm script（目前僅存於開發臨時環境）
+- [x] 七套 node 邏輯測試收進 `test/auto/`，`npm test` 一鍵執行（零依賴，抽取真實函式原始碼驗證）
 
 ## 未來主題候選
 - [ ] 雲端同步（需先選定方案：Google Drive / Supabase / 自架後端）
