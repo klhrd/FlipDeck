@@ -59,8 +59,8 @@
 - [x] 學習中搜尋並跳至特定卡片 (v4.5.0)
 
 ## 品質保證
-- [x] 手動測試清單 (`test/MANUAL_TEST_CHECKLIST.md`，涵蓋 v4.1.4 → v5.0.0 共 18 節)
-- [x] 七套 node 邏輯測試收進 `test/auto/`，`npm test` 一鍵執行（零依賴，抽取真實函式原始碼驗證）
+- [x] 手動測試清單 (`test/MANUAL_TEST_CHECKLIST.md`，涵蓋 v4.1.4 → v5.1.0 共 20 節，含 SRS 深化 §6A)
+- [x] 八套 node 邏輯測試收進 `test/auto/`，`npm test` 一鍵執行（零依賴，抽取真實函式原始碼驗證）
 
 ## 未來主題候選
 - [ ] 雲端同步（需先選定方案：Google Drive / Supabase / 自架後端）
