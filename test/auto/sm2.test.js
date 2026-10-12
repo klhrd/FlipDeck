@@ -62,19 +62,20 @@ const DAY = 86400000;
     console.log('T3 EF floor clamp: OK');
 }
 
-// ---- T4: syncCardStatus 遷移（舊資料 mastery → SM-2 欄位） ----
+// ---- T4: syncCardStatus 遷移（v4 mastery → v5 SM-2 → v5.1 lapses/suspended） ----
 {
     let currentCardStatus = new Map([
         ['legacy_m5', { mastery: 5, lastTime: 1 }],          // 完熟 → reps 4, ~38 天後到期
         ['legacy_m2', { mastery: 2, lastTime: 1 }],          // → reps 1, 1 天後到期
         ['legacy_m1', { mastery: 1, lastTime: 1 }],          // 新卡 → due 0 立即到期
-        ['already_v5', { mastery: 3, lastTime: 1, ef: 2.2, reps: 2, interval: 6, due: 123 }], // 不覆蓋
+        ['already_v5', { mastery: 3, lastTime: 1, ef: 2.2, reps: 2, interval: 6, due: 123 }], // v5.0 資料：SM-2 不覆蓋、補 lapses/suspended
+        ['v51_full', { mastery: 3, lastTime: 1, ef: 2.5, reps: 2, interval: 6, due: 123, lapses: 4, suspended: true }], // v5.1 完整資料：完全不動
         ['old_gone', { mastery: 4, lastTime: 1 }]
     ]);
     const DAY_MS = DAY;
     eval(extractFn('syncCardStatus'));
     const before = Date.now();
-    syncCardStatus([{ card_id: 'legacy_m5' }, { card_id: 'legacy_m2' }, { card_id: 'legacy_m1' }, { card_id: 'already_v5' }, { card_id: 'brand_new' }]);
+    syncCardStatus([{ card_id: 'legacy_m5' }, { card_id: 'legacy_m2' }, { card_id: 'legacy_m1' }, { card_id: 'already_v5' }, { card_id: 'v51_full' }, { card_id: 'brand_new' }]);
     const after = Date.now();
 
     assert.ok(!currentCardStatus.has('old_gone'), 'stale pruned');
@@ -82,15 +83,19 @@ const DAY = 86400000;
     assert.strictEqual(m5.reps, 4, 'mastery 5 -> reps 4');
     assert.strictEqual(m5.interval, 38, 'mastery 5 -> interval 38d (6 × 2.5^2)');
     assert.ok(m5.due > before + 37 * DAY && m5.due < after + 39 * DAY, 'm5 due ≈ 38 days out');
+    assert.strictEqual(m5.lapses, 0, 'v5.1: legacy gets lapses 0');
+    assert.strictEqual(m5.suspended, false, 'v5.1: legacy gets suspended false');
     const m2 = currentCardStatus.get('legacy_m2');
     assert.strictEqual(m2.reps, 1, 'mastery 2 -> reps 1');
     assert.ok(m2.due > before && m2.due < after + 2 * DAY, 'm2 due ≈ 1 day out');
     assert.strictEqual(currentCardStatus.get('legacy_m1').due, 0, 'mastery 1 -> due 0');
     const kept = currentCardStatus.get('already_v5');
-    assert.deepStrictEqual([kept.ef, kept.reps, kept.due], [2.2, 2, 123], 'existing SM-2 fields untouched');
+    assert.deepStrictEqual([kept.ef, kept.reps, kept.due, kept.lapses, kept.suspended], [2.2, 2, 123, 0, false], 'v5.0 fields kept + v5.1 backfilled');
+    const full = currentCardStatus.get('v51_full');
+    assert.deepStrictEqual([full.ef, full.reps, full.due, full.lapses, full.suspended], [2.5, 2, 123, 4, true], 'v5.1 fields untouched');
     const fresh = currentCardStatus.get('brand_new');
-    assert.deepStrictEqual([fresh.mastery, fresh.ef, fresh.reps, fresh.interval, fresh.due], [1, 2.5, 0, 0, 0], 'new card defaults');
-    console.log('T4 syncCardStatus migration (mastery->SM-2, keep existing, defaults): OK');
+    assert.deepStrictEqual([fresh.mastery, fresh.ef, fresh.reps, fresh.interval, fresh.due, fresh.lapses, fresh.suspended], [1, 2.5, 0, 0, 0, 0, false], 'new card defaults');
+    console.log('T4 syncCardStatus migration (mastery->SM-2->v5.1, keep existing, defaults): OK');
 }
 
 // ---- T5: updateLearningDeck —— 到期制過濾與排序 ----

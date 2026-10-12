@@ -9,11 +9,16 @@ const showNextCardSrc = extractFn('showNextCard');
 const undoLastActionSrc = extractFn('undoLastAction');
 const appConfirmSrc = extractFn('appConfirm');
 const sm2UpdateSrc = extractFn('sm2Update');
+const applyLapseSrc = extractFn('applyLapse');
 const DAY_MS = 86400000;
+const LEECH_THRESHOLD = 8;
 
 // Session harness: the extracted functions share THIS lexical scope.
 function makeSession() {
-    const mkState = (mastery, extra = {}) => ({ mastery, lastTime: 1, ef: 2.5, reps: mastery - 1 > 0 ? mastery - 1 : 0, interval: 0, due: 0, ...extra });
+    const mkState = (mastery, extra = {}) => ({
+        mastery, lastTime: 1, ef: 2.5, reps: mastery - 1 > 0 ? mastery - 1 : 0,
+        interval: 0, due: 0, lapses: 0, leech: false, suspended: false, ...extra
+    });
     let currentCardStatus = new Map([
         ['a', mkState(2, { reps: 1, interval: 1 })],
         ['b', mkState(1)],
@@ -37,8 +42,10 @@ function makeSession() {
     const fillUpcomingQueue = () => { while (upcomingQueue.length < 2 && currentLearningDeck.length > 0) upcomingQueue.push(currentLearningDeck[currentLearningDeck.length - 1]); };
     const showUndoPill = () => { if (lastAction) calls.push('undoPillShown'); };
     const hideUndoPill = () => { lastAction = null; };
+    const adjustDailyNew = (delta) => calls.push('adjustDailyNew:' + delta);
 
     eval(sm2UpdateSrc);
+    eval(applyLapseSrc);
     eval(showNextCardSrc);
     eval(undoLastActionSrc);
 
@@ -65,15 +72,16 @@ function makeSession() {
         assert.strictEqual(S.lastAction, null, 'new_game records no undo action');
         assert.ok(!S.calls.includes('undoPillShown'), 'no undo pill on initial deal');
 
-        const before = { mastery: 1, ef: 2.5, reps: 0, interval: 0, due: 0 };
-        S.showNextCard('correct'); // document stub → 未翻面 → q=5
+        const before = { mastery: 1, ef: 2.5, reps: 0, interval: 0, due: 0, lapses: 0, leech: false, suspended: false };
+        S.showNextCard('correct'); // document stub → 未翻面 → q=5；b 是新卡 → wasIntro
         const after = S.status.get('b');
         assert.strictEqual(after.mastery, 2, 'mastery incremented');
         assert.strictEqual(after.ef, 2.6, 'SM-2: q=5 raises EF 2.5 -> 2.6');
         assert.strictEqual(after.reps, 1, 'SM-2: reps 1');
         assert.strictEqual(after.interval, 1, 'SM-2: first success +1 day');
         assert.ok(after.due > Date.now(), 'SM-2: scheduled to future');
-        assert.deepStrictEqual(S.lastAction, { cardId: 'b', prev: before, nextId: 'c' }, 'undo payload = full snapshot');
+        assert.deepStrictEqual(S.lastAction, { cardId: 'b', prev: before, nextId: 'c', wasIntro: true }, 'undo payload = full snapshot + wasIntro');
+        assert.ok(S.calls.includes('adjustDailyNew:1'), 'v5.1: introducing a new card consumes daily allowance');
         assert.ok(S.calls.includes('undoPillShown'), 'undo pill shown on judgment');
         assert.strictEqual(S.historyIndex, 1, 'advanced to next card');
 
@@ -82,11 +90,13 @@ function makeSession() {
         assert.strictEqual(restored.mastery, 1, 'undo restores mastery');
         assert.strictEqual(restored.ef, 2.5, 'undo restores EF');
         assert.strictEqual(restored.due, 0, 'undo restores due');
+        assert.strictEqual(restored.lapses, 0, 'undo restores lapses');
+        assert.ok(S.calls.includes('adjustDailyNew:-1'), 'v5.1: undo refunds the daily allowance');
         assert.strictEqual(S.historyIndex, 0, 'undo rewinds historyIndex');
         assert.deepStrictEqual(S.history, ['b'], 'undo removes advanced card from history');
         assert.strictEqual(S.queue[0], 'c', 'undo puts next card back at queue front');
         assert.strictEqual(S.lastAction, null, 'undo consumed the action');
-        console.log('T1 correct+undo round-trip (SM-2 snapshot): OK');
+        console.log('T1 correct+undo round-trip (SM-2 snapshot + daily allowance): OK');
     }
 
     // ---- T2: 'skip' leaves mastery AND SM-2 untouched; undo restores only position ----
@@ -96,9 +106,11 @@ function makeSession() {
         const m = S.status.get('b');
         const snapshot = { mastery: m.mastery, ef: m.ef, reps: m.reps, interval: m.interval, due: m.due };
         S.showNextCard('skip');
-        assert.deepStrictEqual(Object.fromEntries(Object.entries(S.status.get('b'))).mastery, snapshot.mastery, 'skip does not change mastery');
+        assert.strictEqual(S.status.get('b').mastery, snapshot.mastery, 'skip does not change mastery');
         assert.strictEqual(S.status.get('b').ef, snapshot.ef, 'skip does not change EF');
         assert.strictEqual(S.lastAction.prev, null, 'skip marks prev as null (position-only undo)');
+        assert.strictEqual(S.lastAction.wasIntro, false, 'skip never consumes daily allowance');
+        assert.ok(!S.calls.includes('adjustDailyNew:1'), 'no allowance consumed on skip');
         assert.strictEqual(S.history[1], 'c', 'skip still advances');
         S.undoLastAction();
         assert.strictEqual(S.status.get('b').ef, snapshot.ef, 'undo of skip keeps EF');
@@ -106,7 +118,7 @@ function makeSession() {
         console.log('T2 skip+undo: OK (no mastery/SM-2 side-effect)');
     }
 
-    // ---- T3: 'incorrect' — SM-2 重置 + undo 還原全部欄位 ----
+    // ---- T3: 'incorrect' — SM-2 重置 + lapses 計數 + undo 還原全部欄位 ----
     {
         const S = makeSession();
         S.queue = ['a', 'c'];
@@ -119,13 +131,16 @@ function makeSession() {
         assert.strictEqual(after.reps, 0, 'SM-2: reps reset');
         assert.ok(after.due <= Date.now(), 'SM-2: immediately re-due');
         assert.ok(after.ef < before.ef, 'SM-2: EF penalized');
+        assert.strictEqual(after.lapses, 1, 'v5.1: lapse counted');
+        assert.strictEqual(S.lastAction.wasIntro, false, 'failed card (reps>0) is not a new-card intro');
         S.undoLastAction();
         const restored = S.status.get('a');
         assert.strictEqual(restored.mastery, 2, 'undo restores mastery 2');
         assert.strictEqual(restored.ef, before.ef, 'undo restores EF');
         assert.strictEqual(restored.reps, before.reps, 'undo restores reps');
         assert.strictEqual(restored.due, before.due, 'undo restores due');
-        console.log('T3 incorrect+undo: OK (restores full SM-2 state)');
+        assert.strictEqual(restored.lapses, 0, 'undo restores lapses');
+        console.log('T3 incorrect+undo: OK (full SM-2 state + lapses)');
     }
 
     // ---- T4: 'new_game' never records action; undo without action is a no-op ----

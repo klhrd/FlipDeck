@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.0.0 (SM-2 Spaced Repetition) =====
+// ===== FlipDeck v5.1.0 (SM-2 + 每日新卡上限 / leech / 暫停) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -58,6 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const fontSizeDecrease = document.getElementById('font-size-decrease');
     const fontSizeIncrease = document.getElementById('font-size-increase');
     const fontSizeValue = document.getElementById('font-size-value');
+    const newLimitDecrease = document.getElementById('new-limit-decrease');
+    const newLimitIncrease = document.getElementById('new-limit-increase');
+    const newLimitValue = document.getElementById('new-limit-value');
     
     const allCardsModal = document.getElementById('all-cards-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -133,10 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
     let editorConfirmClose = null;
 
-    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [] };
+    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20 };
     const MAX_HISTORY = 50;
     const RECENT_SKIP = 8; // v4.3.0 P5：排隊時排除最近 N 張已作答卡片，避免立即回鍋
     const DAY_MS = 86400000;
+    const LEECH_THRESHOLD = 8; // v5.1.0：失敗達 N 次標記為難卡 (leech)
 
     // =================================================================
     // ===== 核心儲存邏輯 =====
@@ -252,14 +256,19 @@ document.addEventListener('DOMContentLoaded', () => {
         deckData.forEach(c => {
             let v = currentCardStatus.get(c.card_id);
             if (!v || typeof v !== 'object') {
-                currentCardStatus.set(c.card_id, { mastery: 1, lastTime: now, ef: 2.5, reps: 0, interval: 0, due: 0 });
-            } else if (v.ef === undefined) {
-                // v5 遷移：舊資料以既有 mastery 推估 SM-2 欄位，尊重已完成的學習（mastery 5 ≈ 38 天後到期）
-                const reps = Math.max((v.mastery ?? 1) - 1, 0);
-                const interval = reps <= 0 ? 0 : reps === 1 ? 1 : reps === 2 ? 6 : Math.round(6 * Math.pow(2.5, reps - 2));
-                v.ef = 2.5; v.reps = reps; v.interval = interval;
-                v.due = interval === 0 ? 0 : now + interval * DAY_MS;
-                v.lastTime = v.lastTime ?? now;
+                currentCardStatus.set(c.card_id, { mastery: 1, lastTime: now, ef: 2.5, reps: 0, interval: 0, due: 0, lapses: 0, suspended: false });
+            } else {
+                if (v.ef === undefined) {
+                    // v5 遷移：舊資料以既有 mastery 推估 SM-2 欄位，尊重已完成的學習（mastery 5 ≈ 38 天後到期）
+                    const reps = Math.max((v.mastery ?? 1) - 1, 0);
+                    const interval = reps <= 0 ? 0 : reps === 1 ? 1 : reps === 2 ? 6 : Math.round(6 * Math.pow(2.5, reps - 2));
+                    v.ef = 2.5; v.reps = reps; v.interval = interval;
+                    v.due = interval === 0 ? 0 : now + interval * DAY_MS;
+                    v.lastTime = v.lastTime ?? now;
+                }
+                // v5.1 遷移：補齊 lapses / suspended
+                if (v.lapses === undefined) v.lapses = 0;
+                if (v.suspended === undefined) v.suspended = false;
             }
         });
     }
@@ -276,9 +285,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateLearningDeck() {
         // v5.0.0：SM-2 到期制排程 —— 只挑到期（含逾期與新卡 due=0）的卡片；
         // 逾期複習優先（最逾期在前），新卡（due=0 sentinel）排在其後
+        // v5.1.0：排除暫停卡；套用每日新卡上限
         const now = Date.now();
         const filtered = currentDeckSettings.filterTags?.length > 0 ? currentFullDeck.filter(matchesDeckFilter) : currentFullDeck;
-        currentLearningDeck = filtered.filter(c => (currentCardStatus.get(c.card_id)?.due ?? 0) <= now);
+        currentLearningDeck = filtered.filter(c => {
+            const st = currentCardStatus.get(c.card_id);
+            return st && !st.suspended && (st.due ?? 0) <= now;
+        });
+        const limit = currentDeckSettings.newPerDay ?? 0;
+        if (limit > 0) {
+            const today = new Date().toDateString();
+            const dn = currentDeckSettings.dailyNew;
+            const introduced = dn && dn.date === today ? dn.count : 0;
+            currentLearningDeck = enforceNewCardLimit(currentLearningDeck, currentCardStatus, limit, introduced);
+        }
         const dueKey = c => {
             const d = currentCardStatus.get(c.card_id)?.due ?? 0;
             return d === 0 ? Infinity : d;
@@ -287,6 +307,53 @@ document.addEventListener('DOMContentLoaded', () => {
             const da = dueKey(a), db = dueKey(b);
             return da !== db ? da - db : Math.random() - 0.5;
         });
+    }
+
+    // v5.1.0：每日新卡上限（0 = 無上限）——只限制「未引入」的新卡（reps=0 且 due=0），
+    // 失敗過的卡（reps=0 但 due=now）屬複習、不受限；保留排序（複習在前、新卡其後）
+    function enforceNewCardLimit(cards, status, limit, introducedToday) {
+        if (!limit || limit <= 0) return cards;
+        const allow = Math.max(limit - introducedToday, 0);
+        let kept = 0;
+        return cards.filter(c => {
+            const st = status.get(c.card_id);
+            const isNew = st && (st.reps ?? 0) === 0 && (st.due ?? 0) === 0;
+            if (!isNew) return true;
+            if (kept >= allow) return false;
+            kept++;
+            return true;
+        });
+    }
+
+    // v5.1.0：失敗計數與難卡 (leech) 標記
+    function applyLapse(state, threshold = LEECH_THRESHOLD) {
+        state.lapses = (state.lapses ?? 0) + 1;
+        if (state.lapses >= threshold) state.leech = true;
+        return state;
+    }
+
+    // v5.1.0：每日新卡引入計數（存於 deck settings.dailyNew，跨日自動歸零）
+    function adjustDailyNew(delta) {
+        const today = new Date().toDateString();
+        let d = currentDeckSettings.dailyNew;
+        if (!d || d.date !== today) d = currentDeckSettings.dailyNew = { date: today, count: 0 };
+        d.count = Math.max(d.count + delta, 0);
+        const meta = deckList.find(m => m.id === currentDeckId);
+        if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
+    }
+
+    // v5.1.0：未來 30 天到期分布（以日曆天分桶：第 0 格=今天、1=明天…第 30 格=30 天以上；排除暫停卡）
+    function buildForecast(cards, status, now) {
+        const buckets = new Array(31).fill(0);
+        const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0);
+        cards.forEach(c => {
+            const st = status.get(c.card_id);
+            if (!st || st.suspended) return;
+            const d = st.due ?? 0;
+            if (d <= now) return;
+            buckets[Math.min(Math.floor((d - startOfToday) / DAY_MS), 30)]++;
+        });
+        return buckets;
     }
 
     // v5.0.0：牌組健康度（首頁用）—— 進度 % 與到期張數一次遍歷求得
@@ -340,33 +407,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNextCard(action) {
-        // v4.2.0 P3：記錄本次判定，供 undo 膠囊回復；v5：快照含 SM-2 欄位
+        // v4.2.0 P3：記錄本次判定，供 undo 膠囊回復；v5：快照含 SM-2 欄位；v5.1：lapses/suspended + 新卡計數
         const isJudgment = action === 'correct' || action === 'incorrect' || action === 'skip';
         const prevId = (historyIndex >= 0 && historyIndex < history.length) ? history[historyIndex] : null;
         const prevState = prevId != null ? currentCardStatus.get(prevId) : null;
-        const prevSnapshot = prevState ? { mastery: prevState.mastery, ef: prevState.ef, reps: prevState.reps, interval: prevState.interval, due: prevState.due } : null;
+        const prevSnapshot = prevState ? {
+            mastery: prevState.mastery, ef: prevState.ef, reps: prevState.reps,
+            interval: prevState.interval, due: prevState.due,
+            lapses: prevState.lapses, leech: prevState.leech, suspended: prevState.suspended
+        } : null;
 
         if (isJudgment) markFirstInteraction();
 
+        let wasIntro = false;
         if (isJudgment && action !== 'skip') {
             const id = history[historyIndex], state = currentCardStatus.get(id);
             if (state) {
                 // v5：即答（未翻面）q=5，翻面後才答對 q=4，忘記 q=2
                 const flipped = document.getElementById('active-combo-card')?.querySelector('.card-inner')?.classList.contains('rotate-y-180') ?? false;
                 const q = action === 'incorrect' ? 2 : (flipped ? 4 : 5);
+                wasIntro = (state.reps ?? 0) === 0 && (state.due ?? 0) === 0; // v5.1：首次引入新卡
                 Object.assign(state, sm2Update(state, q));
+                if (action === 'incorrect') applyLapse(state); // v5.1：失敗計數 + leech
                 state.mastery = action === 'incorrect' ? 1 : Math.min((state.mastery ?? 1) + 1, 5);
                 state.lastTime = Date.now();
                 currentCardStatus.set(id, state);
+                if (wasIntro) adjustDailyNew(1); // v5.1：每日新卡額度遞減
             }
-            // 依到期日重建學習集合，並把已排到未來的卡片移出佇列（同一輪不再重複出現）
+            // 依到期日重建學習集合，並把已排到未來/暫停的卡片移出佇列（同一輪不再重複出現）
             updateLearningDeck();
             const now = Date.now();
-            upcomingQueue = upcomingQueue.filter(qid => (currentCardStatus.get(qid)?.due ?? 0) <= now);
+            upcomingQueue = upcomingQueue.filter(qid => {
+                const st = currentCardStatus.get(qid);
+                return st && !st.suspended && (st.due ?? 0) <= now;
+            });
         }
 
         if (isJudgment && prevId != null) {
-            lastAction = { cardId: prevId, prev: action === 'skip' ? null : prevSnapshot, nextId: null };
+            lastAction = { cardId: prevId, prev: action === 'skip' ? null : prevSnapshot, nextId: null, wasIntro };
             showUndoPill();
         } else {
             lastAction = null;
@@ -405,10 +483,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function undoLastAction() {
         if (!lastAction) { hideUndoPill(); return; }
-        const { cardId, prev, nextId } = lastAction;
+        const { cardId, prev, nextId, wasIntro } = lastAction;
         if (prev) {
             const st = currentCardStatus.get(cardId);
             if (st) Object.assign(st, prev);
+            if (wasIntro) adjustDailyNew(-1); // v5.1：退還今日新卡額度
             updateLearningDeck();
         }
         if (nextId) {
@@ -586,6 +665,8 @@ document.addEventListener('DOMContentLoaded', () => {
         editDeckBtn.onclick = (e) => { e.stopPropagation(); openEditDeckModal(); };
         fontSizeIncrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(0.2); };
         fontSizeDecrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(-0.2); };
+        newLimitIncrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(5); };
+        newLimitDecrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(-5); };
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 融合 Modal 按鈕 ---
@@ -597,12 +678,25 @@ document.addEventListener('DOMContentLoaded', () => {
         closeStatsModalBtn.onclick = () => statsModal.classList.add('hidden');
         if (emptyStateCta) emptyStateCta.onclick = () => openQuickStartModal();
 
-        // --- 顯示全部：跳至卡片（事件委派，表格重建後仍有效） ---
+        // --- 顯示全部：跳至卡片 / 暫停切換（事件委派，表格重建後仍有效） ---
         allCardsTable.onclick = (e) => {
-            const btn = e.target.closest('.jump-to-card-btn');
-            if (!btn) return;
-            allCardsModal.classList.add('hidden');
-            jumpToCard(btn.dataset.id);
+            const jump = e.target.closest('.jump-to-card-btn');
+            if (jump) {
+                allCardsModal.classList.add('hidden');
+                jumpToCard(jump.dataset.id);
+                return;
+            }
+            const sus = e.target.closest('.suspend-btn');
+            if (sus) {
+                const st = currentCardStatus.get(sus.dataset.id);
+                if (st) {
+                    st.suspended = !st.suspended;
+                    st.lastTime = Date.now();
+                    upcomingQueue = upcomingQueue.filter(qid => qid !== sus.dataset.id); // 移出待答佇列
+                    saveDeckState(currentDeckId, currentCardStatus);
+                    renderAllCardsTable();
+                }
+            }
         };
 
         // --- 其他全域事件 ---
@@ -904,6 +998,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function applyCurrentDeckSettings() {
         fontSizeValue.textContent = currentDeckSettings.fontSize.toFixed(1);
+        newLimitValue.textContent = (currentDeckSettings.newPerDay ?? 0) > 0 ? currentDeckSettings.newPerDay : '無上限';
         populateCardTagFilters();
     }
 
@@ -938,6 +1033,15 @@ document.addEventListener('DOMContentLoaded', () => {
         displayCardStack();
     }
 
+    // v5.1.0：每日新卡上限調整（0 = 無上限，步進 5，上限 100），立即套用到學習佇列
+    function changeNewPerDay(step) {
+        currentDeckSettings.newPerDay = Math.min(Math.max((currentDeckSettings.newPerDay ?? 0) + step, 0), 100);
+        const meta = deckList.find(d => d.id === currentDeckId);
+        if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
+        newLimitValue.textContent = currentDeckSettings.newPerDay > 0 ? currentDeckSettings.newPerDay : '無上限';
+        updateLearningDeck();
+    }
+
     function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); cardSearchInput.focus(); }
 
     // v4.5.0 P7：從「顯示全部」跳至特定卡片（含已熟練卡，直接排到佇列最前）
@@ -962,11 +1066,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const prog = calculateProgress(currentDeckId, currentFullDeck);
         const maxCount = Math.max(...buckets.map(b => b.count), 1);
         const now = Date.now();
-        const dueNow = currentFullDeck.filter(c => (currentCardStatus.get(c.card_id)?.due ?? 0) <= now).length;
-        const due7 = currentFullDeck.filter(c => {
-            const d = currentCardStatus.get(c.card_id)?.due ?? 0;
-            return d > now && d <= now + 7 * DAY_MS;
+        const dueNow = currentFullDeck.filter(c => {
+            const st = currentCardStatus.get(c.card_id);
+            return st && !st.suspended && (st.due ?? 0) <= now;
         }).length;
+        const due7 = currentFullDeck.filter(c => {
+            const st = currentCardStatus.get(c.card_id);
+            return st && !st.suspended && (st.due ?? 0) > now && (st.due ?? 0) <= now + 7 * DAY_MS;
+        }).length;
+        const leechCount = currentFullDeck.filter(c => currentCardStatus.get(c.card_id)?.leech).length;
+        const suspendedCount = currentFullDeck.filter(c => currentCardStatus.get(c.card_id)?.suspended).length;
+        const forecast = buildForecast(currentFullDeck, currentCardStatus, now);
+        const fcMax = Math.max(...forecast, 1);
         const bar = (count, label, color) => `
             <div>
                 <div class="flex justify-between items-center mb-1.5">
@@ -999,6 +1110,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${bar(buckets[3].count, '第 4 級', 'bg-neutral-700 dark:bg-neutral-300')}
                 ${bar(buckets[4].count, '第 5 級（已熟練）', 'bg-neutral-900 dark:bg-white')}
             </div>
+            <div class="pt-2">
+                <div class="text-xs font-bold text-neutral-500 dark:text-neutral-400 mb-2">未來 30 天到期分布</div>
+                <div class="flex items-end gap-[2px] h-14">
+                    ${forecast.map((n, i) => `<div class="flex-1 ${n > 0 ? 'bg-neutral-400 dark:bg-neutral-500' : 'bg-neutral-200 dark:bg-neutral-800'} rounded-t-[2px]" style="height: ${n > 0 ? Math.max(n / fcMax * 100, 8) : 4}%" title="${i === 0 ? '今天' : i === 30 ? '30 天以上' : `第 ${i} 天`}：${n} 張"></div>`).join('')}
+                </div>
+                <div class="flex justify-between text-[9px] text-neutral-400 font-bold mt-1"><span>今天</span><span>30 天後</span></div>
+            </div>
+            ${leechCount || suspendedCount ? `<p class="text-[10px] text-neutral-500 dark:text-neutral-400 font-bold text-center">難卡（多次忘記）${leechCount} 張 · 已暫停 ${suspendedCount} 張</p>` : ''}
             <p class="text-[10px] text-neutral-400 font-bold text-center pt-1">答對依記憶曲線排程複習（SM-2）；答錯立即重新到期</p>
         `;
     }
@@ -1010,11 +1129,16 @@ document.addEventListener('DOMContentLoaded', () => {
         html += '<th class="p-4">標籤</th></tr></thead><tbody>';
         
         currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || (c.tags && c.tags.some(t => t.toLowerCase().includes(q)))).forEach(c => {
-            const m = currentCardStatus.get(c.card_id)?.mastery ?? 1;
-            html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+            const st = currentCardStatus.get(c.card_id);
+            const m = st?.mastery ?? 1;
+            const isSuspended = !!st?.suspended;
+            const isLeech = !!st?.leech;
+            html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors ${isSuspended ? 'opacity-40' : ''}">
                 <td class="p-4">
                     <div class="flex items-center gap-2 mb-1">
                         <button class="jump-to-card-btn p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="跳至此卡片" title="跳至此卡片"><span class="material-symbols-outlined !text-sm">my_location</span></button>
+                        <button class="suspend-btn p-1 ${isSuspended ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'} hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${isSuspended ? '取消暫停' : '暫停'}此卡片" title="${isSuspended ? '取消暫停' : '暫停'}"><span class="material-symbols-outlined !text-sm">${isSuspended ? 'play_arrow' : 'pause'}</span></button>
+                        ${isLeech ? '<span class="material-symbols-outlined !text-sm text-red-400" title="難卡（多次忘記）" aria-label="難卡">bug</span>' : ''}
                         <div class="text-[9px] font-mono text-neutral-400">${c.card_id}</div>
                     </div>
                     <div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-neutral-900 dark:bg-white':'bg-neutral-200 dark:bg-neutral-700'}"></div>`).join('')}</div>
@@ -1317,14 +1441,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayEndOfDeck() {
-        // v5：顯示下次到期資訊
+        // v5：顯示下次到期資訊；v5.1：新卡額度用完時改提示明日繼續
         const now = Date.now();
         const futureDues = currentFullDeck.filter(matchesDeckFilter)
             .map(c => currentCardStatus.get(c.card_id)?.due ?? 0)
             .filter(d => d > now);
-        const nextLine = futureDues.length
-            ? `下次到期：${fmtDue(Math.min(...futureDues))}（${futureDues.length} 張已排程）`
-            : '目前沒有已排程的卡片';
+        const remainingNew = currentFullDeck.filter(c => {
+            if (!matchesDeckFilter(c)) return false;
+            const st = currentCardStatus.get(c.card_id);
+            return st && !st.suspended && (st.reps ?? 0) === 0 && (st.due ?? 0) === 0;
+        }).length;
+        const note = remainingNew > 0
+            ? `今日新卡額度已用完，還有 ${remainingNew} 張明日繼續`
+            : (futureDues.length
+                ? `下次到期：${fmtDue(Math.min(...futureDues))}（${futureDues.length} 張已排程）`
+                : '目前沒有已排程的卡片');
         cardStackContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
                 <div class="w-24 h-24 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full flex items-center justify-center shadow-2xl">
@@ -1333,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div>
                     <h3 class="text-3xl font-black mb-2 text-neutral-900 dark:text-white">太棒了！</h3>
                     <p class="text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest text-xs">本輪到期卡片全數完成</p>
-                    <p class="text-neutral-400 dark:text-neutral-500 font-bold text-[10px] uppercase tracking-widest mt-2">${nextLine}</p>
+                    <p class="text-neutral-400 dark:text-neutral-500 font-bold text-[10px] uppercase tracking-widest mt-2">${note}</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
                     <button id="restart-round-btn" class="px-8 py-3.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all">再讀一輪</button>
@@ -1371,7 +1502,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!ok) return;
             targets.forEach(c => {
                 const st = currentCardStatus.get(c.card_id);
-                if (st) Object.assign(st, { mastery: 1, lastTime: Date.now(), ef: 2.5, reps: 0, interval: 0, due: 0 });
+                if (st) Object.assign(st, { mastery: 1, lastTime: Date.now(), ef: 2.5, reps: 0, interval: 0, due: 0, lapses: 0, leech: false });
             });
             saveDeckState(currentDeckId, currentCardStatus);
             startGame(currentDeckId);
