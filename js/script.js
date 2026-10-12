@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.1.0 (SM-2 + 每日新卡上限 / leech / 暫停) =====
+// ===== FlipDeck v5.1.1 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const menuOverlay = document.getElementById('menu-overlay');
     const homeMenuPanel = document.getElementById('home-menu-panel');
-    const homeMenuHomeBtn = document.getElementById('home-menu-home-btn');
     const homeMenuAddBtn = document.getElementById('home-menu-add-btn');
     const createNewDeckBtn = document.getElementById('create-new-deck-btn');
     const homeMenuFullscreenBtn = document.getElementById('home-menu-fullscreen-btn');
@@ -53,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const showAllBtn = document.getElementById('show-all-btn');
     const showStatsBtn = document.getElementById('show-stats-btn');
     const visualEditDeckBtn = document.getElementById('visual-edit-deck-btn');
-    const editDeckBtn = document.getElementById('edit-deck-btn');
+    const deckShowHowToUseBtn = document.getElementById('deck-show-how-to-use-btn');
     const cardTagFilterContainer = document.getElementById('card-tag-filter-container');
     const fontSizeDecrease = document.getElementById('font-size-decrease');
     const fontSizeIncrease = document.getElementById('font-size-increase');
@@ -644,7 +643,6 @@ document.addEventListener('DOMContentLoaded', () => {
         menuOverlay.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 首頁選單內按鈕 ---
-        homeMenuHomeBtn.onclick = (e) => { e.stopPropagation(); backToHomeScreen(); hideAllMenus(); };
         homeMenuAddBtn.onclick = (e) => { e.stopPropagation(); openQuickStartModal(); };
         homeMenuFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
         homeMenuThemeBtn.onclick = (e) => { e.stopPropagation(); toggleTheme(); };
@@ -662,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showAllBtn.onclick = (e) => { e.stopPropagation(); showAllCardsView(); };
         showStatsBtn.onclick = (e) => { e.stopPropagation(); showStatsView(); };
         visualEditDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(currentDeckId); hideAllMenus(); };
-        editDeckBtn.onclick = (e) => { e.stopPropagation(); openEditDeckModal(); };
+        deckShowHowToUseBtn.onclick = (e) => { e.stopPropagation(); openHowToUseModal(); };
         fontSizeIncrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(0.2); };
         fontSizeDecrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(-0.2); };
         newLimitIncrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(5); };

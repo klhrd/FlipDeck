@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.1.0</title>
+    <title>FlipDeck v5.1.1</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -114,13 +114,12 @@
             <button id="home-menu-close-btn" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
-            <button id="home-menu-home-btn" aria-label="回到首頁" class="p-3 text-neutral-900 dark:text-white"><span class="material-symbols-outlined">home</span></button>
-            <button id="home-menu-add-btn" aria-label="新增單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
+            <button id="home-menu-add-btn" aria-label="匯入 / 範例" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
             <button id="home-menu-fullscreen-btn" aria-label="切換全螢幕" class="p-3 text-neutral-400"><span class="material-symbols-outlined">fullscreen</span></button>
             <button id="home-menu-theme-btn" aria-label="切換深淺色模式" class="p-3 text-neutral-400"><span class="material-symbols-outlined">dark_mode</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto">
-            <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span>建立新單字集</button></li>
+            <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span>從空白建立</button></li>
             <li><button id="backup-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">backup</span>全域備份 (.json)</button></li>
             <li><button id="show-how-to-use-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">help</span>操作教學</button></li>
         </ul>
@@ -134,7 +133,7 @@
         </div>
         <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
             <button id="deck-menu-home-btn" aria-label="回到首頁" class="p-3 text-neutral-400"><span class="material-symbols-outlined">home</span></button>
-            <button id="deck-menu-add-btn" aria-label="新增單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
+            <button id="deck-menu-add-btn" aria-label="匯入 / 範例" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
             <button id="deck-menu-download-btn" aria-label="下載此單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">download</span></button>
             <button id="deck-menu-fullscreen-btn" aria-label="切換全螢幕" class="p-3 text-neutral-400"><span class="material-symbols-outlined">fullscreen</span></button>
             <button id="deck-menu-theme-btn" aria-label="切換深淺色模式" class="p-3 text-neutral-400"><span class="material-symbols-outlined">dark_mode</span></button>
@@ -143,7 +142,7 @@
             <li><button id="show-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3 text-neutral-900 dark:text-white font-bold">list_alt</span>顯示全卡片 (搜尋)</button></li>
             <li><button id="show-stats-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">insights</span>學習統計</button></li>
             <li><button id="visual-edit-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit</span>圖形化編輯器</button></li>
-            <li><button id="edit-deck-btn" class="menu-item-btn opacity-50 text-[10px]"><span class="material-symbols-outlined !text-sm mr-3">code</span>JSON 原始碼</button></li>
+            <li><button id="deck-show-how-to-use-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">help</span>操作教學</button></li>
             <li class="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                 <span class="text-[10px] uppercase tracking-widest font-black text-neutral-500 block mb-3 pl-4">標籤篩選</span>
                 <div id="card-tag-filter-container" class="space-y-1 pl-4 max-h-40 overflow-y-auto"></div>
