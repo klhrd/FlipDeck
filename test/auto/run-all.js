@@ -10,7 +10,8 @@ const suites = [
     'backup.test.js',   // 備份匯入還原（合併語意）
     'tags.test.js',     // 批次標籤運算 / 跳轉卡片
     'sm2.test.js',      // SM-2 間隔重複演算法 / 遷移 / 到期制排程
-    'limits.test.js'    // 每日新卡上限 / leech / 30 天到期預測
+    'limits.test.js',   // 每日新卡上限 / leech / 30 天到期預測
+    'i18n.test.js'      // zh/en 鍵對稱 / 佔位符一致 / t() 行為
 ];
 
 let failed = 0;

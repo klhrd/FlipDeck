@@ -1,7 +1,7 @@
-// Service Worker for FlipDeck PWA (v5.1.1)
+// Service Worker for FlipDeck PWA (v5.2.0)
 
 // v4.1.4: 快取版本隨每次發版 bump，否則 cache-first 會讓修復永遠到不了使用者
-const CACHE_NAME = 'flipdeck-cache-v5.1.1';
+const CACHE_NAME = 'flipdeck-cache-v5.2.0';
 // 核心資源 + 外部 JSON 範例檔
 const urlsToCache = [
     './',
@@ -10,6 +10,7 @@ const urlsToCache = [
     './assets/icons/icon-192.png',
     './assets/icons/icon-512.png',
     './css/style.css',
+    './js/i18n.js',
     './js/script.js',
     // 範例檔案 (JSON) — 含最大宗 hs_6000，離線時也要能載入
     './data/hs_6000.json',

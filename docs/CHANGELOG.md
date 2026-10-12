@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.2.0] - 2026-04-11
+### Added（新主題：多語系 i18n）
+- **雙語支援 (zh / en)**：新增 `js/i18n.js` 字典引擎（約 130 組鍵、`{n}` 佔位符參數化、缺鍵 fallback zh → key）；靜態 HTML 以 `data-i18n` / `data-i18n-aria` / `data-i18n-placeholder` / `data-i18n-title` 屬性掃描套用；動態字串全面改走 `t()`。首頁與學習選單新增 translate 切換鈕，偏好持久化（`flipdeck_lang`）、`<html lang>` 同步更新。使用者內容（牌組、卡片、標籤、範例名）不翻譯。
+- **i18n 一致性測試**：新增 `test/auto/i18n.test.js`——zh/en 鍵集合完全對稱、佔位符組合逐鍵一致，翻譯漏鍵直接紅。
+- SW 快取清單補上 `js/i18n.js`（離線必備）。
+
+### Changed
+- **版本號升級**：v5.1.1 -> v5.2.0；SW `CACHE_NAME` 同步 bump。
+
 ## [5.1.1] - 2026-04-11
 ### Changed（選單重疊清理）
 - **JSON 原始碼入口整併**：移除學習選單的直達項（原為三重入口），「顯示全卡片」成為編輯器融合中樞（內含 JSON 與圖形化編輯）；首頁牌組設定的 JSON 入口保留。

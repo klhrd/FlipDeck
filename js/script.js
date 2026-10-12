@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.1.1 =====
+// ===== FlipDeck v5.2.0 (i18n) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const homeMenuBtn = document.getElementById('home-menu-btn');
     const homeMenuThemeBtn = document.getElementById('home-menu-theme-btn');
+    const homeMenuLangBtn = document.getElementById('home-menu-lang-btn');
     const statsTotalDecks = document.getElementById('stats-total-decks');
     const statsTotalCards = document.getElementById('stats-total-cards');
     const sortBySelect = document.getElementById('sort-by');
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const deckMenuDownloadBtn = document.getElementById('deck-menu-download-btn');
     const deckMenuFullscreenBtn = document.getElementById('deck-menu-fullscreen-btn');
     const deckMenuThemeBtn = document.getElementById('deck-menu-theme-btn');
+    const deckMenuLangBtn = document.getElementById('deck-menu-lang-btn');
     const deckMenuCloseBtn = document.getElementById('deck-menu-close-btn');
     const showAllBtn = document.getElementById('show-all-btn');
     const showStatsBtn = document.getElementById('show-stats-btn');
@@ -153,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try { uxFlags = JSON.parse(localStorage.getItem(STORAGE_KEYS.UX_FLAGS)) || {}; } catch (e) { uxFlags = {}; }
 
         applyThemeIcons();
+        applyI18n();
         populateExampleSelector();
         renderHomeScreen();
         bindEventListeners();
@@ -161,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveUXFlags() { localStorage.setItem(STORAGE_KEYS.UX_FLAGS, JSON.stringify(uxFlags)); }
 
     // v4.2.0 P4：通用 in-app 對話框，回傳 Promise (appAlert = 僅確定鈕版本)
-    function appConfirm({ title = '確認動作', message = '', okText = '確定', cancelText = '取消', showCancel = true, danger = false } = {}) {
+    function appConfirm({ title = t('dlg.confirm'), message = '', okText = t('dlg.ok'), cancelText = t('common.cancel'), showCancel = true, danger = false } = {}) {
         return new Promise(resolve => {
             confirmModalTitle.textContent = title;
             confirmModalMessage.textContent = message;
@@ -184,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             (danger ? confirmModalCancelBtn : confirmModalOkBtn).focus();
         });
     }
-    function appAlert(message, title = '提示') { return appConfirm({ title, message, showCancel: false, okText: '知道了' }); }
+    function appAlert(message, title = t('dlg.notice')) { return appConfirm({ title, message, showCancel: false, okText: t('dlg.got_it') }); }
 
     // v4.2.0 P2：首次互動後收起提示列並記住
     function markFirstInteraction() {
@@ -192,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // v4.3.0 P5：大牌組匯入/載入期間的 loading 狀態
-    function showLoading(msg = '載入中…') { loadingMsg.textContent = msg; loadingOverlay.classList.remove('hidden'); }
+    function showLoading(msg = t('load.default')) { loadingMsg.textContent = msg; loadingOverlay.classList.remove('hidden'); }
     function hideLoading() { loadingOverlay.classList.add('hidden'); }
     const nextPaint = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 20)));
 
@@ -540,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-inner">
                         <div class="absolute inset-0 backface-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
                             <div class="card-content text-center text-neutral-900 dark:text-neutral-100 font-bold break-words w-full max-h-full overflow-y-auto" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
-                            <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-neutral-400 font-bold pointer-events-none select-none">點擊翻面</span>
+                            <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-neutral-400 font-bold pointer-events-none select-none">${t('learn.tap_flip')}</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
                             <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${data.fields[1] || ''}</div>
@@ -646,6 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
         homeMenuAddBtn.onclick = (e) => { e.stopPropagation(); openQuickStartModal(); };
         homeMenuFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
         homeMenuThemeBtn.onclick = (e) => { e.stopPropagation(); toggleTheme(); };
+        homeMenuLangBtn.onclick = (e) => { e.stopPropagation(); toggleLang(); };
         createNewDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(); hideAllMenus(); };
         backupAllBtn.onclick = (e) => { e.stopPropagation(); backupAllData(); };
         showHowToUseBtn.onclick = (e) => { e.stopPropagation(); openHowToUseModal(); };
@@ -657,6 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
         deckMenuDownloadBtn.onclick = (e) => { e.stopPropagation(); downloadData('json'); hideAllMenus(); };
         deckMenuFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
         deckMenuThemeBtn.onclick = (e) => { e.stopPropagation(); toggleTheme(); };
+        deckMenuLangBtn.onclick = (e) => { e.stopPropagation(); toggleLang(); };
         showAllBtn.onclick = (e) => { e.stopPropagation(); showAllCardsView(); };
         showStatsBtn.onclick = (e) => { e.stopPropagation(); showStatsView(); };
         visualEditDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(currentDeckId); hideAllMenus(); };
@@ -815,15 +820,22 @@ document.addEventListener('DOMContentLoaded', () => {
         [homeMenuThemeBtn, deckMenuThemeBtn].forEach(b => {
             if (!b) return;
             b.querySelector('span').textContent = isDark ? 'light_mode' : 'dark_mode';
-            b.setAttribute('aria-label', isDark ? '切換至淺色模式' : '切換至深色模式');
+            b.setAttribute('aria-label', isDark ? t('aria.theme_light') : t('aria.theme_dark'));
         });
+    }
+
+    // v5.2.0：語言切換（zh ↔ en），靜態 HTML 由 applyI18n 套用、動態內容重渲染
+    function toggleLang() {
+        setLang(I18N_LANG === 'zh' ? 'en' : 'zh');
+        if (!mainScreen.classList.contains('hidden')) updateUI();
+        else renderHomeScreen();
     }
 
     function handleFileUpload(e) {
         const f = e.target.files[0]; if (!f) return;
         const r = new FileReader();
         r.onload = async (ev) => {
-            showLoading('解析檔案中…');
+            showLoading(t('load.parsing'));
             try {
                 await nextPaint();
                 let parsed;
@@ -836,26 +848,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 // v4.4.0 P7：備份檔偵測 → 走還原流程
                 if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.decks) && Array.isArray(parsed.deckList)) {
                     const ids = parsed.decks.filter(d => d && typeof d.id === 'string').map(d => d.id);
-                    if (ids.length === 0) { await appAlert('備份檔中沒有可用的單字集。', '無法還原'); return; }
+                    if (ids.length === 0) { await appAlert(t('dlg.restore_none'), t('dlg.restore_none_t')); return; }
                     const overlap = ids.filter(id => deckList.some(x => x.id === id)).length;
                     const ok = await appConfirm({
-                        title: '還原備份？',
-                        message: `備份內含 ${ids.length} 個單字集，其中 ${overlap} 個將覆蓋現有資料與學習進度，其餘單字集不受影響。`,
-                        okText: '還原',
+                        title: t('dlg.restore_title'),
+                        message: t('dlg.restore_msg', { n: ids.length, m: overlap }),
+                        okText: t('dlg.restore_ok'),
                         danger: overlap > 0
                     });
                     if (!ok) return;
                     const { restored, added } = restoreBackup(parsed);
                     quickStartModal.classList.add('hidden');
                     backToHomeScreen();
-                    await appAlert(`還原完成：覆蓋 ${restored} 個、新增 ${added} 個單字集。`, '備份還原');
+                    await appAlert(t('dlg.restore_done', { r: restored, a: added }), t('dlg.restore_done_t'));
                     return;
                 }
 
                 if (!Array.isArray(parsed)) throw new Error('not a deck');
                 processNewDeck(parsed, `d_${Date.now()}`, f.name.split('.')[0]);
                 quickStartModal.classList.add('hidden');
-            } catch (err) { appAlert('檔案格式錯誤：JSON 無法解析；.txt/.csv 每行以「;」分隔欄位。', '無法匯入'); }
+            } catch (err) { appAlert(t('dlg.file_error'), t('dlg.file_error_t')); }
             finally { hideLoading(); }
         };
         r.readAsText(f);
@@ -903,9 +915,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const existing = deckList.find(d => d.id === id);
         if (existing && calculateProgress(id) > 0) {
             appConfirm({
-                title: '重新載入範例？',
-                message: `「${existing.title}」目前已有 ${calculateProgress(id)}% 學習進度，重新載入會將所有卡片的熟練度重置。`,
-                okText: '重置並載入',
+                title: t('dlg.reload_title'),
+                message: t('dlg.reload_msg', { t: existing.title, p: calculateProgress(id) }),
+                okText: t('dlg.reload_ok'),
                 danger: true
             }).then(ok => { if (ok) doLoadExample(f); });
             return;
@@ -914,7 +926,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function doLoadExample(f) {
-        showLoading('載入範例中…');
+        showLoading(t('load.example'));
         try {
             const r = await fetch(`data/${f}`);
             const data = await r.json();
@@ -922,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
             processNewDeck(data, `ex_${f.split('.')[0]}`, exampleSelector.selectedOptions[0].text);
             quickStartModal.classList.add('hidden');
         } catch (e) {
-            appAlert('載入範例失敗，請確認網路連線後再試。', '載入失敗');
+            appAlert(t('dlg.example_fail'), t('dlg.example_fail_t'));
         } finally {
             hideLoading();
         }
@@ -957,12 +969,12 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-4">
                     <h3 class="text-lg font-black text-neutral-900 dark:text-neutral-100 truncate pr-8">${d.title}</h3>
-                    <button class="options-btn p-1 text-neutral-400 hover:text-neutral-900 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors" aria-label="單字集選項">
+                    <button class="options-btn p-1 text-neutral-400 hover:text-neutral-900 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors" aria-label="${t('aria.deck_options')}">
                         <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </div>
                 <div class="flex items-center text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">
-                    <span>${d.totalCards} 張卡片 • ${prog}% 已熟練${st.due > 0 ? ` • <span class="text-neutral-900 dark:text-white">${st.due} 張到期</span>` : ''}</span>
+                    <span>${t('home.cards', { n: d.totalCards })} • ${t('home.mastered', { n: prog })}${st.due > 0 ? ` • <span class="text-neutral-900 dark:text-white">${t('home.due', { n: st.due })}</span>` : ''}</span>
                 </div>
                 <div class="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                     <div class="h-full bg-neutral-900 dark:bg-white transition-all duration-1000" style="width: ${prog}%"></div>
@@ -996,7 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function applyCurrentDeckSettings() {
         fontSizeValue.textContent = currentDeckSettings.fontSize.toFixed(1);
-        newLimitValue.textContent = (currentDeckSettings.newPerDay ?? 0) > 0 ? currentDeckSettings.newPerDay : '無上限';
+        newLimitValue.textContent = (currentDeckSettings.newPerDay ?? 0) > 0 ? currentDeckSettings.newPerDay : t('menu.unlimited');
         populateCardTagFilters();
     }
 
@@ -1004,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cardTagFilterContainer.innerHTML = '';
         const tags = [...new Set(currentFullDeck.flatMap(c => c.tags || []))].sort();
         if (tags.length === 0) {
-            cardTagFilterContainer.innerHTML = '<p class="text-xs text-neutral-400 pl-4 italic">無可用標籤</p>';
+            cardTagFilterContainer.innerHTML = `<p class="text-xs text-neutral-400 pl-4 italic">${t('menu.no_tags')}</p>`;
             return;
         }
         tags.forEach(t => {
@@ -1036,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDeckSettings.newPerDay = Math.min(Math.max((currentDeckSettings.newPerDay ?? 0) + step, 0), 100);
         const meta = deckList.find(d => d.id === currentDeckId);
         if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
-        newLimitValue.textContent = currentDeckSettings.newPerDay > 0 ? currentDeckSettings.newPerDay : '無上限';
+        newLimitValue.textContent = currentDeckSettings.newPerDay > 0 ? currentDeckSettings.newPerDay : t('menu.unlimited');
         updateLearningDeck();
     }
 
@@ -1080,7 +1092,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div>
                 <div class="flex justify-between items-center mb-1.5">
                     <span class="text-xs font-bold text-neutral-500 dark:text-neutral-400">${label}</span>
-                    <span class="text-xs font-black text-neutral-400">${count} 張</span>
+                    <span class="text-xs font-black text-neutral-400">${t('st.n_cards', { n: count })}</span>
                 </div>
                 <div class="w-full h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                     <div class="h-full rounded-full ${color} transition-all duration-1000" style="width: ${(count / maxCount) * 100}%"></div>
@@ -1089,42 +1101,42 @@ document.addEventListener('DOMContentLoaded', () => {
         statsBody.innerHTML = `
             <div class="flex items-baseline justify-between">
                 <span class="text-4xl font-black text-neutral-900 dark:text-white">${prog}%</span>
-                <span class="text-xs font-bold text-neutral-400">已熟練 ${mastered} / ${total} 張</span>
+                <span class="text-xs font-bold text-neutral-400">${t('st.mastered', { m: mastered, t: total })}</span>
             </div>
             <div class="flex gap-2">
                 <div class="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl text-center">
                     <div class="text-lg font-black text-neutral-900 dark:text-white">${dueNow}</div>
-                    <div class="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">今日到期</div>
+                    <div class="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">${t('st.due_today')}</div>
                 </div>
                 <div class="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl text-center">
                     <div class="text-lg font-black text-neutral-900 dark:text-white">${due7}</div>
-                    <div class="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">7 天內到期</div>
+                    <div class="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">${t('st.due_7')}</div>
                 </div>
             </div>
             <div class="pt-2 space-y-3">
-                ${bar(buckets[0].count, '第 1 級（新卡）', 'bg-neutral-300 dark:bg-neutral-600')}
-                ${bar(buckets[1].count, '第 2 級', 'bg-neutral-400 dark:bg-neutral-500')}
-                ${bar(buckets[2].count, '第 3 級', 'bg-neutral-500 dark:bg-neutral-400')}
-                ${bar(buckets[3].count, '第 4 級', 'bg-neutral-700 dark:bg-neutral-300')}
-                ${bar(buckets[4].count, '第 5 級（已熟練）', 'bg-neutral-900 dark:bg-white')}
+                ${bar(buckets[0].count, t('st.lv1'), 'bg-neutral-300 dark:bg-neutral-600')}
+                ${bar(buckets[1].count, t('st.lv2'), 'bg-neutral-400 dark:bg-neutral-500')}
+                ${bar(buckets[2].count, t('st.lv3'), 'bg-neutral-500 dark:bg-neutral-400')}
+                ${bar(buckets[3].count, t('st.lv4'), 'bg-neutral-700 dark:bg-neutral-300')}
+                ${bar(buckets[4].count, t('st.lv5'), 'bg-neutral-900 dark:bg-white')}
             </div>
             <div class="pt-2">
-                <div class="text-xs font-bold text-neutral-500 dark:text-neutral-400 mb-2">未來 30 天到期分布</div>
+                <div class="text-xs font-bold text-neutral-500 dark:text-neutral-400 mb-2">${t('st.forecast')}</div>
                 <div class="flex items-end gap-[2px] h-14">
-                    ${forecast.map((n, i) => `<div class="flex-1 ${n > 0 ? 'bg-neutral-400 dark:bg-neutral-500' : 'bg-neutral-200 dark:bg-neutral-800'} rounded-t-[2px]" style="height: ${n > 0 ? Math.max(n / fcMax * 100, 8) : 4}%" title="${i === 0 ? '今天' : i === 30 ? '30 天以上' : `第 ${i} 天`}：${n} 張"></div>`).join('')}
+                    ${forecast.map((n, i) => `<div class="flex-1 ${n > 0 ? 'bg-neutral-400 dark:bg-neutral-500' : 'bg-neutral-200 dark:bg-neutral-800'} rounded-t-[2px]" style="height: ${n > 0 ? Math.max(n / fcMax * 100, 8) : 4}%" title="${i === 0 ? t('st.today') : i === 30 ? t('st.over30') : t('st.day_n', { n: i })}：${n}"></div>`).join('')}
                 </div>
-                <div class="flex justify-between text-[9px] text-neutral-400 font-bold mt-1"><span>今天</span><span>30 天後</span></div>
+                <div class="flex justify-between text-[9px] text-neutral-400 font-bold mt-1"><span>${t('st.today')}</span><span>${t('st.after30')}</span></div>
             </div>
-            ${leechCount || suspendedCount ? `<p class="text-[10px] text-neutral-500 dark:text-neutral-400 font-bold text-center">難卡（多次忘記）${leechCount} 張 · 已暫停 ${suspendedCount} 張</p>` : ''}
-            <p class="text-[10px] text-neutral-400 font-bold text-center pt-1">答對依記憶曲線排程複習（SM-2）；答錯立即重新到期</p>
+            ${leechCount || suspendedCount ? `<p class="text-[10px] text-neutral-500 dark:text-neutral-400 font-bold text-center">${t('st.leech_suspended', { l: leechCount, s: suspendedCount })}</p>` : ''}
+            <p class="text-[10px] text-neutral-400 font-bold text-center pt-1">${t('st.rule')}</p>
         `;
     }
     function renderAllCardsTable() {
         const q = cardSearchInput.value.toLowerCase().trim();
-        let html = '<thead><tr class="text-neutral-400 text-[10px] uppercase tracking-widest"><th class="p-4">ID / 熟練度</th>';
+        let html = `<thead><tr class="text-neutral-400 text-[10px] uppercase tracking-widest"><th class="p-4">${t('ac.col_mastery')}</th>`;
         const fields = currentFullDeck[0]?.fields.length || 0;
-        for (let i = 1; i <= fields; i++) html += `<th class="p-4">欄位 ${i}</th>`;
-        html += '<th class="p-4">標籤</th></tr></thead><tbody>';
+        for (let i = 1; i <= fields; i++) html += `<th class="p-4">${t('ac.col_field')} ${i}</th>`;
+        html += `<th class="p-4">${t('ac.col_tags')}</th></tr></thead><tbody>`;
         
         currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || (c.tags && c.tags.some(t => t.toLowerCase().includes(q)))).forEach(c => {
             const st = currentCardStatus.get(c.card_id);
@@ -1134,9 +1146,9 @@ document.addEventListener('DOMContentLoaded', () => {
             html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors ${isSuspended ? 'opacity-40' : ''}">
                 <td class="p-4">
                     <div class="flex items-center gap-2 mb-1">
-                        <button class="jump-to-card-btn p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="跳至此卡片" title="跳至此卡片"><span class="material-symbols-outlined !text-sm">my_location</span></button>
-                        <button class="suspend-btn p-1 ${isSuspended ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'} hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${isSuspended ? '取消暫停' : '暫停'}此卡片" title="${isSuspended ? '取消暫停' : '暫停'}"><span class="material-symbols-outlined !text-sm">${isSuspended ? 'play_arrow' : 'pause'}</span></button>
-                        ${isLeech ? '<span class="material-symbols-outlined !text-sm text-red-400" title="難卡（多次忘記）" aria-label="難卡">bug</span>' : ''}
+                        <button class="jump-to-card-btn p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${t('aria.jump')}" title="${t('aria.jump')}"><span class="material-symbols-outlined !text-sm">my_location</span></button>
+                        <button class="suspend-btn p-1 ${isSuspended ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'} hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}" title="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}"><span class="material-symbols-outlined !text-sm">${isSuspended ? 'play_arrow' : 'pause'}</span></button>
+                        ${isLeech ? `<span class="material-symbols-outlined !text-sm text-red-400" title="${t('aria.leech')}" aria-label="${t('aria.leech')}">bug</span>` : ''}
                         <div class="text-[9px] font-mono text-neutral-400">${c.card_id}</div>
                     </div>
                     <div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-neutral-900 dark:bg-white':'bg-neutral-200 dark:bg-neutral-700'}"></div>`).join('')}</div>
@@ -1151,7 +1163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openDeckOptions(id) {
         const d = deckList.find(x => x.id === id); if (!d) return;
         deckOptionsModal.classList.remove('hidden');
-        deckOptionsTitle.textContent = '單字集設定';
+        deckOptionsTitle.textContent = t('do.title');
         deckTitleInput.value = d.title;
         deckTitleInput.focus();
         deckTitleInput.select();
@@ -1166,9 +1178,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         deleteDeckBtn.onclick = async () => {
             const ok = await appConfirm({
-                title: '刪除單字集',
-                message: `確定要刪除「${d.title}」嗎？\n此操作無法復原，學習進度將一併刪除。`,
-                okText: '刪除',
+                title: t('dlg.delete_title'),
+                message: t('dlg.delete_msg', { t: d.title }),
+                okText: t('dlg.delete'),
                 danger: true
             });
             if (!ok) return;
@@ -1193,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 儲存前驗證形狀，避免壞資料寫入後弄壞學習畫面
                 const valid = Array.isArray(updated) && updated.length > 0
                     && updated.every(c => c && typeof c.card_id === 'string' && Array.isArray(c.fields));
-                if (!valid) { await appAlert('需為非空卡片陣列，每張卡片須含 card_id (字串) 與 fields (陣列)。', 'JSON 格式錯誤'); return; }
+                if (!valid) { await appAlert(t('dlg.json_shape'), t('dlg.json_shape_t')); return; }
                 saveDeckData(deckId, updated);
                 const meta = deckList.find(x => x.id === deckId);
                 if (meta) { meta.totalCards = updated.length; saveDeckList(); }
@@ -1205,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     resetSessionView();
                 }
                 if (!allCardsModal.classList.contains('hidden')) renderAllCardsTable();
-            } catch (e) { await appAlert('JSON 語法錯誤，請檢查括號與逗號是否成對。', 'JSON 語法錯誤'); }
+            } catch (e) { await appAlert(t('dlg.json_error'), t('dlg.json_error_t')); }
         };
     }
 
@@ -1228,7 +1240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let editorPage = 0, editorDirty = false, lastView = [];
 
         deckEditorModal.classList.remove('hidden');
-        editorDeckTitle.textContent = isNew ? "建立新單字集" : (deckList.find(d => d.id === id)?.title || "編輯單字集");
+        editorDeckTitle.textContent = isNew ? t('ed.new_title') : (deckList.find(d => d.id === id)?.title || t('ed.edit_title'));
         editorSearchInput.value = '';
         editorBulkTagInput.value = '';
         renderEditorPage();
@@ -1267,10 +1279,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         editorSaveBtn.onclick = async () => {
             const newRows = serializeEditorRows(workingCards.filter(c => !deletedIds.has(c.card_id)));
-            if (newRows.length === 0) { await appAlert('請至少輸入一張卡片內容（正面欄位必填）。', '無法儲存'); return; }
+            if (newRows.length === 0) { await appAlert(t('dlg.empty_deck'), t('dlg.empty_deck_t')); return; }
 
             if (isNew) {
-                processNewDeck(newRows, `d_${Date.now()}`, "未命名單字集");
+                processNewDeck(newRows, `d_${Date.now()}`, t('ed.untitled'));
             } else {
                 saveDeckData(id, newRows);
                 const meta = deckList.find(d => d.id === id);
@@ -1292,9 +1304,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const tryCloseEditor = () => {
             if (!editorDirty) { editorConfirmClose = null; deckEditorModal.classList.add('hidden'); return; }
             appConfirm({
-                title: '放棄未儲存的變更？',
-                message: '您在編輯器中的修改尚未儲存，離開將全部遺失。',
-                okText: '放棄變更',
+                title: t('dlg.discard_title'),
+                message: t('dlg.discard_msg'),
+                okText: t('dlg.discard_ok'),
                 danger: true
             }).then(ok => { if (ok) { editorDirty = false; editorConfirmClose = null; deckEditorModal.classList.add('hidden'); } });
         };
@@ -1317,14 +1329,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const slice = view.slice(editorPage * PAGE_SIZE, (editorPage + 1) * PAGE_SIZE);
             if (slice.length === 0) {
-                editorRowsContainer.innerHTML = '<p class="text-center text-neutral-400 py-12 text-sm font-bold">沒有符合的卡片</p>';
+                editorRowsContainer.innerHTML = `<p class="text-center text-neutral-400 py-12 text-sm font-bold">${t('ed.no_match')}</p>`;
             } else {
                 slice.forEach(({ c, i }) => renderEditorRow(c, i));
             }
             if (keepScroll) editorRowsContainer.scrollTop = prevScroll;
 
             const liveCount = workingCards.length - deletedIds.size;
-            editorStatusMsg.textContent = `共 ${liveCount} 張卡片${q ? ` · 符合 ${view.length} 張` : ''}`;
+            editorStatusMsg.textContent = q ? t('ed.count_match', { n: liveCount, m: view.length }) : t('ed.count', { n: liveCount });
             editorPageIndicator.textContent = `${editorPage + 1} / ${totalPages}`;
             editorPrevPageBtn.disabled = editorPage === 0;
             editorNextPageBtn.disabled = editorPage >= totalPages - 1;
@@ -1334,7 +1346,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editorSelectAllPage.checked = pageIdxs.length > 0 && pageIdxs.every(i => selectedIdx.has(i));
             const n = selectedIdx.size;
             editorBulkBar.classList.toggle('hidden', n === 0);
-            editorSelectedCount.textContent = n > 0 ? `已選 ${n} 張` : '';
+            editorSelectedCount.textContent = n > 0 ? t('ed.selected', { n }) : '';
         }
 
         function renderEditorRow(card, globalIndex) {
@@ -1344,20 +1356,20 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <input type="checkbox" class="row-select-box w-4 h-4 accent-neutral-900" aria-label="選取此卡片" ${selectedIdx.has(globalIndex) ? 'checked' : ''}>
-                        <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">卡片 #${globalIndex + 1}</span>
+                        <input type="checkbox" class="row-select-box w-4 h-4 accent-neutral-900" aria-label="${t('aria.select_card')}" ${selectedIdx.has(globalIndex) ? 'checked' : ''}>
+                        <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">${t('ed.card_n', { n: globalIndex + 1 })}</span>
                     </div>
-                    <button class="delete-row-btn p-1 text-neutral-300 hover:text-red-500 transition-colors" aria-label="刪除此卡片">
+                    <button class="delete-row-btn p-1 text-neutral-300 hover:text-red-500 transition-colors" aria-label="${t('aria.delete_card')}">
                         <span class="material-symbols-outlined !text-sm">delete</span>
                     </button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input type="text" placeholder="正面 (必填)" value="${escapeAttr(card.fields[0] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900 font-bold">
-                    <input type="text" placeholder="背面 (解釋/翻譯)" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
+                    <input type="text" placeholder="${t('ed.front_ph')}" value="${escapeAttr(card.fields[0] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900 font-bold">
+                    <input type="text" placeholder="${t('ed.back_ph')}" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
                 </div>
                 <div class="flex flex-col gap-2">
-                    <input type="text" placeholder="補充備註 (Notes)" value="${escapeAttr(card.fields[2] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 opacity-60">
-                    <input type="text" placeholder="標籤 (用逗號隔開)" value="${escapeAttr(card.tags)}" class="tag-input px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-400">
+                    <input type="text" placeholder="${t('ed.notes_ph')}" value="${escapeAttr(card.fields[2] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 opacity-60">
+                    <input type="text" placeholder="${t('ed.tags_ph')}" value="${escapeAttr(card.tags)}" class="tag-input px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-400">
                 </div>
             `;
             const inputs = row.querySelectorAll('input[type="text"]');
@@ -1370,7 +1382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else selectedIdx.delete(globalIndex);
                 const n = selectedIdx.size;
                 editorBulkBar.classList.toggle('hidden', n === 0);
-                editorSelectedCount.textContent = n > 0 ? `已選 ${n} 張` : '';
+                editorSelectedCount.textContent = n > 0 ? t('ed.selected', { n }) : '';
             };
             row.querySelector('.delete-row-btn').onclick = () => {
                 deletedIds.add(card.card_id);
@@ -1450,23 +1462,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return st && !st.suspended && (st.reps ?? 0) === 0 && (st.due ?? 0) === 0;
         }).length;
         const note = remainingNew > 0
-            ? `今日新卡額度已用完，還有 ${remainingNew} 張明日繼續`
+            ? t('learn.daily_used', { n: remainingNew })
             : (futureDues.length
-                ? `下次到期：${fmtDue(Math.min(...futureDues))}（${futureDues.length} 張已排程）`
-                : '目前沒有已排程的卡片');
+                ? t('learn.next_due', { t: fmtDue(Math.min(...futureDues)), n: futureDues.length })
+                : t('learn.none_scheduled'));
         cardStackContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
                 <div class="w-24 h-24 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full flex items-center justify-center shadow-2xl">
                     <span class="material-symbols-outlined !text-5xl">celebration</span>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-black mb-2 text-neutral-900 dark:text-white">太棒了！</h3>
-                    <p class="text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest text-xs">本輪到期卡片全數完成</p>
+                    <h3 class="text-3xl font-black mb-2 text-neutral-900 dark:text-white">${t('learn.congrats')}</h3>
+                    <p class="text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest text-xs">${t('learn.done_all')}</p>
                     <p class="text-neutral-400 dark:text-neutral-500 font-bold text-[10px] uppercase tracking-widest mt-2">${note}</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button id="restart-round-btn" class="px-8 py-3.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all">再讀一輪</button>
-                    <button id="back-to-home-btn" class="px-8 py-3.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">返回首頁</button>
+                    <button id="restart-round-btn" class="px-8 py-3.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all">${t('learn.restart')}</button>
+                    <button id="back-to-home-btn" class="px-8 py-3.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">${t('learn.back_home')}</button>
                 </div>
             </div>
         `;
@@ -1479,12 +1491,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // v5.0.0：相對時間格式（完成畫面顯示下次到期）
     function fmtDue(ts) {
         const diff = ts - Date.now();
-        if (diff <= 0) return '現在';
+        if (diff <= 0) return t('fmt.now');
         const mins = Math.ceil(diff / 60000);
-        if (mins < 60) return `${mins} 分鐘後`;
+        if (mins < 60) return t('fmt.min', { n: mins });
         const hours = Math.round(mins / 60);
-        if (hours < 24) return `${hours} 小時後`;
-        return `${Math.round(hours / 24)} 天後`;
+        if (hours < 24) return t('fmt.hour', { n: hours });
+        return t('fmt.day', { n: Math.round(hours / 24) });
     }
 
     // v4.3.0 P7：完成後直接再讀一輪 —— 只重置「目前篩選下」的卡片熟練度
@@ -1492,9 +1504,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const targets = currentFullDeck.filter(matchesDeckFilter);
         if (targets.length === 0) return;
         appConfirm({
-            title: '再讀一輪',
-            message: `將把目前篩選下的 ${targets.length} 張卡片熟練度重置為 1 並重新開始，其他卡片不受影響。`,
-            okText: '重置並開始',
+            title: t('dlg.restart_title'),
+            message: t('dlg.restart_msg', { n: targets.length }),
+            okText: t('dlg.restart_ok'),
             danger: true
         }).then(ok => {
             if (!ok) return;

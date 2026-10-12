@@ -12,6 +12,12 @@ const sm2UpdateSrc = extractFn('sm2Update');
 const applyLapseSrc = extractFn('applyLapse');
 const DAY_MS = 86400000;
 const LEECH_THRESHOLD = 8;
+// v5.2.0: appConfirm 預設文案走 t() —— 測試環境以鍵名代替（不影響行為斷言）
+const t = (k, params) => {
+    let s = k;
+    if (params) for (const [pk, pv] of Object.entries(params)) s = s.split('{' + pk + '}').join(String(pv));
+    return s;
+};
 
 // Session harness: the extracted functions share THIS lexical scope.
 function makeSession() {
