@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.2.0</title>
+    <title>FlipDeck v5.3.0</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#171717">
+    <meta name="theme-color" content="#0f766e">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' };</script>
@@ -27,28 +27,28 @@
     
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-neutral-50 dark:bg-neutral-950 text-neutral-800 dark:text-neutral-200 min-h-screen p-0">
+<body class="bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-200 min-h-screen p-0">
 
     <div id="app" class="w-full max-w-6xl mx-auto min-h-screen sm:min-h-0">
 
         <!-- ===== 首頁 ===== -->
-        <div id="home-screen" class="p-4 sm:p-8 bg-white dark:bg-neutral-900 sm:rounded-2xl shadow-xl min-h-screen sm:min-h-0">
+        <div id="home-screen" class="p-4 sm:p-8 bg-white dark:bg-stone-900 sm:rounded-2xl shadow-xl min-h-screen sm:min-h-0">
             
             <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center space-x-3">
-                    <button id="home-menu-btn" data-i18n-aria="aria.open_menu" aria-label="開啟主選單" class="p-2 -ml-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                    <button id="home-menu-btn" data-i18n-aria="aria.open_menu" aria-label="開啟主選單" class="p-2 -ml-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors">
                         <span class="material-symbols-outlined !text-3xl">menu</span>
                     </button>
-                    <h1 class="text-3xl font-black tracking-tighter text-neutral-900 dark:text-white">FlipDeck</h1>
+                    <h1 class="text-3xl font-black tracking-tighter text-stone-900 dark:text-white">FlipDeck</h1>
                 </div>
-                <div id="stats-summary" class="text-right text-neutral-500 dark:text-neutral-400 hidden sm:block">
-                    <p class="text-xs uppercase tracking-widest font-black" data-i18n="home.total_cards">卡片總數：<span id="stats-total-cards" class="text-neutral-900 dark:text-white">0</span></p>
+                <div id="stats-summary" class="text-right text-stone-500 dark:text-stone-400 hidden sm:block">
+                    <p class="text-xs uppercase tracking-widest font-black" data-i18n="home.total_cards">卡片總數：<span id="stats-total-cards" class="text-stone-900 dark:text-white">0</span></p>
                 </div>
             </div>
 
             <div id="deck-history-section">
                 <div class="flex justify-between items-center mb-6">
-                    <select id="sort-by" class="px-4 py-2 text-sm border-none bg-neutral-100 dark:bg-neutral-800 rounded-full focus:ring-2 focus:ring-neutral-900 outline-none font-bold">
+                    <select id="sort-by" class="px-4 py-2 text-sm border-none bg-stone-100 dark:bg-stone-800 rounded-full focus:ring-2 focus:ring-teal-600 outline-none font-bold">
                         <option value="lastOpened" data-i18n="home.sort_last">最後閱讀</option>
                         <option value="title" data-i18n="home.sort_title">名稱 (A-Z)</option>
                         <option value="progress" data-i18n="home.sort_progress">學習進度</option>
@@ -60,15 +60,15 @@
 
                 <!-- v4.4.0：空狀態移出 deck-list-container（原先會被 innerHTML='' 清掉而永遠不顯示），並補上 CTA -->
                 <div id="no-recent-decks" class="hidden text-center py-16">
-                    <span class="material-symbols-outlined !text-5xl text-neutral-200 dark:text-neutral-700">style</span>
-                    <p class="text-neutral-400 italic font-medium mb-6" data-i18n="home.empty">尚未開啟任何單字集</p>
-                    <button id="empty-state-cta" data-i18n="home.empty_cta" class="px-8 py-3.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all">新增單字集</button>
+                    <span class="material-symbols-outlined !text-5xl text-stone-200 dark:text-stone-700">style</span>
+                    <p class="text-stone-400 italic font-medium mb-6" data-i18n="home.empty">尚未開啟任何單字集</p>
+                    <button id="empty-state-cta" data-i18n="home.empty_cta" class="px-8 py-3.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all">新增單字集</button>
                 </div>
             </div>
         </div>
 
         <!-- ===== 主學習畫面 (Combo Mode v4.1.0) ===== -->
-        <div id="main-screen" class="hidden w-full h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 relative overflow-hidden">
+        <div id="main-screen" class="hidden w-full h-screen flex flex-col bg-stone-50 dark:bg-stone-950 relative overflow-hidden">
             
             <!-- 漸層背景 -->
             <div id="bg-forgot" class="swipe-bg"></div>
@@ -76,19 +76,19 @@
 
             <!-- 首次操作提示列 (v4.2.0 P2：答題一次後自動收起) -->
             <div id="swipe-hint-bar" class="hidden absolute bottom-10 left-0 right-0 z-30 flex flex-wrap justify-center gap-2 px-4 pointer-events-none">
-                <div class="px-3.5 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">close</span><span data-i18n="learn.hint_forgot">左滑 忘記</span></div>
-                <div class="px-3.5 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">touch_app</span><span data-i18n="learn.hint_flip">點擊 翻面</span></div>
-                <div class="px-3.5 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">check</span><span data-i18n="learn.hint_learned">右滑 學會</span></div>
-                <div class="px-3.5 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">keyboard_arrow_up</span><span data-i18n="learn.hint_skip">上滑 跳過</span></div>
+                <div class="px-3.5 py-2 bg-white/90 dark:bg-stone-800/90 backdrop-blur-md rounded-full shadow-lg border border-stone-100 dark:border-stone-700 text-[10px] font-bold text-stone-500 dark:text-stone-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">close</span><span data-i18n="learn.hint_forgot">左滑 忘記</span></div>
+                <div class="px-3.5 py-2 bg-white/90 dark:bg-stone-800/90 backdrop-blur-md rounded-full shadow-lg border border-stone-100 dark:border-stone-700 text-[10px] font-bold text-stone-500 dark:text-stone-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">touch_app</span><span data-i18n="learn.hint_flip">點擊 翻面</span></div>
+                <div class="px-3.5 py-2 bg-white/90 dark:bg-stone-800/90 backdrop-blur-md rounded-full shadow-lg border border-stone-100 dark:border-stone-700 text-[10px] font-bold text-stone-500 dark:text-stone-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">check</span><span data-i18n="learn.hint_learned">右滑 學會</span></div>
+                <div class="px-3.5 py-2 bg-white/90 dark:bg-stone-800/90 backdrop-blur-md rounded-full shadow-lg border border-stone-100 dark:border-stone-700 text-[10px] font-bold text-stone-500 dark:text-stone-400 flex items-center"><span class="material-symbols-outlined !text-xs mr-1">keyboard_arrow_up</span><span data-i18n="learn.hint_skip">上滑 跳過</span></div>
             </div>
 
             <!-- 復原膠囊 (v4.2.0 P3：判定後 3.5 秒內可復原) -->
-            <button id="undo-pill" class="hidden absolute bottom-10 left-1/2 -translate-x-1/2 z-40 px-5 py-2.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-full shadow-xl text-xs font-bold flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all" data-i18n-aria="aria.undo" aria-label="復原上一次判定">
+            <button id="undo-pill" class="hidden absolute bottom-10 left-1/2 -translate-x-1/2 z-40 px-5 py-2.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 rounded-full shadow-xl text-xs font-bold flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all" data-i18n-aria="aria.undo" aria-label="復原上一次判定">
                 <span class="material-symbols-outlined !text-sm">undo</span><span data-i18n="learn.undo">復原</span>
             </button>
 
             <!-- 選單按鈕 - 固定位置 -->
-            <button id="menu-btn" data-i18n-aria="aria.open_settings" aria-label="開啟設定選單" class="fixed-top-left w-12 h-12 flex items-center justify-center bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-neutral-200 dark:border-neutral-700">
+            <button id="menu-btn" data-i18n-aria="aria.open_settings" aria-label="開啟設定選單" class="fixed-top-left w-12 h-12 flex items-center justify-center bg-white/90 dark:bg-stone-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700">
                 <span class="material-symbols-outlined">menu</span>
             </button>
 
@@ -99,7 +99,7 @@
             </div>
 
             <div class="absolute top-6 left-0 right-0 flex justify-center items-center pointer-events-none z-40">
-                <div id="deck-info" class="text-[10px] uppercase tracking-[0.2em] font-black bg-neutral-900 text-white px-5 py-2.5 rounded-full shadow-xl"></div>
+                <div id="deck-info" class="text-[10px] uppercase tracking-[0.2em] font-black bg-teal-800 text-white px-5 py-2.5 rounded-full shadow-xl"></div>
             </div>
         </div>
     </div>
@@ -110,14 +110,14 @@
     <!-- 首頁選單 -->
     <div id="home-menu-panel" class="menu-panel">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-500" data-i18n="app.menu">主選單</h2>
-            <button id="home-menu-close-btn" data-i18n-aria="aria.close_menu" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
+            <h2 class="text-xs uppercase tracking-widest font-black text-stone-500" data-i18n="app.menu">主選單</h2>
+            <button id="home-menu-close-btn" data-i18n-aria="aria.close_menu" aria-label="關閉選單" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
-            <button id="home-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
-            <button id="home-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-3 text-neutral-400"><span class="material-symbols-outlined">fullscreen</span></button>
-            <button id="home-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-3 text-neutral-400"><span class="material-symbols-outlined">dark_mode</span></button>
-            <button id="home-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-3 text-neutral-400"><span class="material-symbols-outlined">translate</span></button>
+        <div class="flex flex-wrap justify-center gap-1 mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl">
+            <button id="home-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-2 text-stone-400"><span class="material-symbols-outlined">add_circle</span></button>
+            <button id="home-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-2 text-stone-400"><span class="material-symbols-outlined">fullscreen</span></button>
+            <button id="home-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-2 text-stone-400"><span class="material-symbols-outlined">dark_mode</span></button>
+            <button id="home-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-2 text-stone-400"><span class="material-symbols-outlined">translate</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto">
             <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span data-i18n="menu.create_blank">從空白建立</button></li>
@@ -129,43 +129,43 @@
     <!-- 學習中選單 -->
     <div id="menu-panel" class="menu-panel">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xs uppercase tracking-widest font-black text-neutral-500" data-i18n="app.settings">設定</h2>
-            <button id="deck-menu-close-btn" data-i18n-aria="aria.close_menu" aria-label="關閉選單" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+            <h2 class="text-xs uppercase tracking-widest font-black text-stone-500" data-i18n="app.settings">設定</h2>
+            <button id="deck-menu-close-btn" data-i18n-aria="aria.close_menu" aria-label="關閉選單" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <div class="flex justify-around mb-6 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-2xl">
-            <button id="deck-menu-home-btn" data-i18n-aria="aria.back_home" aria-label="回到首頁" class="p-3 text-neutral-400"><span class="material-symbols-outlined">home</span></button>
-            <button id="deck-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-3 text-neutral-400"><span class="material-symbols-outlined">add_circle</span></button>
-            <button id="deck-menu-download-btn" data-i18n-aria="aria.download" aria-label="下載此單字集" class="p-3 text-neutral-400"><span class="material-symbols-outlined">download</span></button>
-            <button id="deck-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-3 text-neutral-400"><span class="material-symbols-outlined">fullscreen</span></button>
-            <button id="deck-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-3 text-neutral-400"><span class="material-symbols-outlined">dark_mode</span></button>
-            <button id="deck-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-3 text-neutral-400"><span class="material-symbols-outlined">translate</span></button>
+        <div class="flex flex-wrap justify-center gap-1 mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl">
+            <button id="deck-menu-home-btn" data-i18n-aria="aria.back_home" aria-label="回到首頁" class="p-2 text-stone-400"><span class="material-symbols-outlined">home</span></button>
+            <button id="deck-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-2 text-stone-400"><span class="material-symbols-outlined">add_circle</span></button>
+            <button id="deck-menu-download-btn" data-i18n-aria="aria.download" aria-label="下載此單字集" class="p-2 text-stone-400"><span class="material-symbols-outlined">download</span></button>
+            <button id="deck-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-2 text-stone-400"><span class="material-symbols-outlined">fullscreen</span></button>
+            <button id="deck-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-2 text-stone-400"><span class="material-symbols-outlined">dark_mode</span></button>
+            <button id="deck-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-2 text-stone-400"><span class="material-symbols-outlined">translate</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto custom-scrollbar">
-            <li><button id="show-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3 text-neutral-900 dark:text-white font-bold">list_alt</span data-i18n="menu.show_all">顯示全卡片 (搜尋)</button></li>
+            <li><button id="show-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3 text-stone-900 dark:text-white font-bold">list_alt</span data-i18n="menu.show_all">顯示全卡片 (搜尋)</button></li>
             <li><button id="show-stats-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">insights</span><span data-i18n="menu.stats">學習統計</span></button></li>
             <li><button id="visual-edit-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit</span><span data-i18n="menu.visual_edit">圖形化編輯器</span></button></li>
             <li><button id="deck-show-how-to-use-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">help</span><span data-i18n="menu.help">操作教學</span></button></li>
-            <li class="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                <span class="text-[10px] uppercase tracking-widest font-black text-neutral-500 block mb-3 pl-4" data-i18n="menu.tag_filter">標籤篩選</span>
+            <li class="pt-4 border-t border-stone-100 dark:border-stone-800">
+                <span class="text-[10px] uppercase tracking-widest font-black text-stone-500 block mb-3 pl-4" data-i18n="menu.tag_filter">標籤篩選</span>
                 <div id="card-tag-filter-container" class="space-y-1 pl-4 max-h-40 overflow-y-auto"></div>
             </li>
-            <li class="pt-4 border-t border-neutral-100 dark:border-gray-800">
+            <li class="pt-4 border-t border-stone-100 dark:border-gray-800">
                 <div class="flex items-center justify-between px-4">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-neutral-500" data-i18n="menu.font_size">字型大小</span>
+                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.font_size">字型大小</span>
                     <div class="flex items-center space-x-3">
-                        <button id="font-size-decrease" data-i18n-aria="aria.decrease_font" aria-label="縮小字型" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">-</button>
+                        <button id="font-size-decrease" data-i18n-aria="aria.decrease_font" aria-label="縮小字型" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">-</button>
                         <span id="font-size-value" class="text-xs font-bold w-8 text-center">2.5</span>
-                        <button id="font-size-increase" data-i18n-aria="aria.increase_font" aria-label="放大字型" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">+</button>
+                        <button id="font-size-increase" data-i18n-aria="aria.increase_font" aria-label="放大字型" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">+</button>
                     </div>
                 </div>
             </li>
-            <li class="pt-4 border-t border-neutral-100 dark:border-gray-800">
+            <li class="pt-4 border-t border-stone-100 dark:border-gray-800">
                 <div class="flex items-center justify-between px-4">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-neutral-500" data-i18n="menu.daily_new">每日新卡</span>
+                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.daily_new">每日新卡</span>
                     <div class="flex items-center space-x-3">
-                        <button id="new-limit-decrease" data-i18n-aria="aria.decrease_new" aria-label="減少每日新卡上限" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">-</button>
+                        <button id="new-limit-decrease" data-i18n-aria="aria.decrease_new" aria-label="減少每日新卡上限" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">-</button>
                         <span id="new-limit-value" class="text-xs font-bold w-12 text-center">20</span>
-                        <button id="new-limit-increase" data-i18n-aria="aria.increase_new" aria-label="增加每日新卡上限" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full font-bold">+</button>
+                        <button id="new-limit-increase" data-i18n-aria="aria.increase_new" aria-label="增加每日新卡上限" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">+</button>
                     </div>
                 </div>
             </li>
@@ -173,21 +173,21 @@
     </div>
 
     <!-- Modals -->
-    <div id="quick-start-modal" role="dialog" aria-modal="true" aria-labelledby="quick-start-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
-        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
+    <div id="quick-start-modal" role="dialog" aria-modal="true" aria-labelledby="quick-start-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
                 <h2 id="quick-start-title" class="text-xl font-black" data-i18n="qs.title">新增單字集</h2>
-                <button id="close-quick-start-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                <button id="close-quick-start-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
-                <label for="file-upload" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-3xl cursor-pointer hover:bg-neutral-50 transition-all group">
-                    <span class="material-symbols-outlined !text-5xl text-neutral-300 group-hover:text-neutral-900 transition-colors mb-4">cloud_upload</span>
-                    <p class="text-sm font-bold text-neutral-500" data-i18n="qs.upload">上傳 .txt, .csv, .json</p>
+                <label for="file-upload" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-3xl cursor-pointer hover:bg-stone-50 transition-all group">
+                    <span class="material-symbols-outlined !text-5xl text-stone-300 group-hover:text-stone-900 transition-colors mb-4">cloud_upload</span>
+                    <p class="text-sm font-bold text-stone-500" data-i18n="qs.upload">上傳 .txt, .csv, .json</p>
                     <input id="file-upload" type="file" class="hidden" accept=".txt,.csv,.json">
                 </label>
                 <div class="flex space-x-2">
-                    <select id="example-selector" class="flex-grow px-4 py-3 bg-neutral-100 dark:bg-neutral-800 border-none rounded-2xl text-sm font-medium outline-none"></select>
-                    <button id="load-example-btn" data-i18n-aria="aria.load_example" aria-label="載入範例" class="w-12 h-12 flex items-center justify-center bg-neutral-900 text-white rounded-2xl hover:bg-black transition-colors">
+                    <select id="example-selector" class="flex-grow px-4 py-3 bg-stone-100 dark:bg-stone-800 border-none rounded-2xl text-sm font-medium outline-none"></select>
+                    <button id="load-example-btn" data-i18n-aria="aria.load_example" aria-label="載入範例" class="w-12 h-12 flex items-center justify-center bg-teal-700 text-white rounded-2xl hover:bg-teal-800 transition-colors">
                         <span class="material-symbols-outlined">play_arrow</span>
                     </button>
                 </div>
@@ -196,20 +196,20 @@
     </div>
 
     <!-- 所有卡片列表 (含搜尋與編輯器融合) -->
-    <div id="all-cards-modal" role="dialog" aria-modal="true" aria-labelledby="all-cards-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
-        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
-            <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex flex-col gap-4">
+    <div id="all-cards-modal" role="dialog" aria-modal="true" aria-labelledby="all-cards-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex flex-col gap-4">
                 <div class="flex items-center justify-between">
                     <h2 id="all-cards-title" class="text-xl font-black" data-i18n="ac.title">單字集管理</h2>
-                    <div class="flex items-center space-x-2">
-                        <button id="modal-editor-btn" data-i18n-aria="aria.visual_edit" aria-label="開啟圖形化編輯器" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">edit</span><span data-i18n="ac.visual_edit">圖形化編輯</span></button>
-                        <button id="modal-json-btn" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">code</span><span data-i18n="ac.json">JSON 原始碼</span></button>
-                        <button id="close-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                    <div class="flex flex-wrap items-center justify-end gap-2">
+                        <button id="modal-editor-btn" data-i18n-aria="aria.visual_edit" aria-label="開啟圖形化編輯器" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">edit</span><span data-i18n="ac.visual_edit">圖形化編輯</span></button>
+                        <button id="modal-json-btn" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">code</span><span data-i18n="ac.json">JSON 原始碼</span></button>
+                        <button id="close-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
                     </div>
                 </div>
                 <div class="relative flex-grow">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">search</span>
-                    <input type="text" id="card-search-input" placeholder="搜尋關鍵字或標籤..." data-i18n-placeholder="ac.search_ph" class="w-full pl-12 pr-4 py-3 bg-neutral-100 dark:bg-neutral-800 border-none rounded-2xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-stone-400">search</span>
+                    <input type="text" id="card-search-input" placeholder="搜尋關鍵字或標籤..." data-i18n-placeholder="ac.search_ph" class="w-full pl-12 pr-4 py-3 bg-stone-100 dark:bg-stone-800 border-none rounded-2xl text-sm outline-none focus:ring-2 focus:ring-teal-600">
                 </div>
             </div>
             <div class="flex-grow overflow-auto p-2 custom-scrollbar"><table id="all-cards-table" class="w-full text-left text-sm border-separate border-spacing-y-2"></table></div>
@@ -217,37 +217,37 @@
     </div>
 
     <!-- JSON 編輯器 Modal -->
-    <div id="edit-deck-modal" role="dialog" aria-modal="true" aria-labelledby="edit-deck-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[4000] backdrop-blur-sm">
-        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
-            <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
+    <div id="edit-deck-modal" role="dialog" aria-modal="true" aria-labelledby="edit-deck-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[4000] backdrop-blur-sm">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
                 <h2 id="edit-deck-title" class="text-xl font-black" data-i18n="json.title">JSON 原始碼編輯</h2>
-                <button id="close-edit-deck-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                <button id="close-edit-deck-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="flex-grow p-4">
-                <textarea id="json-editor-textarea" class="w-full h-full p-4 font-mono text-xs bg-neutral-50 dark:bg-neutral-800 border-none rounded-2xl outline-none focus:ring-2 focus:ring-neutral-900 resize-none"></textarea>
+                <textarea id="json-editor-textarea" class="w-full h-full p-4 font-mono text-xs bg-stone-50 dark:bg-stone-800 border-none rounded-2xl outline-none focus:ring-2 focus:ring-teal-600 resize-none"></textarea>
             </div>
-            <div class="p-6 border-t border-neutral-100 dark:border-neutral-800 flex justify-end space-x-3">
-                <button id="cancel-edit-deck-btn" class="px-6 py-3 font-bold text-neutral-500 hover:bg-neutral-100 rounded-2xl" data-i18n="common.cancel">取消</button>
-                <button id="save-edit-deck-btn" class="px-8 py-3 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-black rounded-2xl shadow-lg" data-i18n="json.save">儲存變更</button>
+            <div class="p-6 border-t border-stone-100 dark:border-stone-800 flex justify-end space-x-3">
+                <button id="cancel-edit-deck-btn" class="px-6 py-3 font-bold text-stone-500 hover:bg-stone-100 rounded-2xl" data-i18n="common.cancel">取消</button>
+                <button id="save-edit-deck-btn" class="px-8 py-3 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 font-black rounded-2xl shadow-lg" data-i18n="json.save">儲存變更</button>
             </div>
         </div>
     </div>
 
     <!-- 單字集選項 (More) Modal -->
-    <div id="deck-options-modal" role="dialog" aria-modal="true" aria-labelledby="deck-options-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
-        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
+    <div id="deck-options-modal" role="dialog" aria-modal="true" aria-labelledby="deck-options-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
                 <h2 id="deck-options-title" class="text-xl font-black">設定</h2>
-                <button id="close-deck-options-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                <button id="close-deck-options-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
                 <div>
-                    <label class="text-[10px] uppercase tracking-widest font-black text-neutral-400 block mb-2 pl-1" data-i18n="do.name">單字集名稱</label>
-                    <input type="text" id="deck-title-input" class="w-full px-4 py-3 bg-neutral-100 dark:bg-neutral-800 border-none rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-neutral-900">
+                    <label class="text-[10px] uppercase tracking-widest font-black text-stone-400 block mb-2 pl-1" data-i18n="do.name">單字集名稱</label>
+                    <input type="text" id="deck-title-input" class="w-full px-4 py-3 bg-stone-100 dark:bg-stone-800 border-none rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-teal-600">
                 </div>
                 <div class="pt-4 flex flex-col gap-3">
-                    <button id="save-deck-options-btn" class="w-full py-4 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-black rounded-2xl shadow-xl" data-i18n="do.save">儲存設定</button>
-                    <button id="deck-options-json-btn" class="w-full py-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-bold rounded-2xl flex items-center justify-center"><span class="material-symbols-outlined mr-2">code</span><span data-i18n="do.json">JSON 原始碼</span></button>
+                    <button id="save-deck-options-btn" class="w-full py-4 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 font-black rounded-2xl shadow-xl" data-i18n="do.save">儲存設定</button>
+                    <button id="deck-options-json-btn" class="w-full py-4 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-bold rounded-2xl flex items-center justify-center"><span class="material-symbols-outlined mr-2">code</span><span data-i18n="do.json">JSON 原始碼</span></button>
                     <button id="delete-deck-btn" class="w-full py-4 bg-red-50 text-red-500 font-black rounded-2xl hover:bg-red-100 transition-colors" data-i18n="do.delete">刪除單字集</button>
                 </div>
             </div>
@@ -255,59 +255,59 @@
     </div>
 
     <!-- 教學 Modal -->
-    <div id="how-to-use-modal" role="dialog" aria-modal="true" aria-labelledby="how-to-use-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
-        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center">
+    <div id="how-to-use-modal" role="dialog" aria-modal="true" aria-labelledby="how-to-use-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center">
             <h2 id="how-to-use-title" class="text-2xl font-black mb-4" data-i18n="htu.title">操作教學</h2>
             <ul class="text-left space-y-4 text-sm font-medium mb-8">
-                <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">1</span> <span data-i18n="htu.s1">點擊卡片即可翻面</span></li>
-                <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">2</span> <span data-i18n="htu.s2">向右滑動表示「已學會」</span></li>
-                <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">3</span> <span data-i18n="htu.s3">向左滑動表示「不熟悉」</span></li>
-                <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">4</span> <span data-i18n="htu.s4">向上滑動可先「跳過」此卡片</span></li>
-                <li class="flex items-center"><span class="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mr-3 font-black">↩</span> <span data-i18n="htu.s5">判定後 3 秒內可點「復原」</span></li>
+                <li class="flex items-center"><span class="w-8 h-8 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mr-3 font-black">1</span> <span data-i18n="htu.s1">點擊卡片即可翻面</span></li>
+                <li class="flex items-center"><span class="w-8 h-8 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mr-3 font-black">2</span> <span data-i18n="htu.s2">向右滑動表示「已學會」</span></li>
+                <li class="flex items-center"><span class="w-8 h-8 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mr-3 font-black">3</span> <span data-i18n="htu.s3">向左滑動表示「不熟悉」</span></li>
+                <li class="flex items-center"><span class="w-8 h-8 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mr-3 font-black">4</span> <span data-i18n="htu.s4">向上滑動可先「跳過」此卡片</span></li>
+                <li class="flex items-center"><span class="w-8 h-8 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mr-3 font-black">↩</span> <span data-i18n="htu.s5">判定後 3 秒內可點「復原」</span></li>
             </ul>
-            <button id="close-how-to-use-modal-btn" data-i18n-aria="aria.start_learning" aria-label="開始學習" class="w-full py-4 bg-neutral-900 text-white font-black rounded-2xl" data-i18n="htu.start">開始學習</button>
+            <button id="close-how-to-use-modal-btn" data-i18n-aria="aria.start_learning" aria-label="開始學習" class="w-full py-4 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-stone-950 font-black rounded-2xl" data-i18n="htu.start">開始學習</button>
         </div>
     </div>
 
     <!-- 圖形化編輯器 Modal (F14) -->
-    <div id="deck-editor-modal" role="dialog" aria-modal="true" aria-labelledby="editor-deck-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[4500] backdrop-blur-sm">
-        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
-            <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div id="deck-editor-modal" role="dialog" aria-modal="true" aria-labelledby="editor-deck-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[4500] backdrop-blur-sm">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
-                    <span class="material-symbols-outlined text-neutral-400">edit_square</span>
+                    <span class="material-symbols-outlined text-stone-400">edit_square</span>
                     <h2 id="editor-deck-title" class="text-xl font-black truncate max-w-xs">編輯單字集</h2>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <input type="text" id="editor-search-input" placeholder="搜尋卡片…" data-i18n-placeholder="ed.search_ph" aria-label="搜尋卡片" data-i18n-aria="aria.search_cards" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 w-32 sm:w-48">
-                    <button id="editor-add-row-btn" class="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">add</span><span data-i18n="ed.add_card">新增卡片</span></button>
-                    <button id="close-deck-editor-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                <div class="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+                    <input type="text" id="editor-search-input" placeholder="搜尋卡片…" data-i18n-placeholder="ed.search_ph" aria-label="搜尋卡片" data-i18n-aria="aria.search_cards" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs outline-none focus:ring-2 focus:ring-teal-600 flex-grow sm:flex-grow-0 w-full sm:w-48">
+                    <button id="editor-add-row-btn" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">add</span><span data-i18n="ed.add_card">新增卡片</span></button>
+                    <button id="close-deck-editor-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
                 </div>
             </div>
             <!-- 批次標籤操作列 (v4.5.0 P7：選取卡片後浮現) -->
-            <div id="editor-bulk-bar" class="hidden p-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 flex flex-wrap items-center gap-2">
-                <label class="flex items-center gap-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300">
-                    <input type="checkbox" id="editor-select-all-page" class="w-4 h-4 accent-neutral-900"><span data-i18n="ed.select_page">全選本頁</span>
+            <div id="editor-bulk-bar" class="hidden p-3 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50 flex flex-wrap items-center gap-2">
+                <label class="flex items-center gap-1.5 text-xs font-bold text-stone-600 dark:text-stone-300">
+                    <input type="checkbox" id="editor-select-all-page" class="w-4 h-4 accent-stone-900"><span data-i18n="ed.select_page">全選本頁</span>
                 </label>
-                <span id="editor-selected-count" class="text-xs font-black text-neutral-900 dark:text-white"></span>
-                <input type="text" id="editor-bulk-tag-input" placeholder="標籤（用逗號隔開）" data-i18n-placeholder="ed.tags_ph" aria-label="批次標籤" data-i18n-aria="aria.bulk_tags" class="flex-grow min-w-[140px] px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900">
-                <button id="editor-bulk-add-btn" class="px-3 py-1.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-xl text-xs font-black" data-i18n="ed.add">加入</button>
-                <button id="editor-bulk-remove-btn" class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-xl text-xs font-bold" data-i18n="ed.remove">移除</button>
-                <button id="editor-bulk-clear-btn" data-i18n-aria="aria.clear_selection" aria-label="清除選取" class="p-1.5 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors"><span class="material-symbols-outlined !text-sm">close</span></button>
+                <span id="editor-selected-count" class="text-xs font-black text-stone-900 dark:text-white"></span>
+                <input type="text" id="editor-bulk-tag-input" placeholder="標籤（用逗號隔開）" data-i18n-placeholder="ed.tags_ph" aria-label="批次標籤" data-i18n-aria="aria.bulk_tags" class="flex-grow min-w-[140px] px-3 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs outline-none focus:ring-2 focus:ring-teal-600">
+                <button id="editor-bulk-add-btn" class="px-3 py-1.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 rounded-xl text-xs font-black" data-i18n="ed.add">加入</button>
+                <button id="editor-bulk-remove-btn" class="px-3 py-1.5 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-xl text-xs font-bold" data-i18n="ed.remove">移除</button>
+                <button id="editor-bulk-clear-btn" data-i18n-aria="aria.clear_selection" aria-label="清除選取" class="p-1.5 text-stone-400 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors"><span class="material-symbols-outlined !text-sm">close</span></button>
             </div>
             <div id="editor-rows-container" class="flex-grow overflow-auto p-4 space-y-3 custom-scrollbar">
                 <!-- 動態生成編輯行（v4.3.0 分頁渲染） -->
             </div>
-            <div class="p-4 sm:p-6 border-t border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row justify-between items-center gap-3 bg-neutral-50/50 dark:bg-neutral-800/20">
-                <p id="editor-status-msg" class="text-xs font-bold text-neutral-400"></p>
-                <div class="flex items-center space-x-4">
+            <div class="p-4 sm:p-6 border-t border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row justify-between items-center gap-3 bg-stone-50/50 dark:bg-stone-800/20">
+                <p id="editor-status-msg" class="text-xs font-bold text-stone-400"></p>
+                <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
                     <div class="flex items-center space-x-1">
-                        <button id="editor-prev-page-btn" data-i18n-aria="aria.prev_page" aria-label="上一頁" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full text-neutral-600 dark:text-neutral-300 disabled:opacity-30 transition-opacity"><span class="material-symbols-outlined !text-sm">chevron_left</span></button>
-                        <span id="editor-page-indicator" class="text-xs font-black text-neutral-400 w-16 text-center">1 / 1</span>
-                        <button id="editor-next-page-btn" data-i18n-aria="aria.next_page" aria-label="下一頁" class="w-8 h-8 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-full text-neutral-600 dark:text-neutral-300 disabled:opacity-30 transition-opacity"><span class="material-symbols-outlined !text-sm">chevron_right</span></button>
+                        <button id="editor-prev-page-btn" data-i18n-aria="aria.prev_page" aria-label="上一頁" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full text-stone-600 dark:text-stone-300 disabled:opacity-30 transition-opacity"><span class="material-symbols-outlined !text-sm">chevron_left</span></button>
+                        <span id="editor-page-indicator" class="text-xs font-black text-stone-400 w-16 text-center">1 / 1</span>
+                        <button id="editor-next-page-btn" data-i18n-aria="aria.next_page" aria-label="下一頁" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full text-stone-600 dark:text-stone-300 disabled:opacity-30 transition-opacity"><span class="material-symbols-outlined !text-sm">chevron_right</span></button>
                     </div>
                     <div class="flex space-x-3">
-                        <button id="editor-cancel-btn" class="px-6 py-3 font-bold text-neutral-500 hover:bg-neutral-100 rounded-2xl transition-colors" data-i18n="common.cancel">取消</button>
-                        <button id="editor-save-btn" class="px-8 py-3 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all" data-i18n="ed.save_all">儲存全部變更</button>
+                        <button id="editor-cancel-btn" class="px-6 py-3 font-bold text-stone-500 hover:bg-stone-100 rounded-2xl transition-colors" data-i18n="common.cancel">取消</button>
+                        <button id="editor-save-btn" class="px-8 py-3 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all" data-i18n="ed.save_all">儲存全部變更</button>
                     </div>
                 </div>
             </div>
@@ -315,7 +315,7 @@
     </div>
 
     <!-- 載入中覆蓋層 (v4.3.0 P5：大牌組匯入/載入期間的 loading 狀態) -->
-    <div id="loading-overlay" class="hidden fixed inset-0 bg-neutral-950/60 backdrop-blur-sm flex items-center justify-center z-[6000]" role="status" aria-live="polite">
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-stone-950/60 backdrop-blur-sm flex items-center justify-center z-[6000]" role="status" aria-live="polite">
         <div class="flex flex-col items-center gap-4">
             <div class="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
             <p id="loading-msg" class="text-white text-[10px] font-black uppercase tracking-[0.2em]" data-i18n="load.default">載入中…</p>
@@ -323,25 +323,25 @@
     </div>
 
     <!-- 學習統計 Modal (v4.4.0 P7) -->
-    <div id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-title" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
-        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div class="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
+    <div id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
                 <h2 id="stats-title" class="text-xl font-black" data-i18n="st.title">學習統計</h2>
-                <button id="close-stats-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                <button id="close-stats-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div id="stats-body" class="p-6 space-y-4"></div>
         </div>
     </div>
 
     <!-- 通用確認對話框 (v4.2.0 P4：取代原生 alert/confirm) -->
-    <div id="app-confirm-modal" class="hidden fixed inset-0 bg-neutral-950/60 flex items-center justify-center p-4 z-[5000] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
-        <div class="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
-            <span class="material-symbols-outlined !text-4xl text-neutral-300 mb-3">info</span>
+    <div id="app-confirm-modal" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[5000] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
+            <span class="material-symbols-outlined !text-4xl text-stone-300 mb-3">info</span>
             <h3 id="confirm-modal-title" class="text-xl font-black mb-3"></h3>
-            <p id="confirm-modal-message" class="text-sm text-neutral-500 dark:text-neutral-400 font-medium mb-8 whitespace-pre-line"></p>
+            <p id="confirm-modal-message" class="text-sm text-stone-500 dark:text-stone-400 font-medium mb-8 whitespace-pre-line"></p>
             <div class="flex gap-3">
-                <button id="confirm-modal-cancel-btn" class="flex-1 py-3.5 font-bold text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-2xl transition-colors">取消</button>
-                <button id="confirm-modal-ok-btn" class="flex-1 py-3.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all">確定</button>
+                <button id="confirm-modal-cancel-btn" class="flex-1 py-3.5 font-bold text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-2xl transition-colors">取消</button>
+                <button id="confirm-modal-ok-btn" class="flex-1 py-3.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all">確定</button>
             </div>
         </div>
     </div>

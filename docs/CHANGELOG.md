@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.3.0] - 2026-04-11
+### Changed（UI/UX 優化：降低黑白對比 + 修復按鈕溢出）
+- **配色系統重塑**：冷灰 neutral 全面換成暖灰 **stone**（紙感底色 stone-100/950、暖邊框），告別黑白極端；主色收復品牌 **teal**（manifest `theme_color: #14b8a6`）——主要按鈕、進度條、到期徽章、熟練度圓點、焦點環、資訊膠囊、統計強調色全部由近黑改為 teal-700/600（深色模式 teal-500/400），滑動回饋的紅/綠保留為功能色。`<meta theme-color>` 同步 teal-700。
+- **按鈕溢出修復（3 處）**：
+  - 學習選單圖示列 6 顆按鈕（272px 可用寬塞 288px）→ `flex-wrap` + 按鈕縮為 p-2（240px）並置中；
+  - 編輯器頁尾「分頁控制 + 取消/儲存」在窄螢幕溢出 → 內層群組改 flex-wrap 置中；
+  - 「顯示全部」視窗頭（標題+3 顆按鈕）與編輯器視窗頭（搜尋+2 顆按鈕）→ 按鈕群組 flex-wrap、搜尋框窄屏滿寬。
+- **版本號升級**：v5.2.0 -> v5.3.0；SW `CACHE_NAME` 同步 bump。
+
 ## [5.2.0] - 2026-04-11
 ### Added（新主題：多語系 i18n）
 - **雙語支援 (zh / en)**：新增 `js/i18n.js` 字典引擎（約 130 組鍵、`{n}` 佔位符參數化、缺鍵 fallback zh → key）；靜態 HTML 以 `data-i18n` / `data-i18n-aria` / `data-i18n-placeholder` / `data-i18n-title` 屬性掃描套用；動態字串全面改走 `t()`。首頁與學習選單新增 translate 切換鈕，偏好持久化（`flipdeck_lang`）、`<html lang>` 同步更新。使用者內容（牌組、卡片、標籤、範例名）不翻譯。

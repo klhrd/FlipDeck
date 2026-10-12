@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.2.0 (i18n) =====
+// ===== FlipDeck v5.3.0 (Warm Stone + Teal) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmModalCancelBtn.textContent = cancelText;
             confirmModalCancelBtn.classList.toggle('hidden', !showCancel);
             confirmModalOkBtn.className = "flex-1 py-3.5 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all " +
-                (danger ? "bg-red-500 text-white" : "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900");
+                (danger ? "bg-red-500 text-white" : "bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400");
             // v4.5.0 P6：焦點管理——危險操作聚焦「取消」，一般操作聚焦「確定」，關閉後還原焦點
             const returnTo = document.activeElement;
             confirmResolveFn = (v) => {
@@ -541,20 +541,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div id="stamp-forgot" class="stamp"><span class="material-symbols-outlined !text-5xl">close</span></div>
                     <div id="stamp-learned" class="stamp"><span class="material-symbols-outlined !text-5xl">check</span></div>
                     <div class="card-inner">
-                        <div class="absolute inset-0 backface-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
-                            <div class="card-content text-center text-neutral-900 dark:text-neutral-100 font-bold break-words w-full max-h-full overflow-y-auto" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
-                            <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-neutral-400 font-bold pointer-events-none select-none">${t('learn.tap_flip')}</span>
+                        <div class="absolute inset-0 backface-hidden bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
+                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full max-h-full overflow-y-auto" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
+                            <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-stone-400 font-bold pointer-events-none select-none">${t('learn.tap_flip')}</span>
                         </div>
-                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
                             <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${data.fields[1] || ''}</div>
-                            <div class="text-neutral-400 dark:text-neutral-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${data.fields.slice(2).join('<br>')}</div>
+                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${data.fields.slice(2).join('<br>')}</div>
                         </div>
                     </div>
                 `;
                 cardStackContainer.appendChild(cardEl);
                 initComboLogic(cardEl);
             } else {
-                cardEl.innerHTML = `<div class="w-full h-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl flex items-center justify-center p-8"><div class="text-neutral-200 dark:text-neutral-800 font-bold truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div></div>`;
+                cardEl.innerHTML = `<div class="w-full h-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl flex items-center justify-center p-8"><div class="text-stone-200 dark:text-stone-800 font-bold truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div></div>`;
                 cardStackContainer.appendChild(cardEl);
             }
         }
@@ -965,19 +965,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const st = statsMap.get(d.id);
             const prog = st.progress;
             const card = document.createElement('div');
-            card.className = "bg-white dark:bg-neutral-800 p-6 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800 cursor-pointer group relative overflow-hidden";
+            card.className = "bg-white dark:bg-stone-800 p-6 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-800 cursor-pointer group relative overflow-hidden";
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-lg font-black text-neutral-900 dark:text-neutral-100 truncate pr-8">${d.title}</h3>
-                    <button class="options-btn p-1 text-neutral-400 hover:text-neutral-900 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors" aria-label="${t('aria.deck_options')}">
+                    <h3 class="text-lg font-black text-stone-900 dark:text-stone-100 truncate pr-8">${d.title}</h3>
+                    <button class="options-btn p-1 text-stone-400 hover:text-stone-900 rounded-full hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors" aria-label="${t('aria.deck_options')}">
                         <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </div>
-                <div class="flex items-center text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">
-                    <span>${t('home.cards', { n: d.totalCards })} • ${t('home.mastered', { n: prog })}${st.due > 0 ? ` • <span class="text-neutral-900 dark:text-white">${t('home.due', { n: st.due })}</span>` : ''}</span>
+                <div class="flex items-center text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">
+                    <span>${t('home.cards', { n: d.totalCards })} • ${t('home.mastered', { n: prog })}${st.due > 0 ? ` • <span class="text-teal-700 dark:text-teal-300 font-black">${t('home.due', { n: st.due })}</span>` : ''}</span>
                 </div>
-                <div class="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-                    <div class="h-full bg-neutral-900 dark:bg-white transition-all duration-1000" style="width: ${prog}%"></div>
+                <div class="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-teal-600 dark:bg-teal-400 transition-all duration-1000" style="width: ${prog}%"></div>
                 </div>
             `;
             card.onclick = (e) => { if(!e.target.closest('.options-btn')) startGame(d.id); };
@@ -1016,14 +1016,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cardTagFilterContainer.innerHTML = '';
         const tags = [...new Set(currentFullDeck.flatMap(c => c.tags || []))].sort();
         if (tags.length === 0) {
-            cardTagFilterContainer.innerHTML = `<p class="text-xs text-neutral-400 pl-4 italic">${t('menu.no_tags')}</p>`;
+            cardTagFilterContainer.innerHTML = `<p class="text-xs text-stone-400 pl-4 italic">${t('menu.no_tags')}</p>`;
             return;
         }
         tags.forEach(t => {
             const l = document.createElement('label');
-            l.className = "flex items-center space-x-3 cursor-pointer py-2 px-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl";
+            l.className = "flex items-center space-x-3 cursor-pointer py-2 px-2 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-xl";
             const checked = currentDeckSettings.filterTags.includes(t) ? 'checked' : '';
-            l.innerHTML = `<input type="checkbox" ${checked} value="${t}" class="w-5 h-5 rounded-lg border-neutral-300 text-neutral-900 focus:ring-neutral-900"> <span class="text-sm font-bold text-neutral-600 dark:text-neutral-400">${t}</span>`;
+            l.innerHTML = `<input type="checkbox" ${checked} value="${t}" class="w-5 h-5 rounded-lg border-stone-300 text-stone-900 focus:ring-teal-600"> <span class="text-sm font-bold text-stone-600 dark:text-stone-400">${t}</span>`;
             l.querySelector('input').onchange = () => {
                 const checked = Array.from(cardTagFilterContainer.querySelectorAll('input:checked')).map(i => i.value);
                 currentDeckSettings.filterTags = checked;
@@ -1091,49 +1091,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const bar = (count, label, color) => `
             <div>
                 <div class="flex justify-between items-center mb-1.5">
-                    <span class="text-xs font-bold text-neutral-500 dark:text-neutral-400">${label}</span>
-                    <span class="text-xs font-black text-neutral-400">${t('st.n_cards', { n: count })}</span>
+                    <span class="text-xs font-bold text-stone-500 dark:text-stone-400">${label}</span>
+                    <span class="text-xs font-black text-stone-400">${t('st.n_cards', { n: count })}</span>
                 </div>
-                <div class="w-full h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                <div class="w-full h-2.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
                     <div class="h-full rounded-full ${color} transition-all duration-1000" style="width: ${(count / maxCount) * 100}%"></div>
                 </div>
             </div>`;
         statsBody.innerHTML = `
             <div class="flex items-baseline justify-between">
-                <span class="text-4xl font-black text-neutral-900 dark:text-white">${prog}%</span>
-                <span class="text-xs font-bold text-neutral-400">${t('st.mastered', { m: mastered, t: total })}</span>
+                <span class="text-4xl font-black text-stone-900 dark:text-white">${prog}%</span>
+                <span class="text-xs font-bold text-stone-400">${t('st.mastered', { m: mastered, t: total })}</span>
             </div>
             <div class="flex gap-2">
-                <div class="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl text-center">
-                    <div class="text-lg font-black text-neutral-900 dark:text-white">${dueNow}</div>
-                    <div class="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">${t('st.due_today')}</div>
+                <div class="flex-1 px-4 py-3 bg-stone-50 dark:bg-stone-800 rounded-2xl text-center">
+                    <div class="text-lg font-black text-teal-700 dark:text-teal-300">${dueNow}</div>
+                    <div class="text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-widest">${t('st.due_today')}</div>
                 </div>
-                <div class="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl text-center">
-                    <div class="text-lg font-black text-neutral-900 dark:text-white">${due7}</div>
-                    <div class="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">${t('st.due_7')}</div>
+                <div class="flex-1 px-4 py-3 bg-stone-50 dark:bg-stone-800 rounded-2xl text-center">
+                    <div class="text-lg font-black text-teal-700 dark:text-teal-300">${due7}</div>
+                    <div class="text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-widest">${t('st.due_7')}</div>
                 </div>
             </div>
             <div class="pt-2 space-y-3">
-                ${bar(buckets[0].count, t('st.lv1'), 'bg-neutral-300 dark:bg-neutral-600')}
-                ${bar(buckets[1].count, t('st.lv2'), 'bg-neutral-400 dark:bg-neutral-500')}
-                ${bar(buckets[2].count, t('st.lv3'), 'bg-neutral-500 dark:bg-neutral-400')}
-                ${bar(buckets[3].count, t('st.lv4'), 'bg-neutral-700 dark:bg-neutral-300')}
-                ${bar(buckets[4].count, t('st.lv5'), 'bg-neutral-900 dark:bg-white')}
+                ${bar(buckets[0].count, t('st.lv1'), 'bg-stone-300 dark:bg-stone-600')}
+                ${bar(buckets[1].count, t('st.lv2'), 'bg-stone-400 dark:bg-stone-500')}
+                ${bar(buckets[2].count, t('st.lv3'), 'bg-stone-500 dark:bg-stone-400')}
+                ${bar(buckets[3].count, t('st.lv4'), 'bg-stone-700 dark:bg-stone-300')}
+                ${bar(buckets[4].count, t('st.lv5'), 'bg-teal-600 dark:bg-teal-400')}
             </div>
             <div class="pt-2">
-                <div class="text-xs font-bold text-neutral-500 dark:text-neutral-400 mb-2">${t('st.forecast')}</div>
+                <div class="text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">${t('st.forecast')}</div>
                 <div class="flex items-end gap-[2px] h-14">
-                    ${forecast.map((n, i) => `<div class="flex-1 ${n > 0 ? 'bg-neutral-400 dark:bg-neutral-500' : 'bg-neutral-200 dark:bg-neutral-800'} rounded-t-[2px]" style="height: ${n > 0 ? Math.max(n / fcMax * 100, 8) : 4}%" title="${i === 0 ? t('st.today') : i === 30 ? t('st.over30') : t('st.day_n', { n: i })}：${n}"></div>`).join('')}
+                    ${forecast.map((n, i) => `<div class="flex-1 ${n > 0 ? 'bg-stone-400 dark:bg-stone-500' : 'bg-stone-200 dark:bg-stone-800'} rounded-t-[2px]" style="height: ${n > 0 ? Math.max(n / fcMax * 100, 8) : 4}%" title="${i === 0 ? t('st.today') : i === 30 ? t('st.over30') : t('st.day_n', { n: i })}：${n}"></div>`).join('')}
                 </div>
-                <div class="flex justify-between text-[9px] text-neutral-400 font-bold mt-1"><span>${t('st.today')}</span><span>${t('st.after30')}</span></div>
+                <div class="flex justify-between text-[9px] text-stone-400 font-bold mt-1"><span>${t('st.today')}</span><span>${t('st.after30')}</span></div>
             </div>
-            ${leechCount || suspendedCount ? `<p class="text-[10px] text-neutral-500 dark:text-neutral-400 font-bold text-center">${t('st.leech_suspended', { l: leechCount, s: suspendedCount })}</p>` : ''}
-            <p class="text-[10px] text-neutral-400 font-bold text-center pt-1">${t('st.rule')}</p>
+            ${leechCount || suspendedCount ? `<p class="text-[10px] text-stone-500 dark:text-stone-400 font-bold text-center">${t('st.leech_suspended', { l: leechCount, s: suspendedCount })}</p>` : ''}
+            <p class="text-[10px] text-stone-400 font-bold text-center pt-1">${t('st.rule')}</p>
         `;
     }
     function renderAllCardsTable() {
         const q = cardSearchInput.value.toLowerCase().trim();
-        let html = `<thead><tr class="text-neutral-400 text-[10px] uppercase tracking-widest"><th class="p-4">${t('ac.col_mastery')}</th>`;
+        let html = `<thead><tr class="text-stone-400 text-[10px] uppercase tracking-widest"><th class="p-4">${t('ac.col_mastery')}</th>`;
         const fields = currentFullDeck[0]?.fields.length || 0;
         for (let i = 1; i <= fields; i++) html += `<th class="p-4">${t('ac.col_field')} ${i}</th>`;
         html += `<th class="p-4">${t('ac.col_tags')}</th></tr></thead><tbody>`;
@@ -1143,18 +1143,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const m = st?.mastery ?? 1;
             const isSuspended = !!st?.suspended;
             const isLeech = !!st?.leech;
-            html += `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors ${isSuspended ? 'opacity-40' : ''}">
+            html += `<tr class="hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors ${isSuspended ? 'opacity-40' : ''}">
                 <td class="p-4">
                     <div class="flex items-center gap-2 mb-1">
-                        <button class="jump-to-card-btn p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${t('aria.jump')}" title="${t('aria.jump')}"><span class="material-symbols-outlined !text-sm">my_location</span></button>
-                        <button class="suspend-btn p-1 ${isSuspended ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'} hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}" title="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}"><span class="material-symbols-outlined !text-sm">${isSuspended ? 'play_arrow' : 'pause'}</span></button>
+                        <button class="jump-to-card-btn p-1 text-stone-400 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${t('aria.jump')}" title="${t('aria.jump')}"><span class="material-symbols-outlined !text-sm">my_location</span></button>
+                        <button class="suspend-btn p-1 ${isSuspended ? 'text-stone-900 dark:text-white' : 'text-stone-400'} hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}" title="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}"><span class="material-symbols-outlined !text-sm">${isSuspended ? 'play_arrow' : 'pause'}</span></button>
                         ${isLeech ? `<span class="material-symbols-outlined !text-sm text-red-400" title="${t('aria.leech')}" aria-label="${t('aria.leech')}">bug</span>` : ''}
-                        <div class="text-[9px] font-mono text-neutral-400">${c.card_id}</div>
+                        <div class="text-[9px] font-mono text-stone-400">${c.card_id}</div>
                     </div>
-                    <div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-neutral-900 dark:bg-white':'bg-neutral-200 dark:bg-neutral-700'}"></div>`).join('')}</div>
+                    <div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-teal-600 dark:bg-teal-400':'bg-stone-200 dark:bg-stone-700'}"></div>`).join('')}</div>
                 </td>`;
-            c.fields.forEach(f => html += `<td class="p-4 text-neutral-600 dark:text-neutral-400 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
-            html += `<td class="p-4"><div class="flex flex-wrap gap-1">${(c.tags || []).map(t => `<span class="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-bold">${t}</span>`).join('')}</div></td></tr>`;
+            c.fields.forEach(f => html += `<td class="p-4 text-stone-600 dark:text-stone-400 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
+            html += `<td class="p-4"><div class="flex flex-wrap gap-1">${(c.tags || []).map(t => `<span class="px-2 py-0.5 bg-stone-100 dark:bg-stone-800 rounded text-[10px] font-bold">${t}</span>`).join('')}</div></td></tr>`;
         });
         allCardsTable.innerHTML = html + '</tbody>';
     }
@@ -1329,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const slice = view.slice(editorPage * PAGE_SIZE, (editorPage + 1) * PAGE_SIZE);
             if (slice.length === 0) {
-                editorRowsContainer.innerHTML = `<p class="text-center text-neutral-400 py-12 text-sm font-bold">${t('ed.no_match')}</p>`;
+                editorRowsContainer.innerHTML = `<p class="text-center text-stone-400 py-12 text-sm font-bold">${t('ed.no_match')}</p>`;
             } else {
                 slice.forEach(({ c, i }) => renderEditorRow(c, i));
             }
@@ -1352,24 +1352,24 @@ document.addEventListener('DOMContentLoaded', () => {
         function renderEditorRow(card, globalIndex) {
             const row = document.createElement('div');
             row.dataset.id = card.card_id;
-            row.className = "p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 flex flex-col gap-3 group animate-in slide-in-from-bottom-2 duration-300";
+            row.className = "p-4 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 flex flex-col gap-3 group animate-in slide-in-from-bottom-2 duration-300";
             row.innerHTML = `
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <input type="checkbox" class="row-select-box w-4 h-4 accent-neutral-900" aria-label="${t('aria.select_card')}" ${selectedIdx.has(globalIndex) ? 'checked' : ''}>
-                        <span class="text-[10px] font-black text-neutral-300 uppercase tracking-widest">${t('ed.card_n', { n: globalIndex + 1 })}</span>
+                        <input type="checkbox" class="row-select-box w-4 h-4 accent-stone-900" aria-label="${t('aria.select_card')}" ${selectedIdx.has(globalIndex) ? 'checked' : ''}>
+                        <span class="text-[10px] font-black text-stone-300 uppercase tracking-widest">${t('ed.card_n', { n: globalIndex + 1 })}</span>
                     </div>
-                    <button class="delete-row-btn p-1 text-neutral-300 hover:text-red-500 transition-colors" aria-label="${t('aria.delete_card')}">
+                    <button class="delete-row-btn p-1 text-stone-300 hover:text-red-500 transition-colors" aria-label="${t('aria.delete_card')}">
                         <span class="material-symbols-outlined !text-sm">delete</span>
                     </button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input type="text" placeholder="${t('ed.front_ph')}" value="${escapeAttr(card.fields[0] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900 font-bold">
-                    <input type="text" placeholder="${t('ed.back_ph')}" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-neutral-900">
+                    <input type="text" placeholder="${t('ed.front_ph')}" value="${escapeAttr(card.fields[0] || '')}" class="px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-teal-600 font-bold">
+                    <input type="text" placeholder="${t('ed.back_ph')}" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-teal-600">
                 </div>
                 <div class="flex flex-col gap-2">
-                    <input type="text" placeholder="${t('ed.notes_ph')}" value="${escapeAttr(card.fields[2] || '')}" class="px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-neutral-900 opacity-60">
-                    <input type="text" placeholder="${t('ed.tags_ph')}" value="${escapeAttr(card.tags)}" class="tag-input px-4 py-2 bg-white dark:bg-neutral-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-400">
+                    <input type="text" placeholder="${t('ed.notes_ph')}" value="${escapeAttr(card.fields[2] || '')}" class="px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-teal-600 opacity-60">
+                    <input type="text" placeholder="${t('ed.tags_ph')}" value="${escapeAttr(card.tags)}" class="tag-input px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-teal-600 text-stone-400">
                 </div>
             `;
             const inputs = row.querySelectorAll('input[type="text"]');
@@ -1468,17 +1468,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 : t('learn.none_scheduled'));
         cardStackContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
-                <div class="w-24 h-24 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full flex items-center justify-center shadow-2xl">
+                <div class="w-24 h-24 bg-teal-600 dark:bg-teal-400 text-white dark:text-stone-950 rounded-full flex items-center justify-center shadow-2xl">
                     <span class="material-symbols-outlined !text-5xl">celebration</span>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-black mb-2 text-neutral-900 dark:text-white">${t('learn.congrats')}</h3>
-                    <p class="text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest text-xs">${t('learn.done_all')}</p>
-                    <p class="text-neutral-400 dark:text-neutral-500 font-bold text-[10px] uppercase tracking-widest mt-2">${note}</p>
+                    <h3 class="text-3xl font-black mb-2 text-stone-900 dark:text-white">${t('learn.congrats')}</h3>
+                    <p class="text-stone-500 dark:text-stone-400 font-bold uppercase tracking-widest text-xs">${t('learn.done_all')}</p>
+                    <p class="text-stone-400 dark:text-stone-500 font-bold text-[10px] uppercase tracking-widest mt-2">${note}</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button id="restart-round-btn" class="px-8 py-3.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all">${t('learn.restart')}</button>
-                    <button id="back-to-home-btn" class="px-8 py-3.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">${t('learn.back_home')}</button>
+                    <button id="restart-round-btn" class="px-8 py-3.5 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all">${t('learn.restart')}</button>
+                    <button id="back-to-home-btn" class="px-8 py-3.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 text-white dark:text-stone-950 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">${t('learn.back_home')}</button>
                 </div>
             </div>
         `;
