@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.3.0 (Warm Stone + Teal) =====
+// ===== FlipDeck v5.4.0 (Dual-side View + URL Sharing) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const newLimitDecrease = document.getElementById('new-limit-decrease');
     const newLimitIncrease = document.getElementById('new-limit-increase');
     const newLimitValue = document.getElementById('new-limit-value');
+    const displayModeBtn = document.getElementById('display-mode-btn');
+    const hintFlipPill = document.getElementById('hint-flip-pill');
     
     const allCardsModal = document.getElementById('all-cards-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -137,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
     let editorConfirmClose = null;
 
-    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20 };
+    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo' };
     const MAX_HISTORY = 50;
     const RECENT_SKIP = 8; // v4.3.0 P5：排隊時排除最近 N 張已作答卡片，避免立即回鍋
     const DAY_MS = 86400000;
@@ -159,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         populateExampleSelector();
         renderHomeScreen();
         bindEventListeners();
+        handleSharedDeckUrl(); // v5.4.0：分享連結匯入（非同步，不阻塞啟動）
     }
 
     function saveUXFlags() { localStorage.setItem(STORAGE_KEYS.UX_FLAGS, JSON.stringify(uxFlags)); }
@@ -426,8 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = history[historyIndex], state = currentCardStatus.get(id);
             if (state) {
                 // v5：即答（未翻面）q=5，翻面後才答對 q=4，忘記 q=2
+                // v5.4.0：雙面模式答案可見，答對一律記 q=4（視為「看過答案後想起」）
                 const flipped = document.getElementById('active-combo-card')?.querySelector('.card-inner')?.classList.contains('rotate-y-180') ?? false;
-                const q = action === 'incorrect' ? 2 : (flipped ? 4 : 5);
+                const q = action === 'incorrect' ? 2 : (currentDeckSettings.displayMode === 'dual' ? 4 : (flipped ? 4 : 5));
                 wasIntro = (state.reps ?? 0) === 0 && (state.due ?? 0) === 0; // v5.1：首次引入新卡
                 Object.assign(state, sm2Update(state, q));
                 if (action === 'incorrect') applyLapse(state); // v5.1：失敗計數 + leech
@@ -537,12 +541,28 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (isTop) {
                 cardEl.id = 'active-combo-card';
+                const fs = currentDeckSettings.fontSize;
+                if (currentDeckSettings.displayMode === 'dual') {
+                    // v5.4.0：雙面模式 —— 正面與背面同時可見，無翻面
+                    cardEl.innerHTML = `
+                    <div id="stamp-forgot" class="stamp"><span class="material-symbols-outlined !text-5xl">close</span></div>
+                    <div id="stamp-learned" class="stamp"><span class="material-symbols-outlined !text-5xl">check</span></div>
+                    <div class="card-inner">
+                        <div class="absolute inset-0 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex flex-col items-center justify-center p-6 sm:p-8 overflow-hidden">
+                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${fs}rem">${data.fields[0]}</div>
+                            <div class="w-12 h-px bg-stone-200 dark:bg-stone-700 my-3 sm:my-4 flex-shrink-0"></div>
+                            <div class="card-content text-center text-stone-600 dark:text-stone-300 font-bold break-words w-full" style="font-size: ${fs * 0.8}rem">${data.fields[1] || ''}</div>
+                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full text-center mt-2">${data.fields.slice(2).join('<br>')}</div>
+                        </div>
+                    </div>
+                `;
+                } else {
                 cardEl.innerHTML = `
                     <div id="stamp-forgot" class="stamp"><span class="material-symbols-outlined !text-5xl">close</span></div>
                     <div id="stamp-learned" class="stamp"><span class="material-symbols-outlined !text-5xl">check</span></div>
                     <div class="card-inner">
                         <div class="absolute inset-0 backface-hidden bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
-                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full max-h-full overflow-y-auto" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
+                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
                             <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-stone-400 font-bold pointer-events-none select-none">${t('learn.tap_flip')}</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
@@ -551,6 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 `;
+                }
                 cardStackContainer.appendChild(cardEl);
                 initComboLogic(cardEl);
             } else {
@@ -618,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
                 card.style.transform = `translateX(0px) rotate(0deg)`;
                 sForgot.style.opacity = sLearned.style.opacity = bgForgot.style.opacity = bgLearned.style.opacity = 0;
-                if (Math.abs(dragX) < 15 && Math.abs(dragY) < 15 && (Date.now() - startTime) < 300) inner.classList.toggle('rotate-y-180');
+                if (currentDeckSettings.displayMode !== 'dual' && Math.abs(dragX) < 15 && Math.abs(dragY) < 15 && (Date.now() - startTime) < 300) inner.classList.toggle('rotate-y-180');
             }
         };
         card.onpointerup = handleEnd;
@@ -670,6 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fontSizeDecrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(-0.2); };
         newLimitIncrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(5); };
         newLimitDecrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(-5); };
+        displayModeBtn.onclick = (e) => { e.stopPropagation(); changeDisplayMode(); };
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 融合 Modal 按鈕 ---
@@ -734,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (e.key === ' ') {
                     e.preventDefault();
                     const ac = document.getElementById('active-combo-card');
-                    if (ac) ac.querySelector('.card-inner').classList.toggle('rotate-y-180');
+                    if (ac && currentDeckSettings.displayMode !== 'dual') ac.querySelector('.card-inner').classList.toggle('rotate-y-180');
                 }
             }
         };
@@ -1009,6 +1031,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyCurrentDeckSettings() {
         fontSizeValue.textContent = currentDeckSettings.fontSize.toFixed(1);
         newLimitValue.textContent = (currentDeckSettings.newPerDay ?? 0) > 0 ? currentDeckSettings.newPerDay : t('menu.unlimited');
+        const dual = currentDeckSettings.displayMode === 'dual';
+        displayModeBtn.textContent = dual ? t('menu.mode_dual') : t('menu.mode_combo');
+        hintFlipPill.classList.toggle('hidden', dual); // v5.4.0：雙面模式無翻面操作
         populateCardTagFilters();
     }
 
@@ -1035,6 +1060,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // v5.4.0：切換顯示模式（翻面 <-> 雙面），立即重繪卡面
+    function changeDisplayMode() {
+        currentDeckSettings.displayMode = currentDeckSettings.displayMode === 'dual' ? 'combo' : 'dual';
+        const meta = deckList.find(d => d.id === currentDeckId);
+        if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
+        const dual = currentDeckSettings.displayMode === 'dual';
+        displayModeBtn.textContent = dual ? t('menu.mode_dual') : t('menu.mode_combo');
+        hintFlipPill.classList.toggle('hidden', dual);
+        displayCardStack();
+    }
+
     function changeDeckFontSize(step) {
         currentDeckSettings.fontSize = Math.min(Math.max(currentDeckSettings.fontSize + step, 1.0), 5.0);
         const meta = deckList.find(d => d.id === currentDeckId);
@@ -1050,6 +1086,81 @@ document.addEventListener('DOMContentLoaded', () => {
         if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
         newLimitValue.textContent = currentDeckSettings.newPerDay > 0 ? currentDeckSettings.newPerDay : t('menu.unlimited');
         updateLearningDeck();
+    }
+
+    // v5.4.0：URL 分享編碼 —— 靜態資料（id/標題/卡片）→ 精簡 JSON → deflate-raw → base64url
+    async function encodeDeckForUrl(deck) {
+        const compact = { i: deck.id, t: deck.title, c: deck.cards.map(c => [c.card_id, c.fields, c.tags || [], c.notes || '']) };
+        const buf = new TextEncoder().encode(JSON.stringify(compact));
+        const stream = new Blob([buf]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+        const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+        const CHUNK = 0x8000;
+        let bin = '';
+        for (let i = 0; i < bytes.length; i += CHUNK) bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+        return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    // v5.4.0：URL 分享解碼 —— base64url → inflate → { id, title, cards }
+    async function decodeDeckFromUrl(payload) {
+        const b64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
+        const bin = atob(padded);
+        const bytes = Uint8Array.from(bin, ch => ch.charCodeAt(0));
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+        const json = new TextDecoder().decode(await new Response(stream).arrayBuffer());
+        const compact = JSON.parse(json);
+        if (!compact || !Array.isArray(compact.c) || compact.c.length === 0) throw new Error('bad payload');
+        return { id: compact.i, title: compact.t, cards: compact.c.map(([card_id, fields, tags, notes]) => ({ card_id, fields, tags, notes })) };
+    }
+
+    // v5.4.0：牌組設定 → 複製分享連結
+    async function copyShareLink(id) {
+        const cards = getDeckData(id);
+        if (!cards) return;
+        try {
+            const payload = await encodeDeckForUrl({ id, title: deckList.find(d => d.id === id)?.title || id, cards });
+            if (payload.length > 32768) { await appAlert(t('dlg.share_too_big'), t('do.share')); return; }
+            const url = location.href.split('#')[0] + '#d=' + payload;
+            try {
+                await navigator.clipboard.writeText(url);
+                await appAlert(t('dlg.share_done'), t('do.share'));
+            } catch (e) {
+                await appAlert(t('dlg.share_fail', { u: url }), t('do.share'));
+            }
+        } catch (e) {
+            await appAlert(t('dlg.share_invalid'), t('do.share'));
+        }
+    }
+
+    // v5.4.0：載入時偵測 #d= 分享連結 → 確認後匯入（同 id 覆蓋、進度保留），完成即清除 hash
+    async function handleSharedDeckUrl() {
+        const m = location.hash.match(/[#&]d=([A-Za-z0-9\-_]+)/);
+        if (!m) return;
+        let deck = null;
+        try { deck = await decodeDeckFromUrl(m[1]); } catch (e) { deck = null; }
+        history.replaceState(null, '', location.pathname + location.search);
+        if (!deck || !deck.id || deck.cards.some(c => !c || typeof c.card_id !== 'string' || !Array.isArray(c.fields))) {
+            appAlert(t('dlg.share_invalid'), t('do.share'));
+            return;
+        }
+        const existing = deckList.find(x => x.id === deck.id);
+        const ok = await appConfirm({
+            title: t('dlg.share_title'),
+            message: existing ? t('dlg.share_msg_overwrite', { t: deck.title, n: deck.cards.length }) : t('dlg.share_msg_new', { t: deck.title, n: deck.cards.length }),
+            okText: t('dlg.share_ok'),
+            danger: !!existing
+        });
+        if (!ok) return;
+        if (existing) {
+            saveDeckData(deck.id, deck.cards);
+            existing.title = deck.title;
+            existing.totalCards = deck.cards.length;
+            saveDeckList();
+            renderHomeScreen();
+            await appAlert(t('dlg.share_imported', { t: deck.title }), t('do.share'));
+        } else {
+            processNewDeck(deck.cards, deck.id, deck.title);
+        }
     }
 
     function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); cardSearchInput.focus(); }
@@ -1170,6 +1281,11 @@ document.addEventListener('DOMContentLoaded', () => {
         saveDeckOptionsBtn.onclick = () => {
             d.title = deckTitleInput.value; saveDeckList();
             deckOptionsModal.classList.add('hidden'); renderHomeScreen();
+        };
+        const deckOptionsShareBtn = document.getElementById('deck-options-share-btn');
+        if (deckOptionsShareBtn) deckOptionsShareBtn.onclick = async () => {
+            deckOptionsModal.classList.add('hidden');
+            await copyShareLink(id);
         };
         const deckOptionsJsonBtn = document.getElementById('deck-options-json-btn');
         if (deckOptionsJsonBtn) deckOptionsJsonBtn.onclick = () => {

@@ -35,6 +35,7 @@ function makeSession() {
     let history = [], historyIndex = -1;
     let lastAction = null;
     let currentDeckId = 'deck1';
+    let currentDeckSettings = { displayMode: 'combo' }; // v5.4.0：showNextCard 讀取顯示模式
     const MAX_HISTORY = 50;
     const calls = [];
     const document = { getElementById: () => null }; // 無進行中卡面 → 翻面偵測為 false → q=5
@@ -64,7 +65,8 @@ function makeSession() {
         get historyIndex() { return historyIndex; },
         get lastAction() { return lastAction; },
         get queue() { return upcomingQueue; },
-        set queue(q) { upcomingQueue = q; }
+        set queue(q) { upcomingQueue = q; },
+        set displayMode(m) { currentDeckSettings.displayMode = m; } // v5.4.0：測試用
     };
 }
 
@@ -103,6 +105,17 @@ function makeSession() {
         assert.strictEqual(S.queue[0], 'c', 'undo puts next card back at queue front');
         assert.strictEqual(S.lastAction, null, 'undo consumed the action');
         console.log('T1 correct+undo round-trip (SM-2 snapshot + daily allowance): OK');
+
+        // v5.4.0：雙面模式 —— 答案可見，答對記 q=4（EF 不加成）
+        const S2 = makeSession();
+        S2.displayMode = 'dual';
+        S2.showNextCard('new_game');
+        S2.showNextCard('correct');
+        const dualCard = S2.status.get('b');
+        assert.strictEqual(dualCard.reps, 1, 'dual: reps still advance');
+        assert.strictEqual(dualCard.ef, 2.5, 'dual: q=4 keeps EF unchanged');
+        assert.ok(dualCard.due > Date.now(), 'dual: still scheduled');
+        console.log('T1b dual-mode correct maps to q=4: OK');
     }
 
     // ---- T2: 'skip' leaves mastery AND SM-2 untouched; undo restores only position ----

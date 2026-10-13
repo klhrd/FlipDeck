@@ -16,6 +16,7 @@ const I18N = {
         'menu.show_all': '顯示全卡片 (搜尋)', 'menu.stats': '學習統計', 'menu.visual_edit': '圖形化編輯器',
         'menu.tag_filter': '標籤篩選', 'menu.no_tags': '無可用標籤',
         'menu.font_size': '字型大小', 'menu.daily_new': '每日新卡', 'menu.unlimited': '無上限',
+        'menu.display_mode': '顯示模式', 'menu.mode_combo': '翻面', 'menu.mode_dual': '雙面',
         // 快速開始
         'qs.title': '新增單字集', 'qs.upload': '上傳 .txt, .csv, .json',
         // 顯示全部
@@ -24,7 +25,7 @@ const I18N = {
         // JSON 編輯器
         'json.title': 'JSON 原始碼編輯', 'json.save': '儲存變更',
         // 牌組選項
-        'do.title': '單字集設定', 'do.name': '單字集名稱', 'do.save': '儲存設定', 'do.json': 'JSON 原始碼', 'do.delete': '刪除單字集',
+        'do.title': '單字集設定', 'do.name': '單字集名稱', 'do.save': '儲存設定', 'do.json': 'JSON 原始碼', 'do.delete': '刪除單字集', 'do.share': '複製分享連結',
         // 操作教學
         'htu.title': '操作教學',
         'htu.s1': '點擊卡片即可翻面', 'htu.s2': '向右滑動表示「已學會」', 'htu.s3': '向左滑動表示「不熟悉」',
@@ -71,6 +72,13 @@ const I18N = {
         'dlg.restore_done_t': '備份還原', 'dlg.restore_done': '還原完成：覆蓋 {r} 個、新增 {a} 個單字集。',
         'dlg.restart_title': '再讀一輪', 'dlg.restart_msg': '將把目前篩選下的 {n} 張卡片熟練度重置為 1 並重新開始，其他卡片不受影響。', 'dlg.restart_ok': '重置並開始',
         'dlg.discard_title': '放棄未儲存的變更？', 'dlg.discard_msg': '您在編輯器中的修改尚未儲存，離開將全部遺失。', 'dlg.discard_ok': '放棄變更',
+        // 分享（URL 內嵌）
+        'dlg.share_title': '匯入分享牌組？', 'dlg.share_msg_new': '「{t}」（{n} 張卡片）',
+        'dlg.share_msg_overwrite': '將覆蓋現有「{t}」的內容（{n} 張卡片）——你的學習進度保留',
+        'dlg.share_ok': '匯入', 'dlg.share_imported': '已匯入「{t}」。',
+        'dlg.share_done': '分享連結已複製到剪貼簿。', 'dlg.share_fail': '複製失敗，請手動選取複製：\n{u}',
+        'dlg.share_too_big': '此牌組壓縮後仍過大，不適合連結分享，請改用「全域備份」。',
+        'dlg.share_invalid': '分享連結無效或已損毀。',
         // aria
         'aria.open_menu': '開啟主選單', 'aria.open_settings': '開啟設定選單', 'aria.close': '關閉', 'aria.close_menu': '關閉選單',
         'aria.back_home': '回到首頁', 'aria.fullscreen': '切換全螢幕', 'aria.theme': '切換深淺色模式',
@@ -83,7 +91,7 @@ const I18N = {
         'aria.decrease_new': '減少每日新卡上限', 'aria.increase_new': '增加每日新卡上限',
         'aria.bulk_tags': '批次標籤', 'aria.clear_selection': '清除選取',
         'aria.search_cards': '搜尋卡片', 'aria.visual_edit': '開啟圖形化編輯器', 'aria.start_learning': '開始學習',
-        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）'
+        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式'
     },
     en: {
         'app.menu': 'Menu', 'app.settings': 'Settings',
@@ -97,11 +105,12 @@ const I18N = {
         'menu.show_all': 'All Cards (Search)', 'menu.stats': 'Statistics', 'menu.visual_edit': 'Visual Editor',
         'menu.tag_filter': 'Filter by Tags', 'menu.no_tags': 'No tags available',
         'menu.font_size': 'Font Size', 'menu.daily_new': 'Daily New Cards', 'menu.unlimited': 'Unlimited',
+        'menu.display_mode': 'Card View', 'menu.mode_combo': 'Flip', 'menu.mode_dual': 'Both Sides',
         'qs.title': 'Add Deck', 'qs.upload': 'Upload .txt, .csv, .json',
         'ac.title': 'Deck Manager', 'ac.visual_edit': 'Visual Edit', 'ac.json': 'JSON Source',
         'ac.search_ph': 'Search keyword or tags...', 'ac.col_mastery': 'ID / Mastery', 'ac.col_field': 'Field', 'ac.col_tags': 'Tags',
         'json.title': 'JSON Source Editor', 'json.save': 'Save Changes',
-        'do.title': 'Deck Settings', 'do.name': 'Deck Name', 'do.save': 'Save Settings', 'do.json': 'JSON Source', 'do.delete': 'Delete Deck',
+        'do.title': 'Deck Settings', 'do.name': 'Deck Name', 'do.save': 'Save Settings', 'do.json': 'JSON Source', 'do.delete': 'Delete Deck', 'do.share': 'Copy Share Link',
         'htu.title': 'How to Use',
         'htu.s1': 'Tap the card to flip it', 'htu.s2': 'Swipe right for "Got it"', 'htu.s3': 'Swipe left for "Forgot"',
         'htu.s4': 'Swipe up to "Skip" for now', 'htu.s5': 'Tap "Undo" within 3s to revert a judgment',
@@ -142,6 +151,12 @@ const I18N = {
         'dlg.restore_done_t': 'Backup Restored', 'dlg.restore_done': 'Restored: {r} overwritten, {a} added.',
         'dlg.restart_title': 'Another Round', 'dlg.restart_msg': 'Reset {n} filtered cards to level 1 and start over? Other cards are unaffected.', 'dlg.restart_ok': 'Reset & Start',
         'dlg.discard_title': 'Discard unsaved changes?', 'dlg.discard_msg': 'Your edits in the editor are not saved and will be lost.', 'dlg.discard_ok': 'Discard',
+        'dlg.share_title': 'Import shared deck?', 'dlg.share_msg_new': '"{t}" ({n} cards)',
+        'dlg.share_msg_overwrite': 'This overwrites existing "{t}" ({n} cards) — your progress is kept',
+        'dlg.share_ok': 'Import', 'dlg.share_imported': 'Imported "{t}".',
+        'dlg.share_done': 'Share link copied to clipboard.', 'dlg.share_fail': 'Copy failed — select and copy manually:\n{u}',
+        'dlg.share_too_big': 'This deck is too large even after compression. Use "Backup All" instead.',
+        'dlg.share_invalid': 'The share link is invalid or corrupted.',
         'aria.open_menu': 'Open menu', 'aria.open_settings': 'Open settings menu', 'aria.close': 'Close', 'aria.close_menu': 'Close menu',
         'aria.back_home': 'Back to home', 'aria.fullscreen': 'Toggle fullscreen', 'aria.theme': 'Toggle dark/light mode',
         'aria.theme_light': 'Switch to light mode', 'aria.theme_dark': 'Switch to dark mode',
@@ -153,7 +168,7 @@ const I18N = {
         'aria.decrease_new': 'Decrease daily new-card limit', 'aria.increase_new': 'Increase daily new-card limit',
         'aria.bulk_tags': 'Batch tags', 'aria.clear_selection': 'Clear selection',
         'aria.search_cards': 'Search cards', 'aria.visual_edit': 'Open visual editor', 'aria.start_learning': 'Start Learning',
-        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)'
+        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view'
     }
 };
 

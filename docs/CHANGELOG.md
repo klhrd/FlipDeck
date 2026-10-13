@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.0] - 2026-04-11
+### Added（Roadmap 兩件套：雙面顯示 + 連結分享）
+- **雙面顯示模式**：學習選單新增「顯示模式」切換（翻面 ⇄ 雙面），per-deck 持久化。雙面版面同時顯示正面/背面（上下分割），點擊與空白鍵不再翻面；滑動判定、跳過、復原、鍵盤全部照常。**SM-2 對映定案**：雙面模式答案可見，答對一律記 q=4（「看過答案後想起」），EF 不加成——進度語意誠實。手勢提示列在雙面模式自動隱藏「點擊 翻面」膠囊。
+- **連結分享牌組（URL 內嵌、無後端）**：牌組設定（⋮）新增「複製分享連結」——精簡 JSON → `CompressionStream('deflate-raw')` → base64url 編入 `#d=` hash；**只傳靜態資料**（牌組 id、標題、card_id/fields/tags/notes），mastery/SM-2 進度不傳、由接收端自行累積。接收流程：開啟連結自動偵測 → in-app 確認（新匯入/覆蓋同 id 且**進度保留**）→ 匯入後清除 hash 防重複。壓縮後 >32KB 的大牌組（如 hs_6000）提示改用全域備份。
+- **測試**：新增 `share.test.js`（round-trip/壓縮率/損毀防護）；`learning.test.js` 補雙面 q=4 斷言；`extractFn` 支援 `async function` 抽取。測試過程抓出生產碼兩個真 bug：`b64` 自我引用 TDZ、async 關鍵字被抽取器截斷。
+
+### Changed
+- **版本號升級**：v5.3.0 -> v5.4.0；SW `CACHE_NAME` 同步 bump。
+
 ## [5.3.0] - 2026-04-11
 ### Changed（UI/UX 優化：降低黑白對比 + 修復按鈕溢出）
 - **配色系統重塑**：冷灰 neutral 全面換成暖灰 **stone**（紙感底色 stone-100/950、暖邊框），告別黑白極端；主色收復品牌 **teal**（manifest `theme_color: #14b8a6`）——主要按鈕、進度條、到期徽章、熟練度圓點、焦點環、資訊膠囊、統計強調色全部由近黑改為 teal-700/600（深色模式 teal-500/400），滑動回饋的紅/綠保留為功能色。`<meta theme-color>` 同步 teal-700。

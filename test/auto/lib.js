@@ -10,7 +10,9 @@ const readServiceWorker = () => fs.readFileSync(serviceWorkerPath, 'utf8');
 
 // 以括號平衡抽取整個函式原始碼（支援參數解構的簽名，如 appConfirm({ ... })）
 function extractFn(src, name) {
-    const idx = src.indexOf(`function ${name}(`);
+    // 支援 async function（從關鍵字起切，保留 async）
+    let idx = src.indexOf(`async function ${name}(`);
+    if (idx < 0) idx = src.indexOf(`function ${name}(`);
     if (idx < 0) throw new Error(`function ${name} not found in source`);
     const sigEnd = src.indexOf(') {', idx);
     if (sigEnd < 0) throw new Error(`body brace not located for ${name}`);
