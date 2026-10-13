@@ -1,9 +1,12 @@
 {
   "name": "flipdeck",
-  "version": "5.4.0",
+  "version": "5.4.1",
   "private": true,
   "description": "極簡單字卡 PWA，SM-2 間隔重複排程 (Vanilla JS, no build step, zero dependencies)",
   "scripts": {
     "test": "node test/auto/run-all.js"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.2"
   }
 }

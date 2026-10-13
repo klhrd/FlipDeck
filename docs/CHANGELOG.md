@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.1] - 2026-04-11
+### Fixed（「選單故障」根因修復 —— 由 jsdom 冒煙測試重現定位）
+- **分享連結匯入 100% 失敗**：`handleSharedDeckUrl` 內 `history.replaceState` 被 closure 內答題歷史陣列 `history` 遮蔽 → TypeError → 匯入對話框永不顯示、hash 無法清除。改用 `window.history.replaceState`。
+- **學習選單防護**：session 尚未啟動或設定不完整時（如匯入流程中斷後誤觸），`applyCurrentDeckSettings()` 對 `fontSize.toFixed` 直接 TypeError、炸斷 `menuBtn.onclick`。加入預設值回補防護。
+- **`</span data-i18n=...>` 無效結尾標籤 ×2**（「從空白建立」「顯示全卡片」）：i18n 批次腳本誤將屬性插入結尾標籤、被瀏覽器丟棄 → 語言切換時這兩項不翻譯。改為正確的 `<span data-i18n>` 包裹。
+- 附帶：修正 zh `aria.theme_dark` 錯字（「深色色」→「深色」）。
+
+### Added（開發者）
+- **jsdom 冒煙測試入列**（`test/auto/smoke.test.js`，devDependency `jsdom`）：完整啟動 + 首頁/學習選單開關、教學/編輯器/統計入口、語言切換、顯示模式切換、Escape、匯入流程——直接重現了本次故障，防止回歸。
+
+### Changed
+- **版本號升級**：v5.4.0 -> v5.4.1；SW `CACHE_NAME` 同步 bump。
+
 ## [5.4.0] - 2026-04-11
 ### Added（Roadmap 兩件套：雙面顯示 + 連結分享）
 - **雙面顯示模式**：學習選單新增「顯示模式」切換（翻面 ⇄ 雙面），per-deck 持久化。雙面版面同時顯示正面/背面（上下分割），點擊與空白鍵不再翻面；滑動判定、跳過、復原、鍵盤全部照常。**SM-2 對映定案**：雙面模式答案可見，答對一律記 q=4（「看過答案後想起」），EF 不加成——進度語意誠實。手勢提示列在雙面模式自動隱藏「點擊 翻面」膠囊。

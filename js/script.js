@@ -1029,6 +1029,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function openHowToUseModal() { howToUseModal.classList.remove('hidden'); hideAllMenus(); document.getElementById('close-how-to-use-modal-btn')?.focus(); }
     
     function applyCurrentDeckSettings() {
+        // 防護：session 尚未啟動或設定不完整時（如匯入中斷後誤觸選單），回補預設值
+        if (!currentDeckSettings || currentDeckSettings.fontSize === undefined) {
+            currentDeckSettings = { ...DEFAULT_DECK_SETTINGS };
+        }
         fontSizeValue.textContent = currentDeckSettings.fontSize.toFixed(1);
         newLimitValue.textContent = (currentDeckSettings.newPerDay ?? 0) > 0 ? currentDeckSettings.newPerDay : t('menu.unlimited');
         const dual = currentDeckSettings.displayMode === 'dual';
@@ -1138,7 +1142,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!m) return;
         let deck = null;
         try { deck = await decodeDeckFromUrl(m[1]); } catch (e) { deck = null; }
-        history.replaceState(null, '', location.pathname + location.search);
+        // 注意：須用 window.history——本閉包內的 `history` 是答題歷史陣列（遮蔽修正）
+        window.history.replaceState(null, '', location.pathname + location.search);
         if (!deck || !deck.id || deck.cards.some(c => !c || typeof c.card_id !== 'string' || !Array.isArray(c.fields))) {
             appAlert(t('dlg.share_invalid'), t('do.share'));
             return;

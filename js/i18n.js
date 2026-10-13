@@ -82,7 +82,7 @@ const I18N = {
         // aria
         'aria.open_menu': '開啟主選單', 'aria.open_settings': '開啟設定選單', 'aria.close': '關閉', 'aria.close_menu': '關閉選單',
         'aria.back_home': '回到首頁', 'aria.fullscreen': '切換全螢幕', 'aria.theme': '切換深淺色模式',
-        'aria.theme_light': '切換至淺色模式', 'aria.theme_dark': '切換至深色色模式',
+        'aria.theme_light': '切換至淺色模式', 'aria.theme_dark': '切換至深色模式',
         'aria.lang': '切換語言 (English)', 'aria.download': '下載此單字集', 'aria.load_example': '載入範例',
         'aria.undo': '復原上一次判定', 'aria.jump': '跳至此卡片', 'aria.suspend': '暫停此卡片', 'aria.unsuspend': '取消暫停此卡片',
         'aria.select_card': '選取此卡片', 'aria.delete_card': '刪除此卡片',
