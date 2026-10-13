@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.2] - 2026-04-11
+### Changed
+- **選單快速列布局重構**：學習選單 6 顆快速鈕改為**分組雙列**（牌組操作：回首頁/匯入/下載 ＋ 顯示設定：全螢幕/深淺/語言），根除依賴 `flex-wrap` 的被動換行；按鈕 `flex-shrink-0` 防壓縮、觸控目標加大為 p-2.5；首頁選單（4 顆）同步套用。
+- **長期 Roadmap 立項**：TODO 新增候選池 18 項（複習模式/媒體/資料層/演算法/分享/平台六大類），雲端同步維持暫緩。
+- **版本號升級**：v5.4.1 -> v5.4.2；SW `CACHE_NAME` 同步 bump。
+
 ## [5.4.1] - 2026-04-11
 ### Fixed（「選單故障」根因修復 —— 由 jsdom 冒煙測試重現定位）
 - **分享連結匯入 100% 失敗**：`handleSharedDeckUrl` 內 `history.replaceState` 被 closure 內答題歷史陣列 `history` 遮蔽 → TypeError → 匯入對話框永不顯示、hash 無法清除。改用 `window.history.replaceState`。

@@ -113,11 +113,14 @@
             <h2 class="text-xs uppercase tracking-widest font-black text-stone-500" data-i18n="app.menu">主選單</h2>
             <button id="home-menu-close-btn" data-i18n-aria="aria.close_menu" aria-label="關閉選單" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <div class="flex flex-wrap justify-center gap-1 mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl">
-            <button id="home-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-2 text-stone-400"><span class="material-symbols-outlined">add_circle</span></button>
-            <button id="home-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-2 text-stone-400"><span class="material-symbols-outlined">fullscreen</span></button>
-            <button id="home-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-2 text-stone-400"><span class="material-symbols-outlined">dark_mode</span></button>
-            <button id="home-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-2 text-stone-400"><span class="material-symbols-outlined">translate</span></button>
+        <!-- v5.4.2：快速列分組雙列（3+3），不再依賴 flex-wrap 換行 -->
+        <div class="mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl space-y-2">
+            <div class="flex justify-around">
+                <button id="home-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">add_circle</span></button>
+                <button id="home-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">fullscreen</span></button>
+                <button id="home-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">dark_mode</span></button>
+                <button id="home-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">translate</span></button>
+            </div>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto">
             <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span><span data-i18n="menu.create_blank">從空白建立</span></button></li>
@@ -132,13 +135,18 @@
             <h2 class="text-xs uppercase tracking-widest font-black text-stone-500" data-i18n="app.settings">設定</h2>
             <button id="deck-menu-close-btn" data-i18n-aria="aria.close_menu" aria-label="關閉選單" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <div class="flex flex-wrap justify-center gap-1 mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl">
-            <button id="deck-menu-home-btn" data-i18n-aria="aria.back_home" aria-label="回到首頁" class="p-2 text-stone-400"><span class="material-symbols-outlined">home</span></button>
-            <button id="deck-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-2 text-stone-400"><span class="material-symbols-outlined">add_circle</span></button>
-            <button id="deck-menu-download-btn" data-i18n-aria="aria.download" aria-label="下載此單字集" class="p-2 text-stone-400"><span class="material-symbols-outlined">download</span></button>
-            <button id="deck-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-2 text-stone-400"><span class="material-symbols-outlined">fullscreen</span></button>
-            <button id="deck-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-2 text-stone-400"><span class="material-symbols-outlined">dark_mode</span></button>
-            <button id="deck-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-2 text-stone-400"><span class="material-symbols-outlined">translate</span></button>
+        <!-- v5.4.2：快速列分組雙列 —— 牌組操作 3 顆 + 顯示設定 3 顆，根除換行 -->
+        <div class="mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl space-y-2">
+            <div class="flex justify-around">
+                <button id="deck-menu-home-btn" data-i18n-aria="aria.back_home" aria-label="回到首頁" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">home</span></button>
+                <button id="deck-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">add_circle</span></button>
+                <button id="deck-menu-download-btn" data-i18n-aria="aria.download" aria-label="下載此單字集" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">download</span></button>
+            </div>
+            <div class="flex justify-around">
+                <button id="deck-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">fullscreen</span></button>
+                <button id="deck-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">dark_mode</span></button>
+                <button id="deck-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">translate</span></button>
+            </div>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto custom-scrollbar">
             <li><button id="show-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3 text-stone-900 dark:text-white font-bold">list_alt</span><span data-i18n="menu.show_all">顯示全卡片 (搜尋)</span></button></li>

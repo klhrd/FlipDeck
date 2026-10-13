@@ -1,7 +1,7 @@
-// Service Worker for FlipDeck PWA (v5.4.1)
+// Service Worker for FlipDeck PWA (v5.4.2)
 
 // v4.1.4: 快取版本隨每次發版 bump，否則 cache-first 會讓修復永遠到不了使用者
-const CACHE_NAME = 'flipdeck-cache-v5.4.1';
+const CACHE_NAME = 'flipdeck-cache-v5.4.2';
 // 核心資源 + 外部 JSON 範例檔
 const urlsToCache = [
     './',

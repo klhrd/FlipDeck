@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.4.0 (Dual-side View + URL Sharing) =====
+// ===== FlipDeck v5.4.2 (Dual-side View + URL Sharing + Menu Layout) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
