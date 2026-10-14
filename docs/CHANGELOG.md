@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.3] - 2026-04-11
+### Fixed
+- **行動瀏覽器視窗高度修正（100vh → dvh）**：`100vh` 會把網址列/狀態列算進視窗高度，導致學習畫面底部（手勢提示列、復原膠囊）與 Modal 底部按鈕被遮、內部需要捲動才看得到。全部改用 `dvh`（dynamic viewport height，隨工具列顯示自動縮放），並保留 `vh` 作為舊瀏覽器 fallback。套用範圍：學習主畫面（`dvh-screen`）、顯示全部/編輯器/JSON 編輯器 Modal（`dvh-90` / `dvh-80`）、卡片容器上限（`dvh-max-68`）、側邊選單面板。文件流元素（首頁捲動頁）的 `min-h-screen` 為正確用法、不動。
+
+### Changed
+- **版本號升級**：v5.4.2 -> v5.4.3；SW `CACHE_NAME` 同步 bump。
+
 ## [5.4.2] - 2026-04-11
 ### Changed
 - **選單快速列布局重構**：學習選單 6 顆快速鈕改為**分組雙列**（牌組操作：回首頁/匯入/下載 ＋ 顯示設定：全螢幕/深淺/語言），根除依賴 `flex-wrap` 的被動換行；按鈕 `flex-shrink-0` 防壓縮、觸控目標加大為 p-2.5；首頁選單（4 顆）同步套用。

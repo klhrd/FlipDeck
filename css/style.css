@@ -96,7 +96,8 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    height: 100%;
+    height: 100vh; /* v5.4.3: fallback */
+    height: 100dvh; /* v5.4.3: 隨行動瀏覽器工具列動態調整 */
     width: 20rem; /* 80 */
     background-color: white;
     box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.25);
@@ -121,6 +122,14 @@ body {
     backdrop-filter: blur(4px);
     z-index: 2000; /* 低於選單，高於內容 */
 }
+
+/* v5.4.3: dvh（動態視窗高度）—— 修正行動瀏覽器把網址列/狀態列算進 100vh，
+   造成底部內容（提示列、對話框按鈕）被遮、內部必須捲動。dvh 隨工具列顯示自動調整。
+   寫法：先 vh（舊瀏覽器 fallback），再 dvh（支援者覆蓋）。 */
+.dvh-screen { height: 100vh; height: 100dvh; }
+.dvh-90 { height: 90vh; height: 90dvh; }
+.dvh-80 { height: 80vh; height: 80dvh; }
+.dvh-max-68 { max-height: 68vh; max-height: 68dvh; }
 
 .menu-item-btn {
     width: 100%;

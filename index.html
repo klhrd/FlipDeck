@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.4.0</title>
+    <title>FlipDeck v5.4.3</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -68,7 +68,7 @@
         </div>
 
         <!-- ===== 主學習畫面 (Combo Mode v4.1.0) ===== -->
-        <div id="main-screen" class="hidden w-full h-screen flex flex-col bg-stone-50 dark:bg-stone-950 relative overflow-hidden">
+        <div id="main-screen" class="hidden w-full dvh-screen flex flex-col bg-stone-50 dark:bg-stone-950 relative overflow-hidden">
             
             <!-- 漸層背景 -->
             <div id="bg-forgot" class="swipe-bg"></div>
@@ -93,7 +93,7 @@
             </button>
 
             <div id="card-area" class="flex-grow flex items-center justify-center w-full h-full p-6 relative perspective-1000">
-                <div id="card-stack-container" class="relative w-full max-sm:max-w-[320px] max-w-sm h-[520px] max-h-[68vh] flex items-center justify-center">
+                <div id="card-stack-container" class="relative w-full max-sm:max-w-[320px] max-w-sm h-[520px] dvh-max-68 flex items-center justify-center">
                     <!-- 動態生成卡片 -->
                 </div>
             </div>
@@ -211,7 +211,7 @@
 
     <!-- 所有卡片列表 (含搜尋與編輯器融合) -->
     <div id="all-cards-modal" role="dialog" aria-modal="true" aria-labelledby="all-cards-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
-        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-5xl dvh-90 flex flex-col overflow-hidden">
             <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex flex-col gap-4">
                 <div class="flex items-center justify-between">
                     <h2 id="all-cards-title" class="text-xl font-black" data-i18n="ac.title">單字集管理</h2>
@@ -232,7 +232,7 @@
 
     <!-- JSON 編輯器 Modal -->
     <div id="edit-deck-modal" role="dialog" aria-modal="true" aria-labelledby="edit-deck-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[4000] backdrop-blur-sm">
-        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-4xl dvh-80 flex flex-col overflow-hidden">
             <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
                 <h2 id="edit-deck-title" class="text-xl font-black" data-i18n="json.title">JSON 原始碼編輯</h2>
                 <button id="close-edit-deck-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
@@ -286,7 +286,7 @@
 
     <!-- 圖形化編輯器 Modal (F14) -->
     <div id="deck-editor-modal" role="dialog" aria-modal="true" aria-labelledby="editor-deck-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[4500] backdrop-blur-sm">
-        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-5xl dvh-90 flex flex-col overflow-hidden">
             <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
                     <span class="material-symbols-outlined text-stone-400">edit_square</span>
