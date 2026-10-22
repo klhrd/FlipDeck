@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.5.5 =====
+// ===== FlipDeck v5.6.0 (Paste Import) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -112,6 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const openFormatGuideBtn = document.getElementById('open-format-guide-btn');
     const fgCopyPromptBtn = document.getElementById('fg-copy-prompt-btn');
     const fgCopySpecBtn = document.getElementById('fg-copy-spec-btn');
+    const pasteImportArea = document.getElementById('paste-import-area');
+    const pasteImportBtn = document.getElementById('paste-import-btn');
     const editorBulkBar = document.getElementById('editor-bulk-bar');
     const editorSelectAllPage = document.getElementById('editor-select-all-page');
     const editorSelectedCount = document.getElementById('editor-selected-count');
@@ -784,6 +786,29 @@ document.addEventListener('DOMContentLoaded', () => {
         fgCopyPromptBtn.onclick = () => copyWithFeedback(fgCopyPromptBtn, buildAgentPrompt());
         fgCopySpecBtn.onclick = () => copyWithFeedback(fgCopySpecBtn, buildFormatSpec());
 
+        // --- v5.6.0：直接貼上匯入 ---
+        pasteImportBtn.onclick = async () => {
+            const raw = pasteImportArea.value;
+            const r = parsePastedContent(raw);
+            if (!r) return;
+            if (r.error) { await appAlert(t('dlg.paste_' + r.error), t('qs.paste_title')); return; }
+            pasteImportArea.value = '';
+            if (r.backup) {
+                // 備份物件 → 走還原流程（與檔案上傳共用）
+                quickStartModal.classList.add('hidden');
+                await importBackupParsed(r.backup);
+                return;
+            }
+            if (r.kind === 'md') {
+                // Markdown（可能含救援接合）→ 開編輯器預覽，使用者檢查後再存
+                quickStartModal.classList.add('hidden');
+                openDeckEditor(null, r.cards);
+                return;
+            }
+            quickStartModal.classList.add('hidden');
+            processNewDeck(r.cards, `d_${Date.now()}`, t('qs.paste_deckname'));
+        };
+
         // --- 其他全域事件 ---
         fileUpload.onchange = handleFileUpload;
         loadExampleBtn.onclick = handleExampleLoad;
@@ -928,22 +953,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     parsed = ev.target.result.trim().split('\n').map((l, i) => ({ card_id: `c_${Date.now()}_${i}`, fields: l.split(';').map(s => s.trim().replace(/\/\//g, '<br>')), tags: [] }));
                 }
 
-                // v4.4.0 P7：備份檔偵測 → 走還原流程
+                // v4.4.0 P7：備份檔偵測 → 走還原流程（v5.6.0 與貼上匯入共用）
                 if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.decks) && Array.isArray(parsed.deckList)) {
-                    const ids = parsed.decks.filter(d => d && typeof d.id === 'string').map(d => d.id);
-                    if (ids.length === 0) { await appAlert(t('dlg.restore_none'), t('dlg.restore_none_t')); return; }
-                    const overlap = ids.filter(id => deckList.some(x => x.id === id)).length;
-                    const ok = await appConfirm({
-                        title: t('dlg.restore_title'),
-                        message: t('dlg.restore_msg', { n: ids.length, m: overlap }),
-                        okText: t('dlg.restore_ok'),
-                        danger: overlap > 0
-                    });
-                    if (!ok) return;
-                    const { restored, added } = restoreBackup(parsed);
-                    quickStartModal.classList.add('hidden');
-                    backToHomeScreen();
-                    await appAlert(t('dlg.restore_done', { r: restored, a: added }), t('dlg.restore_done_t'));
+                    await importBackupParsed(parsed);
                     return;
                 }
 
@@ -954,6 +966,25 @@ document.addEventListener('DOMContentLoaded', () => {
             finally { hideLoading(); }
         };
         r.readAsText(f);
+    }
+
+    // v5.6.0：備份物件還原流程（檔案上傳與貼上共用）——回傳是否完成
+    async function importBackupParsed(parsed) {
+        const ids = parsed.decks.filter(d => d && typeof d.id === 'string').map(d => d.id);
+        if (ids.length === 0) { await appAlert(t('dlg.restore_none'), t('dlg.restore_none_t')); return false; }
+        const overlap = ids.filter(id => deckList.some(x => x.id === id)).length;
+        const ok = await appConfirm({
+            title: t('dlg.restore_title'),
+            message: t('dlg.restore_msg', { n: ids.length, m: overlap }),
+            okText: t('dlg.restore_ok'),
+            danger: overlap > 0
+        });
+        if (!ok) return false;
+        const { restored, added } = restoreBackup(parsed);
+        quickStartModal.classList.add('hidden');
+        backToHomeScreen();
+        await appAlert(t('dlg.restore_done', { r: restored, a: added }), t('dlg.restore_done_t'));
+        return true;
     }
 
     // v4.4.0 P7：還原全域備份 —— 依 id 合併：已存在者覆蓋（保留清單位置），新 id 新增至最前
@@ -1288,6 +1319,12 @@ flipdeck_backup_*.json (from "Backup All") can be uploaded directly: same-id dec
 - fields[1]：背面／翻譯
 - fields[2+]：補充說明（顯示時自動換行）
 - tags：字串陣列，用於標籤篩選
+【Markdown 表格】
+| 單字 | 詞性 | 中文 |
+| --- | --- | --- |
+| apple | n. | 蘋果 |
+- 第一欄＝正面；第二欄若全是詞性（n./v./phr.…），背面自動合併為「詞性 定義」並將詞性加入標籤
+- 表頭列與「---」分隔列自動略過
 【TXT / CSV】
 每行一張卡，欄位以「;」分隔，欄位內以「//」表示換行：
 正面;背面;補充
@@ -1330,6 +1367,112 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             ta.remove();
         }
         setTimeout(() => { btn.textContent = original; }, 1500);
+    }
+
+    // v5.6.0：直接貼上匯入——JSON / Markdown 表格 / TXT 自動分流
+    const POS_RE = /^(?:n|v|vi|vt|adj|adv|phr|prep|conj|pron|abbr|num|art|aux|interj|det|modal)\.?$/i;
+
+    function parsePastedContent(text, ts = Date.now()) {
+        const s = (text || '').trim();
+        if (!s) return { error: 'empty' };
+        // JSON 路徑
+        if (s.startsWith('[') || s.startsWith('{')) {
+            let parsed;
+            try { parsed = JSON.parse(s); } catch (e) { return { error: 'json' }; }
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.decks) && Array.isArray(parsed.deckList)) return { backup: parsed };
+            if (!Array.isArray(parsed) || parsed.length === 0) return { error: 'shape' };
+            const cards = [];
+            for (let i = 0; i < parsed.length; i++) {
+                const c = parsed[i];
+                if (!c || typeof c !== 'object' || !Array.isArray(c.fields)) return { error: 'fields' };
+                cards.push({
+                    card_id: (typeof c.card_id === 'string' && c.card_id) ? c.card_id : `p_${ts}_${i}`,
+                    fields: c.fields,
+                    tags: Array.isArray(c.tags) ? c.tags : []
+                });
+            }
+            return { cards };
+        }
+        const lines = s.split(/\r?\n/);
+        // Markdown 表格路徑：任一行以 | 開頭
+        if (lines.some(l => /^\s*\|/.test(l))) {
+            const cards = parseMarkdownTable(lines, ts);
+            return cards.length ? { cards, kind: 'md' } : { error: 'shape' };
+        }
+        // TXT / CSV 路徑
+        const cards = lines.map((l, i) => ({
+            card_id: `p_${ts}_${i}`,
+            fields: l.split(';').map(x => x.trim().replace(/\/\//g, '<br>')),
+            tags: []
+        })).filter(c => c.fields[0]);
+        return cards.length ? { cards } : { error: 'shape' };
+    }
+
+    // v5.6.0：Markdown 表格解析——乾淨表格直接對應；「救援模式」接合因換行遺失產生的碎片
+    // 規則：每行細胞 3 個一組切卡；行內剩餘細胞（碎片）依序——
+    //   1) 含「（）／，，」佔位的卡（正面序）優先各吃一個
+    //   2) 尾端未完（；，、（）／）的卡（正面序）反向各吃一個
+    //   3) 仍有剩餘 → 接到該行最後一張卡
+    // 詞性欄合併：若所有列第 2 欄皆為詞性（n./v./phr.…），背面 =「詞性 定義」、詞性入標籤
+    function parseMarkdownTable(lines, ts = Date.now()) {
+        const isSepRow = cells => cells.length > 0 && cells.every(c => /^:?-{2,}:?$/.test(c) || c === '');
+        const rows = [];
+        let pending = null;
+        lines.forEach(line => {
+            if (!/^\s*\|/.test(line)) return;
+            let cells = line.split('|').map(c => c.trim());
+            if (cells.length && cells[0] === '') cells.shift();
+            if (cells.length && cells[cells.length - 1] === '') cells.pop();
+            if (cells.length === 0) return;
+            if (isSepRow(cells)) { pending = null; return; } // 分隔列 → 前一行是表頭，丟棄
+            if (pending) rows.push(pending);
+            pending = { cells };
+        });
+        if (pending) rows.push(pending);
+
+        const rowCards = []; // { cells: [w, c2, c3...], extras: [] }
+        rows.forEach(({ cells }) => {
+            // v5.6.0：詞性錨定掃描——cells[i+1] 是詞性（n./v./phr.…）才算真卡片，其餘細胞歸碎片。
+            // 這能穿透「多行合併 + 尾部碎片」的亂序貼上；無任何詞性錨點的行（乾淨表格列）整行一張卡。
+            const made = [];
+            const frags = [];
+            let i = 0;
+            while (i < cells.length) {
+                if (cells[i] && i + 1 < cells.length && POS_RE.test(cells[i + 1])) {
+                    made.push({ cells: [cells[i], cells[i + 1], cells[i + 2] || ''], extras: [] });
+                    i += 3;
+                } else {
+                    if (cells[i]) frags.push(cells[i]);
+                    i++;
+                }
+            }
+            if (made.length === 0) { made.push({ cells, extras: [] }); frags.length = 0; } // 無詞性錨點 → 乾淨表格列（細胞全在列內，碎片清空防倍增）
+            if (frags.length && made.length) {
+                const slotCount = c => ((c.cells[2] || '').match(/（/g) || []).length + ((c.cells[2] || '').match(/／/g) || []).length + ((c.cells[2] || '').match(/，，/g) || []).length;
+                // 1) 佔位卡依序各吃一個，佔位多者續吃
+                const slotCards = made.filter(c => slotCount(c) > 0);
+                slotCards.forEach(c => { const f = frags.shift(); if (f !== undefined) c.extras.push(f); });
+                slotCards.forEach(c => { for (let k = 1; k < slotCount(c) && frags.length; k++) c.extras.push(frags.shift()); });
+                // 2) 尾端未完的卡反向接合（碎片順序對應卡片逆序）
+                const unfinished = made.filter(c => /[；;，,、／/)）]$/.test((c.cells[2] || '') + c.extras.join('')));
+                for (let k = 0; k < unfinished.length && frags.length; k++) unfinished[k].extras.push(frags.pop());
+                // 3) 剩餘 → 該行最後一張卡
+                if (frags.length) made[made.length - 1].extras.push(...frags.splice(0));
+            }
+            rowCards.push(...made);
+        });
+
+        const posCol = rowCards.length > 0 && rowCards.every(r => r.cells.length === 3 && POS_RE.test(r.cells[1]));
+        const cards = rowCards.map((r, i) => {
+            if (r.cells[0] === '') return null;
+            if (posCol) {
+                const pos = r.cells[1].replace(/\.$/, '');
+                const def = (r.cells[2] + r.extras.join('')).trim();
+                return { card_id: `p_${ts}_${i}`, fields: [r.cells[0], `${r.cells[1]} ${def}`.trim()], tags: [pos] };
+            }
+            return { card_id: `p_${ts}_${i}`, fields: [...r.cells, ...r.extras], tags: [] };
+        }).filter(Boolean);
+        return cards;
     }
 
     function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); cardSearchInput.focus(); }
@@ -1507,9 +1650,10 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
     }
 
     // [v4.1.3] 圖形化編輯器 (F14)；v4.1.5 修正存檔同步；v4.3.0 P5：分頁 + 搜尋 + 陣列工作副本
-    function openDeckEditor(id = null) {
+    // v5.6.0：prefill 參數——貼上解析結果可直接進編輯器預覽（救援碎片在此修正）
+    function openDeckEditor(id = null, prefill = null) {
         const isNew = !id;
-        const data = isNew ? [{ card_id: `c_${Date.now()}_0`, fields: ["", "", ""], tags: [] }] : getDeckData(id);
+        const data = isNew ? (prefill && prefill.length ? prefill : [{ card_id: `c_${Date.now()}_0`, fields: ["", "", ""], tags: [] }]) : getDeckData(id);
         if (!data) return;
 
         // 工作副本：陣列為唯一資料來源，分頁後只有當頁存在於 DOM，輸入即時寫回（6498 張也不再卡）

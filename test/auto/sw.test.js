@@ -20,7 +20,7 @@ const mockCache = {
 };
 const caches = {
     open: async (name) => (caches._current = name, mockCache),
-    keys: async () => ['flashcard-pwa-cache-v2', 'flipdeck-cache-v5.5.4', 'flipdeck-cache-v5.5.5'],
+    keys: async () => ['flashcard-pwa-cache-v2', 'flipdeck-cache-v5.5.5', 'flipdeck-cache-v5.6.0'],
     match: async (req) => {
         const key = req.url || String(req);
         const resolved = key.startsWith('./') ? scope + key.replace('./', '') : key;
@@ -97,7 +97,7 @@ async function runFetch(url, opts) {
     fire('install', installEv);
     await installEv._p;
     assert.ok(calls.skipWaiting.length === 1, 'skipWaiting called');
-    assert.strictEqual(caches._current, 'flipdeck-cache-v5.5.5', 'opens new cache name');
+    assert.strictEqual(caches._current, 'flipdeck-cache-v5.6.0', 'opens new cache name');
     assert.ok(calls.cacheAdd.some(u => u.includes('hs_6000.json')), 'hs_6000.json now precached');
     assert.ok(calls.cacheAdd.some(u => u.includes('Material+Symbols')), 'Material Symbols precached');
     assert.ok(!calls.cacheAdd.some(u => u.includes('jszip')), 'jszip no longer precached (dependency removed)');
@@ -108,7 +108,7 @@ async function runFetch(url, opts) {
     fire('activate', activateEv);
     await activateEv._p;
     assert.ok(calls.claim.length === 1, 'clients.claim called');
-    assert.deepStrictEqual(calls.cacheDelete, ['flashcard-pwa-cache-v2', 'flipdeck-cache-v5.5.4'], 'old caches deleted');
+    assert.deepStrictEqual(calls.cacheDelete, ['flashcard-pwa-cache-v2', 'flipdeck-cache-v5.5.5'], 'old caches deleted');
     console.log('T2 activate: OK (claim + old flashcard-pwa-cache-v2 deleted)');
 
     // --- Test 3: core asset, network available → network-first, caches response ---

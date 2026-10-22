@@ -14,7 +14,8 @@ const suites = [
     'i18n.test.js',     // zh/en 鍵對稱 / 佔位符一致 / t() 行為
     'share.test.js',    // 分享編解碼 round-trip / 壓縮 / 損毀防護
     'smoke.test.js',    // jsdom 冒煙：完整啟動 + 選單互動 + 顯示模式 + 語言切換
-    'numbers.test.js'   // 數字回歸：SM-2 / 進度 / 到期 / 統計視窗全數核對
+    'numbers.test.js',  // 數字回歸：SM-2 / 進度 / 到期 / 統計視窗全數核對
+    'paste.test.js'     // 貼上匯入：分流 + Markdown 救援接合（真實亂序資料）
 ];
 
 let failed = 0;

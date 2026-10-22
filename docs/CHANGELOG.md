@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.6.0] - 2026-04-11
+### Added（直接貼上匯入 + Markdown 表格支援）
+- **貼上匯入**：快速開始視窗新增「直接貼上內容」區——JSON／Markdown 表格／TXT 自動分流（`parsePastedContent`），AI 對話產生的內容不必存檔即可匯入；JSON 缺 `card_id` 自動補、備份檔物件自動走還原流程（與檔案上傳共用 `importBackupParsed`）。
+- **Markdown 表格解析**（`parseMarkdownTable`）：
+  - 乾淨表格：每列一張卡；表頭與「---」分隔列自動略過；**詞性欄合併**——若第 2 欄全是詞性（n./v./phr.…），背面自動合併為「詞性 定義」並將詞性加入標籤。
+  - **救援模式（亂序貼上）**：針對「多行合併成一行、定義被 `；` 截斷、尾部碎片」的真實資料——以**詞性錨定掃描**辨別真卡片與碎片，碎片依序接合：①「（）／，，」佔位卡優先 → ② 尾端未完（；，、）卡反向接合 → ③ 剩餘接該行最後一張卡。Markdown 匯入一律**先開圖形化編輯器預覽**，使用者檢查修正後再存。
+- **格式說明同步**：快速開始折疊區、完整說明 Modal、`buildFormatSpec`、`buildAgentPrompt` 全部加入 Markdown 表格規則。
+- **測試**：`paste.test.js` 入列（第 13 套）——乾淨表格、真實亂序資料救援（pole/ladder、flame/tap/pea、one-by-one 四卡行、wrap 雙佔位）、分流與錯誤處理。`lib.js` 的 `extractFn` 升級為**字串／模板／註解／正規表示式感知**詞法掃描（修復 `'{'` 字串與 `/"/g` regex 造成的抽取暴衝）。
+
+### Changed
+- **版本號升級**：v5.5.5 -> v5.6.0；SW `CACHE_NAME` 同步 bump。
+
 ## [5.5.5] - 2026-04-11
 ### Fixed（i18n 完整性——由新掃描器發現）
 - **範例下拉選單未翻譯**：英文介面下範例名（高中 6000 單字等 4 項）仍顯示中文。改為 i18n 鍵（`ex.*`，en: "High School 6000 Words" 等），**語言切換即時重填選單**，載入後的牌組標題也跟隨當前語言。
