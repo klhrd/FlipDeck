@@ -4,7 +4,10 @@ const { readScript, extractFn: libExtract } = require('./lib');
 
 const src = readScript();
 const extractFn = (name) => libExtract(src, name);
-const POS_RE = /^(?:n|v|vi|vt|adj|adv|phr|prep|conj|pron|abbr|num|art|aux|interj|det|modal)\.?$/i;
+// 從生產源碼抽取 POS_RE（避免測試副本漂移）
+const posReMatch = src.match(/const POS_RE = (\/.+\/i);/);
+assert.ok(posReMatch, 'POS_RE found in source');
+const POS_RE = eval(posReMatch[1]);
 
 eval(extractFn('parseMarkdownTable'));
 eval(extractFn('parsePastedContent'));

@@ -106,6 +106,20 @@ function runTests() {
     ok('提示詞按鈕回饋「已複製！」', document.getElementById('fg-copy-prompt-btn').textContent === '已複製！');
     document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     ok('Escape 關閉格式說明（快速開始仍開）', !visible('format-guide-modal') && visible('quick-start-modal'));
+
+    // --- v5.6.0：貼上匯入流程（Markdown → 編輯器預覽） ---
+    const pasteArea = document.getElementById('paste-import-area');
+    pasteArea.value = '| pole | n. | 竿；| ladder | n. | 梯子 |杆 |';
+    click(document.getElementById('paste-import-btn'));
+    ok('貼上 Markdown → 快速開始關閉 + 編輯器預覽開啟', !visible('quick-start-modal') && visible('deck-editor-modal'));
+    ok('編輯器已渲染 2 張解析卡', document.getElementById('editor-rows-container').children.length === 2);
+    click(document.getElementById('close-deck-editor-modal-btn'));
+    ok('未修改直接關閉編輯器', !visible('deck-editor-modal'));
+
+    // 重新開啟快速開始供後續範例載入
+    click(document.getElementById('home-menu-btn'));
+    click(document.getElementById('home-menu-add-btn'));
+    click(document.getElementById('close-quick-start-modal-btn'));
     click(document.getElementById('close-quick-start-modal-btn'));
 
     // --- 匯入範例 → 學習選單（防護修復的主場景） ---

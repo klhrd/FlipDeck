@@ -212,6 +212,7 @@
                     <summary class="cursor-pointer font-bold hover:text-stone-900 dark:hover:text-white transition-colors select-none" data-i18n="qs.format_title">檔案格式說明</summary>
                     <div class="mt-3 space-y-2 text-left">
                         <p data-i18n="qs.format_json">JSON：卡片陣列，每張須含 card_id（字串）與 fields（正面／背面／補充），tags 可選</p>
+                        <p data-i18n="qs.format_md">Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），自動合併為「詞性 定義」並加入標籤。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）</p>
                         <p data-i18n="qs.format_txt">TXT / CSV：每行一張卡，欄位以「;」分隔；欄位內容以「//」表示換行</p>
                         <p data-i18n="qs.format_backup">支援直接上傳全域備份檔（flipdeck_backup_*.json）進行還原</p>
                         <pre class="bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono" dir="ltr">[{"card_id":"c1","fields":["word","定義","補充"],"tags":["A1"]}]</pre>
