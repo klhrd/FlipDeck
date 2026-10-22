@@ -4,3 +4,6 @@
 
 # Node.js（devDependencies 安裝產物，npm install 可重建）
 node_modules/
+
+# 編輯器本地設定
+.vscode/
