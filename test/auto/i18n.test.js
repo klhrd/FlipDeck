@@ -74,4 +74,24 @@ assert.ok(DICT && DICT.zh && DICT.en && typeof t === 'function', 'i18n engine ev
     console.log('T4 applyI18n attribute scanning: OK');
 }
 
+// ---- T5: HTML 掃描——直接文字含 CJK 但無 data-i18n 的元素應為 0（v5.5.5 起入測） ----
+{
+    const { JSDOM } = require('jsdom');
+    let html = fs.readFileSync(path.join(__dirname, '..', '..', 'index.html'), 'utf8');
+    const dom = new JSDOM(html, { url: 'http://localhost/' });
+    const doc = dom.window.document;
+    const skip = new Set(['SCRIPT', 'STYLE', 'PRE', 'CODE']);
+    const findings = [];
+    doc.body.querySelectorAll('*').forEach(el => {
+        if (skip.has(el.tagName)) return;
+        const direct = Array.from(el.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join('');
+        if (!/[\u4e00-\u9fff]/.test(direct)) return;
+        if (el.hasAttribute('data-i18n')) return;
+        const txt = direct.trim();
+        if (txt) findings.push(`<${el.tagName.toLowerCase()} id="${el.id}"> ${txt.slice(0, 30)}`);
+    });
+    assert.deepStrictEqual(findings, [], 'all CJK text nodes must have data-i18n (or be code examples)');
+    console.log('T5 HTML CJK coverage scan: OK (0 untranslated elements)');
+}
+
 console.log('\nALL i18n CONSISTENCY TESTS PASSED');

@@ -13,7 +13,8 @@ const suites = [
     'limits.test.js',   // 每日新卡上限 / leech / 30 天到期預測
     'i18n.test.js',     // zh/en 鍵對稱 / 佔位符一致 / t() 行為
     'share.test.js',    // 分享編解碼 round-trip / 壓縮 / 損毀防護
-    'smoke.test.js'     // jsdom 冒煙：完整啟動 + 選單互動 + 顯示模式 + 語言切換
+    'smoke.test.js',    // jsdom 冒煙：完整啟動 + 選單互動 + 顯示模式 + 語言切換
+    'numbers.test.js'   // 數字回歸：SM-2 / 進度 / 到期 / 統計視窗全數核對
 ];
 
 let failed = 0;

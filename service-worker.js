@@ -1,7 +1,7 @@
-// Service Worker for FlipDeck PWA (v5.4.3)
+// Service Worker for FlipDeck PWA (v5.5.5)
 
 // v4.1.4: 快取版本隨每次發版 bump，否則 cache-first 會讓修復永遠到不了使用者
-const CACHE_NAME = 'flipdeck-cache-v5.4.3';
+const CACHE_NAME = 'flipdeck-cache-v5.5.5';
 // 核心資源 + 外部 JSON 範例檔
 const urlsToCache = [
     './',
@@ -19,6 +19,7 @@ const urlsToCache = [
     './data/capitals.json',
     // CDN 資源 (離線 fallback)
     'https://cdn.tailwindcss.com',
+    'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js',
     'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap',
     'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200'
 ];

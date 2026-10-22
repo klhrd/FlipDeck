@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.4.3</title>
+    <title>FlipDeck v5.5.5</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -11,6 +11,8 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' };</script>
+    <!-- v5.5.0: QR 產生（分享牌組掃碼匯入；離線由 SW 快取） -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
     <!-- v4.4.0：主題初始化（避免閃白），支援手動切換與跟隨系統 -->
     <script>
         (function () {
@@ -31,8 +33,8 @@
 
     <div id="app" class="w-full max-w-6xl mx-auto min-h-screen sm:min-h-0">
 
-        <!-- ===== 首頁 ===== -->
-        <div id="home-screen" class="p-4 sm:p-8 bg-white dark:bg-stone-900 sm:rounded-2xl shadow-xl min-h-screen sm:min-h-0">
+        <!-- ===== 首頁（v5.5.3：背景透明化，直接落在 body 底色上） ===== -->
+        <div id="home-screen" class="p-4 sm:p-8 min-h-screen sm:min-h-0">
             
             <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center space-x-3">
@@ -180,7 +182,13 @@
             <li class="pt-4 border-t border-stone-100 dark:border-stone-800">
                 <div class="flex items-center justify-between px-4">
                     <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.display_mode">顯示模式</span>
-                    <button id="display-mode-btn" data-i18n-aria="aria.display_mode" aria-label="切換顯示模式" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">翻面</button>
+                    <button id="display-mode-btn" data-i18n="menu.mode_combo" data-i18n-aria="aria.display_mode" aria-label="切換顯示模式" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">翻面</button>
+                </div>
+            </li>
+            <li id="tts-lang-row" class="pt-4 border-t border-stone-100 dark:border-stone-800">
+                <div class="flex items-center justify-between px-4">
+                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.tts_lang">朗讀語言</span>
+                    <button id="tts-lang-btn" data-i18n="tts.auto" data-i18n-aria="aria.tts_lang" aria-label="切換朗讀語言" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">自動</button>
                 </div>
             </li>
         </ul>
@@ -199,6 +207,18 @@
                     <p class="text-sm font-bold text-stone-500" data-i18n="qs.upload">上傳 .txt, .csv, .json</p>
                     <input id="file-upload" type="file" class="hidden" accept=".txt,.csv,.json">
                 </label>
+                <!-- v5.5.3：檔案格式說明（可折疊）；v5.5.4：連結至完整說明 -->
+                <details class="text-xs text-stone-500 dark:text-stone-400">
+                    <summary class="cursor-pointer font-bold hover:text-stone-900 dark:hover:text-white transition-colors select-none" data-i18n="qs.format_title">檔案格式說明</summary>
+                    <div class="mt-3 space-y-2 text-left">
+                        <p data-i18n="qs.format_json">JSON：卡片陣列，每張須含 card_id（字串）與 fields（正面／背面／補充），tags 可選</p>
+                        <p data-i18n="qs.format_txt">TXT / CSV：每行一張卡，欄位以「;」分隔；欄位內容以「//」表示換行</p>
+                        <p data-i18n="qs.format_backup">支援直接上傳全域備份檔（flipdeck_backup_*.json）進行還原</p>
+                        <pre class="bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono" dir="ltr">[{"card_id":"c1","fields":["word","定義","補充"],"tags":["A1"]}]</pre>
+                        <pre class="bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono" dir="ltr">word;定義;補充</pre>
+                        <button id="open-format-guide-btn" class="mt-1 text-[10px] font-bold text-teal-700 dark:text-teal-300 hover:underline" data-i18n="fg.open_full">查看完整說明</button>
+                    </div>
+                </details>
                 <div class="flex space-x-2">
                     <select id="example-selector" class="flex-grow px-4 py-3 bg-stone-100 dark:bg-stone-800 border-none rounded-2xl text-sm font-medium outline-none"></select>
                     <button id="load-example-btn" data-i18n-aria="aria.load_example" aria-label="載入範例" class="w-12 h-12 flex items-center justify-center bg-teal-700 text-white rounded-2xl hover:bg-teal-800 transition-colors">
@@ -251,7 +271,7 @@
     <div id="deck-options-modal" role="dialog" aria-modal="true" aria-labelledby="deck-options-title" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[3000] backdrop-blur-sm">
         <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
-                <h2 id="deck-options-title" class="text-xl font-black">設定</h2>
+                <h2 id="deck-options-title" class="text-xl font-black" data-i18n="do.title">設定</h2>
                 <button id="close-deck-options-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
@@ -290,7 +310,7 @@
             <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
                     <span class="material-symbols-outlined text-stone-400">edit_square</span>
-                    <h2 id="editor-deck-title" class="text-xl font-black truncate max-w-xs">編輯單字集</h2>
+                    <h2 id="editor-deck-title" class="text-xl font-black truncate max-w-xs" data-i18n="ed.edit_title">編輯單字集</h2>
                 </div>
                 <div class="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
                     <input type="text" id="editor-search-input" placeholder="搜尋卡片…" data-i18n-placeholder="ed.search_ph" aria-label="搜尋卡片" data-i18n-aria="aria.search_cards" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs outline-none focus:ring-2 focus:ring-teal-600 flex-grow sm:flex-grow-0 w-full sm:w-48">
@@ -348,6 +368,57 @@
         </div>
     </div>
 
+    <!-- 分享 Modal (v5.5.0：QR 掃碼 + 連結) -->
+    <div id="share-modal" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[4200] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="share-modal-title" class="text-xl font-black" data-i18n="share.title">分享牌組</h2>
+                <button id="close-share-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div id="qr-container" class="mx-auto w-fit p-3 bg-white rounded-2xl border border-stone-100 min-h-[80px] flex items-center justify-center"></div>
+            <div id="share-url-box" class="mt-4 text-[10px] font-mono text-stone-500 dark:text-stone-400 break-all max-h-16 overflow-y-auto text-left bg-stone-50 dark:bg-stone-800 rounded-xl p-3 select-all"></div>
+            <button id="share-copy-btn" class="mt-4 w-full py-3.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-stone-950 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all" data-i18n="share.copy">複製連結</button>
+        </div>
+    </div>
+
+    <!-- 匯入格式說明 Modal (v5.5.4：完整規則 + 一鍵複製給 AI Agent) -->
+    <div id="format-guide-modal" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[4100] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="format-guide-title">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-lg dvh-90 flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
+                <h2 id="format-guide-title" class="text-xl font-black" data-i18n="fg.title">匯入格式說明</h2>
+                <button id="close-format-guide-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="flex-grow overflow-y-auto p-6 space-y-5 custom-scrollbar text-sm text-stone-600 dark:text-stone-400 font-medium">
+                <section>
+                    <h3 class="text-xs uppercase tracking-widest font-black text-stone-500 dark:text-stone-400 mb-2" data-i18n="fg.json_title">JSON（推薦）</h3>
+                    <p data-i18n="fg.json_desc">最外層為卡片物件陣列。fields[0]＝正面（必填）、fields[1]＝背面、之後為補充（顯示時自動換行）。tags 為字串陣列，供標籤篩選。</p>
+                    <pre class="mt-2 bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono text-stone-700 dark:text-stone-300" dir="ltr">[
+  {
+    "card_id": "c1",
+    "fields": ["apple", "蘋果", "an apple a day"],
+    "tags": ["水果", "A1"]
+  }
+]</pre>
+                </section>
+                <section>
+                    <h3 class="text-xs uppercase tracking-widest font-black text-stone-500 dark:text-stone-400 mb-2" data-i18n="fg.txt_title">TXT / CSV</h3>
+                    <p data-i18n="fg.txt_desc">每行一張卡；欄位以「;」分隔；欄位內「//」代表換行。第一欄為正面（必填）。</p>
+                    <pre class="mt-2 bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono text-stone-700 dark:text-stone-300" dir="ltr">apple;蘋果//一種水果;水果
+banana;香蕉;水果</pre>
+                </section>
+                <section>
+                    <h3 class="text-xs uppercase tracking-widest font-black text-stone-500 dark:text-stone-400 mb-2" data-i18n="fg.backup_title">備份檔還原</h3>
+                    <p data-i18n="fg.backup_desc">直接上傳「全域備份」產生的 flipdeck_backup_*.json，依牌組 id 合併：已存在者覆蓋內容（保留你的進度）、新牌組加入。</p>
+                </section>
+                <p class="text-[10px] text-stone-400 font-bold bg-stone-50 dark:bg-stone-800 rounded-xl p-3" data-i18n="fg.tip">小技巧：把「複製 AI Agent 提示詞」的內容貼給你的 AI 助理並填上主題，它會產生可直接匯入的 JSON。</p>
+            </div>
+            <div class="p-6 border-t border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row gap-3 bg-stone-50/50 dark:bg-stone-800/20">
+                <button id="fg-copy-prompt-btn" class="flex-1 py-3.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-stone-950 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all" data-i18n="fg.copy_prompt">複製 AI Agent 提示詞</button>
+                <button id="fg-copy-spec-btn" class="flex-1 py-3.5 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-bold rounded-2xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors" data-i18n="fg.copy_spec">複製格式規則</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 通用確認對話框 (v4.2.0 P4：取代原生 alert/confirm) -->
     <div id="app-confirm-modal" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[5000] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
         <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
@@ -355,8 +426,8 @@
             <h3 id="confirm-modal-title" class="text-xl font-black mb-3"></h3>
             <p id="confirm-modal-message" class="text-sm text-stone-500 dark:text-stone-400 font-medium mb-8 whitespace-pre-line"></p>
             <div class="flex gap-3">
-                <button id="confirm-modal-cancel-btn" class="flex-1 py-3.5 font-bold text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-2xl transition-colors">取消</button>
-                <button id="confirm-modal-ok-btn" class="flex-1 py-3.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all">確定</button>
+                <button id="confirm-modal-cancel-btn" class="flex-1 py-3.5 font-bold text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-2xl transition-colors" data-i18n="common.cancel">取消</button>
+                <button id="confirm-modal-ok-btn" data-i18n="dlg.ok" class="flex-1 py-3.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all">確定</button>
             </div>
         </div>
     </div>

@@ -75,7 +75,7 @@
 
 ### 內容與媒體
 - [ ] 卡片圖片支援（欄位 URL 自動渲染縮圖）
-- [ ] 發音朗讀（Web Speech API，卡面一鍵 TTS）
+- [x] 發音朗讀（Web Speech API，卡面一鍵 TTS；v5.5.2 新增 per-deck 語言切換與切換示範）
 - [ ] 匯出 Anki 相容格式（CSV/TSV，含進度注記）
 
 ### 資料層強化
@@ -89,7 +89,7 @@
 - [ ] 到期推播提醒（PWA Notification + Service Worker 定時觸發）
 
 ### 分享與社群
-- [ ] 分享連結 QR Code 產生（現有 `#d=` 連結直接轉 QR，掃碼即匯）
+- [x] 分享連結 QR Code 產生（現有 `#d=` 連結直接轉 QR，掃碼即匯）(v5.5.0)
 - [ ] 牌組市集（GitHub 靜態 JSON 目錄當無後端倉庫：PR 收錄、app 內瀏覽安裝）
 
 ### 平台與外觀

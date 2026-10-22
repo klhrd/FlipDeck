@@ -9,7 +9,7 @@ const I18N = {
         'home.total_cards': '卡片總數：',
         'home.sort_last': '最後閱讀', 'home.sort_title': '名稱 (A-Z)', 'home.sort_progress': '學習進度',
         'home.empty': '尚未開啟任何單字集', 'home.empty_cta': '新增單字集',
-        'home.cards': '{n} 張卡片', 'home.mastered': '{n}% 已熟練', 'home.due': '{n} 張到期',
+        'home.cards': '{n} 張卡片', 'home.mastered': '{n}% 進度', 'home.due': '{n} 張到期',
         // 選單
         'menu.import': '匯入 / 範例', 'menu.create_blank': '從空白建立',
         'menu.backup': '全域備份 (.json)', 'menu.help': '操作教學',
@@ -17,8 +17,24 @@ const I18N = {
         'menu.tag_filter': '標籤篩選', 'menu.no_tags': '無可用標籤',
         'menu.font_size': '字型大小', 'menu.daily_new': '每日新卡', 'menu.unlimited': '無上限',
         'menu.display_mode': '顯示模式', 'menu.mode_combo': '翻面', 'menu.mode_dual': '雙面',
+        'menu.tts_lang': '朗讀語言', 'tts.auto': '自動',
         // 快速開始
         'qs.title': '新增單字集', 'qs.upload': '上傳 .txt, .csv, .json',
+        'ex.hs6000': '高中 6000 單字', 'ex.verbs': '動詞三態', 'ex.elements': '元素週期表', 'ex.capitals': '國家與首都',
+        'qs.format_title': '檔案格式說明',
+        'qs.format_json': 'JSON：卡片陣列，每張須含 card_id（字串）與 fields（正面／背面／補充），tags 可選',
+        'qs.format_txt': 'TXT / CSV：每行一張卡，欄位以「;」分隔；欄位內容以「//」表示換行',
+        'qs.format_backup': '支援直接上傳全域備份檔（flipdeck_backup_*.json）進行還原',
+        // 匯入格式說明 Modal（v5.5.4）
+        'fg.title': '匯入格式說明', 'fg.open_full': '查看完整說明',
+        'fg.json_title': 'JSON（推薦）',
+        'fg.json_desc': '最外層為卡片物件陣列。fields[0]＝正面（必填）、fields[1]＝背面、之後為補充（顯示時自動換行）。tags 為字串陣列，供標籤篩選。',
+        'fg.txt_title': 'TXT / CSV',
+        'fg.txt_desc': '每行一張卡；欄位以「;」分隔；欄位內「//」代表換行。第一欄為正面（必填）。',
+        'fg.backup_title': '備份檔還原',
+        'fg.backup_desc': '直接上傳「全域備份」產生的 flipdeck_backup_*.json，依牌組 id 合併：已存在者覆蓋內容（保留你的進度）、新牌組加入。',
+        'fg.tip': '小技巧：把「複製 AI Agent 提示詞」的內容貼給你的 AI 助理並填上主題，它會產生可直接匯入的 JSON。',
+        'fg.copy_prompt': '複製 AI Agent 提示詞', 'fg.copy_spec': '複製格式規則', 'fg.copied': '已複製！',
         // 顯示全部
         'ac.title': '單字集管理', 'ac.visual_edit': '圖形化編輯', 'ac.json': 'JSON 原始碼',
         'ac.search_ph': '搜尋關鍵字或標籤...', 'ac.col_mastery': 'ID / 熟練度', 'ac.col_field': '欄位', 'ac.col_tags': '標籤',
@@ -50,6 +66,7 @@ const I18N = {
         'st.rule': '答對依記憶曲線排程複習（SM-2）；答錯立即重新到期',
         // 學習畫面
         'learn.hint_forgot': '左滑 忘記', 'learn.hint_flip': '點擊 翻面', 'learn.hint_learned': '右滑 學會', 'learn.hint_skip': '上滑 跳過',
+        'learn.due_left': '剩 {n} 張到期',
         'learn.undo': '復原', 'learn.tap_flip': '點擊翻面',
         'learn.congrats': '太棒了！', 'learn.done_all': '本輪到期卡片全數完成',
         'learn.next_due': '下次到期：{t}（{n} 張已排程）', 'learn.none_scheduled': '目前沒有已排程的卡片',
@@ -79,6 +96,11 @@ const I18N = {
         'dlg.share_done': '分享連結已複製到剪貼簿。', 'dlg.share_fail': '複製失敗，請手動選取複製：\n{u}',
         'dlg.share_too_big': '此牌組壓縮後仍過大，不適合連結分享，請改用「全域備份」。',
         'dlg.share_invalid': '分享連結無效或已損毀。',
+        // 分享 Modal（v5.5.0）
+        'share.title': '分享牌組', 'share.copy': '複製連結', 'share.copied': '已複製！',
+        'share.qr_unavailable': '此環境不支援 QR 產生，請直接複製連結',
+        'share.qr_too_big': '牌組較大，QR 容量不足——請直接複製連結',
+        'aria.speak': '朗讀正面',
         // aria
         'aria.open_menu': '開啟主選單', 'aria.open_settings': '開啟設定選單', 'aria.close': '關閉', 'aria.close_menu': '關閉選單',
         'aria.back_home': '回到首頁', 'aria.fullscreen': '切換全螢幕', 'aria.theme': '切換深淺色模式',
@@ -91,7 +113,7 @@ const I18N = {
         'aria.decrease_new': '減少每日新卡上限', 'aria.increase_new': '增加每日新卡上限',
         'aria.bulk_tags': '批次標籤', 'aria.clear_selection': '清除選取',
         'aria.search_cards': '搜尋卡片', 'aria.visual_edit': '開啟圖形化編輯器', 'aria.start_learning': '開始學習',
-        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式'
+        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言'
     },
     en: {
         'app.menu': 'Menu', 'app.settings': 'Settings',
@@ -99,14 +121,29 @@ const I18N = {
         'home.total_cards': 'Total Cards: ',
         'home.sort_last': 'Last Opened', 'home.sort_title': 'Title (A-Z)', 'home.sort_progress': 'Progress',
         'home.empty': 'No decks yet', 'home.empty_cta': 'Add Deck',
-        'home.cards': '{n} cards', 'home.mastered': '{n}% mastered', 'home.due': '{n} due',
+        'home.cards': '{n} cards', 'home.mastered': '{n}% progress', 'home.due': '{n} due',
         'menu.import': 'Import / Examples', 'menu.create_blank': 'Create from Scratch',
         'menu.backup': 'Backup All (.json)', 'menu.help': 'How to Use',
         'menu.show_all': 'All Cards (Search)', 'menu.stats': 'Statistics', 'menu.visual_edit': 'Visual Editor',
         'menu.tag_filter': 'Filter by Tags', 'menu.no_tags': 'No tags available',
         'menu.font_size': 'Font Size', 'menu.daily_new': 'Daily New Cards', 'menu.unlimited': 'Unlimited',
         'menu.display_mode': 'Card View', 'menu.mode_combo': 'Flip', 'menu.mode_dual': 'Both Sides',
+        'menu.tts_lang': 'Speech Language', 'tts.auto': 'Auto',
         'qs.title': 'Add Deck', 'qs.upload': 'Upload .txt, .csv, .json',
+        'ex.hs6000': 'High School 6000 Words', 'ex.verbs': 'Verb Tenses', 'ex.elements': 'Periodic Table', 'ex.capitals': 'Countries & Capitals',
+        'qs.format_title': 'File Format Guide',
+        'qs.format_json': 'JSON: an array of cards, each with card_id (string) and fields (front/back/notes); tags optional',
+        'qs.format_txt': 'TXT / CSV: one card per line, fields separated by ";"; use "//" inside a field for a line break',
+        'qs.format_backup': 'You can also upload a global backup file (flipdeck_backup_*.json) to restore',
+        'fg.title': 'Import Format Guide', 'fg.open_full': 'View full guide',
+        'fg.json_title': 'JSON (recommended)',
+        'fg.json_desc': 'A flat array of card objects. fields[0] = front (required), fields[1] = back, further items are notes (line breaks on display). tags is a string array for filtering.',
+        'fg.txt_title': 'TXT / CSV',
+        'fg.txt_desc': 'One card per line; fields separated by ";"; use "//" for a line break inside a field. First field is the front (required).',
+        'fg.backup_title': 'Backup restore',
+        'fg.backup_desc': 'Upload a flipdeck_backup_*.json produced by "Backup All": decks with the same id are overwritten (your progress is kept); new decks are added.',
+        'fg.tip': 'Tip: paste the "AI Agent prompt" into your AI assistant with your topic, and it will generate JSON you can import directly.',
+        'fg.copy_prompt': 'Copy AI Agent Prompt', 'fg.copy_spec': 'Copy Format Rules', 'fg.copied': 'Copied!',
         'ac.title': 'Deck Manager', 'ac.visual_edit': 'Visual Edit', 'ac.json': 'JSON Source',
         'ac.search_ph': 'Search keyword or tags...', 'ac.col_mastery': 'ID / Mastery', 'ac.col_field': 'Field', 'ac.col_tags': 'Tags',
         'json.title': 'JSON Source Editor', 'json.save': 'Save Changes',
@@ -131,6 +168,7 @@ const I18N = {
         'st.leech_suspended': 'Leech {l} · Suspended {s}',
         'st.rule': 'Correct answers are scheduled by SM-2; wrong answers come back immediately',
         'learn.hint_forgot': 'Left: Forgot', 'learn.hint_flip': 'Tap: Flip', 'learn.hint_learned': 'Right: Got it', 'learn.hint_skip': 'Up: Skip',
+        'learn.due_left': '{n} due left',
         'learn.undo': 'Undo', 'learn.tap_flip': 'Tap to flip',
         'learn.congrats': 'Great job!', 'learn.done_all': 'All due cards completed this round',
         'learn.next_due': 'Next due: {t} ({n} scheduled)', 'learn.none_scheduled': 'No scheduled cards',
@@ -157,6 +195,10 @@ const I18N = {
         'dlg.share_done': 'Share link copied to clipboard.', 'dlg.share_fail': 'Copy failed — select and copy manually:\n{u}',
         'dlg.share_too_big': 'This deck is too large even after compression. Use "Backup All" instead.',
         'dlg.share_invalid': 'The share link is invalid or corrupted.',
+        'share.title': 'Share Deck', 'share.copy': 'Copy Link', 'share.copied': 'Copied!',
+        'share.qr_unavailable': 'QR generation unavailable here — copy the link instead',
+        'share.qr_too_big': 'Deck too large for a QR code — copy the link instead',
+        'aria.speak': 'Speak front side',
         'aria.open_menu': 'Open menu', 'aria.open_settings': 'Open settings menu', 'aria.close': 'Close', 'aria.close_menu': 'Close menu',
         'aria.back_home': 'Back to home', 'aria.fullscreen': 'Toggle fullscreen', 'aria.theme': 'Toggle dark/light mode',
         'aria.theme_light': 'Switch to light mode', 'aria.theme_dark': 'Switch to dark mode',
@@ -168,7 +210,7 @@ const I18N = {
         'aria.decrease_new': 'Decrease daily new-card limit', 'aria.increase_new': 'Increase daily new-card limit',
         'aria.bulk_tags': 'Batch tags', 'aria.clear_selection': 'Clear selection',
         'aria.search_cards': 'Search cards', 'aria.visual_edit': 'Open visual editor', 'aria.start_learning': 'Start Learning',
-        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view'
+        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language'
     }
 };
 

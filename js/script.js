@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.4.3 =====
+// ===== FlipDeck v5.5.5 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -64,6 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const newLimitValue = document.getElementById('new-limit-value');
     const displayModeBtn = document.getElementById('display-mode-btn');
     const hintFlipPill = document.getElementById('hint-flip-pill');
+    const ttsLangBtn = document.getElementById('tts-lang-btn');
+    const ttsLangRow = document.getElementById('tts-lang-row');
     
     const allCardsModal = document.getElementById('all-cards-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -100,6 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorPrevPageBtn = document.getElementById('editor-prev-page-btn');
     const editorNextPageBtn = document.getElementById('editor-next-page-btn');
     const editorPageIndicator = document.getElementById('editor-page-indicator');
+    const shareModal = document.getElementById('share-modal');
+    const qrContainer = document.getElementById('qr-container');
+    const shareUrlBox = document.getElementById('share-url-box');
+    const shareCopyBtn = document.getElementById('share-copy-btn');
+    const closeShareModalBtn = document.getElementById('close-share-modal-btn');
+    const formatGuideModal = document.getElementById('format-guide-modal');
+    const closeFormatGuideBtn = document.getElementById('close-format-guide-btn');
+    const openFormatGuideBtn = document.getElementById('open-format-guide-btn');
+    const fgCopyPromptBtn = document.getElementById('fg-copy-prompt-btn');
+    const fgCopySpecBtn = document.getElementById('fg-copy-spec-btn');
     const editorBulkBar = document.getElementById('editor-bulk-bar');
     const editorSelectAllPage = document.getElementById('editor-select-all-page');
     const editorSelectedCount = document.getElementById('editor-selected-count');
@@ -127,10 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const EXAMPLES = [
-        { name: "高中 6000 單字", file: "hs_6000.json" },
-        { name: "動詞三態", file: "verbs.json" },
-        { name: "元素週期表", file: "elements.json" },
-        { name: "國家與首都", file: "capitals.json" }
+        { nameKey: "ex.hs6000", file: "hs_6000.json" },
+        { nameKey: "ex.verbs", file: "verbs.json" },
+        { nameKey: "ex.elements", file: "elements.json" },
+        { nameKey: "ex.capitals", file: "capitals.json" }
     ];
 
     let deckList = [], allTags = [], currentFilter = { sortBy: 'lastOpened' };
@@ -139,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
     let editorConfirmClose = null;
 
-    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo' };
+    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto' };
     const MAX_HISTORY = 50;
     const RECENT_SKIP = 8; // v4.3.0 P5：排隊時排除最近 N 張已作答卡片，避免立即回鍋
     const DAY_MS = 86400000;
@@ -220,9 +232,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateExampleSelector() {
         EXAMPLES.forEach(ex => {
             const opt = document.createElement('option');
-            opt.value = ex.file; opt.textContent = ex.name;
+            opt.value = ex.file; opt.textContent = t(ex.nameKey); // v5.5.5：範例名跟隨介面語言
             exampleSelector.appendChild(opt);
         });
+    }
+
+    // v5.5.5：語言切換後重填範例下拉（名稱為翻譯鍵）
+    function refreshExampleSelector() {
+        exampleSelector.innerHTML = '';
+        populateExampleSelector();
     }
 
     // =================================================================
@@ -507,6 +525,18 @@ document.addEventListener('DOMContentLoaded', () => {
         displayCardStack(); updateUI(); saveDeckState(currentDeckId, currentCardStatus);
     }
 
+    // v5.5.0：Web Speech API 朗讀——v5.5.2：優先使用牌組設定語言（auto = 內容偵測 CJK→zh-TW / 其餘 en-US）
+    function speakText(text) {
+        if (!('speechSynthesis' in window) || !text) return;
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        const pref = currentDeckSettings.ttsLang;
+        u.lang = (pref && pref !== 'auto') ? pref : (/[\u4e00-\u9fff]/.test(text) ? 'zh-TW' : 'en-US');
+        speechSynthesis.speak(u);
+    }
+    const canSpeak = 'speechSynthesis' in window;
+    const TTS_LANGS = ['auto', 'zh-TW', 'en-US', 'ja-JP', 'ko-KR'];
+
     function displayCardStack() {
         cardStackContainer.innerHTML = '';
         const visible = [];
@@ -547,6 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     cardEl.innerHTML = `
                     <div id="stamp-forgot" class="stamp"><span class="material-symbols-outlined !text-5xl">close</span></div>
                     <div id="stamp-learned" class="stamp"><span class="material-symbols-outlined !text-5xl">check</span></div>
+                    ${canSpeak ? `<button class="speak-btn absolute top-3 right-3 z-[5] p-2 text-stone-300 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" aria-label="${t('aria.speak')}" title="${t('aria.speak')}"><span class="material-symbols-outlined !text-lg">volume_up</span></button>` : ''}
                     <div class="card-inner">
                         <div class="absolute inset-0 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex flex-col items-center justify-center p-6 sm:p-8 overflow-hidden">
                             <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${fs}rem">${data.fields[0]}</div>
@@ -560,6 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cardEl.innerHTML = `
                     <div id="stamp-forgot" class="stamp"><span class="material-symbols-outlined !text-5xl">close</span></div>
                     <div id="stamp-learned" class="stamp"><span class="material-symbols-outlined !text-5xl">check</span></div>
+                    ${canSpeak ? `<button class="speak-btn absolute top-3 right-3 z-[5] p-2 text-stone-300 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" aria-label="${t('aria.speak')}" title="${t('aria.speak')}"><span class="material-symbols-outlined !text-lg">volume_up</span></button>` : ''}
                     <div class="card-inner">
                         <div class="absolute inset-0 backface-hidden bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
                             <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
@@ -574,6 +606,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 cardStackContainer.appendChild(cardEl);
                 initComboLogic(cardEl);
+                const speakBtn = cardEl.querySelector('.speak-btn');
+                if (speakBtn) {
+                    speakBtn.onpointerdown = (e) => e.stopPropagation();
+                    speakBtn.onclick = (e) => { e.stopPropagation(); speakText(data.fields[0]); };
+                }
             } else {
                 cardEl.innerHTML = `<div class="w-full h-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl flex items-center justify-center p-8"><div class="text-stone-200 dark:text-stone-800 font-bold truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div></div>`;
                 cardStackContainer.appendChild(cardEl);
@@ -647,13 +684,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI() {
-        const total = currentFullDeck.length;
-        const mastered = currentFullDeck.filter(c => currentCardStatus.get(c.card_id)?.mastery === 5).length;
-        const progress = calculateProgress(currentDeckId, currentFullDeck);
         const meta = deckList.find(d => d.id === currentDeckId);
-        if (meta) { meta.progress = progress; saveDeckList(); }
-        
-        deckInfo.innerHTML = `<span class="font-black">${meta?.title || ''}</span> • ${mastered} / ${total}`;
+        // v5.5.1：膠囊改顯示「剩 N 張到期」——答題即時遞減的回饋
+        //（原顯示第 5 級張數，整個 session 都不會動，觀感像計算故障）
+        deckInfo.innerHTML = `<span class="font-black">${meta?.title || ''}</span> • ${t('learn.due_left', { n: currentLearningDeck.length })}`;
     }
 
     // =================================================================
@@ -692,6 +726,8 @@ document.addEventListener('DOMContentLoaded', () => {
         newLimitIncrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(5); };
         newLimitDecrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(-5); };
         displayModeBtn.onclick = (e) => { e.stopPropagation(); changeDisplayMode(); };
+        ttsLangBtn.onclick = (e) => { e.stopPropagation(); cycleTtsLang(); };
+        ttsLangRow.classList.toggle('hidden', !canSpeak); // 無 TTS 環境隱藏整列
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 融合 Modal 按鈕 ---
@@ -724,6 +760,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // --- 分享 Modal（v5.5.0） ---
+        closeShareModalBtn.onclick = () => shareModal.classList.add('hidden');
+        shareCopyBtn.onclick = async () => {
+            try {
+                await navigator.clipboard.writeText(currentShareUrl);
+                const original = shareCopyBtn.textContent;
+                shareCopyBtn.textContent = t('share.copied');
+                setTimeout(() => { shareCopyBtn.textContent = t('share.copy'); }, 1500);
+            } catch (e) {
+                shareUrlBox.focus();
+                const range = document.createRange();
+                range.selectNodeContents(shareUrlBox);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        };
+
+        // --- 匯入格式說明 Modal（v5.5.4） ---
+        if (openFormatGuideBtn) openFormatGuideBtn.onclick = () => { formatGuideModal.classList.remove('hidden'); };
+        closeFormatGuideBtn.onclick = () => formatGuideModal.classList.add('hidden');
+        fgCopyPromptBtn.onclick = () => copyWithFeedback(fgCopyPromptBtn, buildAgentPrompt());
+        fgCopySpecBtn.onclick = () => copyWithFeedback(fgCopySpecBtn, buildFormatSpec());
+
         // --- 其他全域事件 ---
         fileUpload.onchange = handleFileUpload;
         loadExampleBtn.onclick = handleExampleLoad;
@@ -736,14 +796,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // v4.5.0 P6：Modal 開啟時 Tab 焦點鎖定在 Modal 內（focus trap）
             if (e.key === 'Tab') {
-                const top = [appConfirmModal, deckEditorModal, editDeckModal, allCardsModal, deckOptionsModal, statsModal, howToUseModal, quickStartModal]
+                const top = [appConfirmModal, deckEditorModal, editDeckModal, shareModal, formatGuideModal, allCardsModal, deckOptionsModal, statsModal, howToUseModal, quickStartModal]
                     .find(m => !m.classList.contains('hidden'));
                 if (top) trapTab(top, e);
                 return;
             }
 
             // 任一 Modal 或選單開啟中（或焦點在輸入框）時，不攔截按鍵
-            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal, statsModal]
+            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal, statsModal, shareModal, formatGuideModal]
                 .some(m => !m.classList.contains('hidden'))
                 || !menuOverlay.classList.contains('hidden')
                 || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName || '');
@@ -802,7 +862,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // v4.2.0 P6：Escape 依 z-index 由高到低關閉最上層視窗
     function handleEscape() {
         if (confirmResolveFn) { confirmResolveFn(false); return; }
-        const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, statsModal, editDeckModal, deckEditorModal];
+        const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, statsModal, shareModal, formatGuideModal, editDeckModal, deckEditorModal];
         for (let i = stack.length - 1; i >= 0; i--) {
             if (!stack[i].classList.contains('hidden')) {
                 // v4.3.0：編輯器有未儲存變更時，先經確認再關閉
@@ -849,6 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // v5.2.0：語言切換（zh ↔ en），靜態 HTML 由 applyI18n 套用、動態內容重渲染
     function toggleLang() {
         setLang(I18N_LANG === 'zh' ? 'en' : 'zh');
+        refreshExampleSelector(); // v5.5.5：範例名跟隨語言
         if (!mainScreen.classList.contains('hidden')) updateUI();
         else renderHomeScreen();
     }
@@ -1038,6 +1099,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dual = currentDeckSettings.displayMode === 'dual';
         displayModeBtn.textContent = dual ? t('menu.mode_dual') : t('menu.mode_combo');
         hintFlipPill.classList.toggle('hidden', dual); // v5.4.0：雙面模式無翻面操作
+        ttsLangBtn.textContent = (currentDeckSettings.ttsLang && currentDeckSettings.ttsLang !== 'auto') ? currentDeckSettings.ttsLang : t('tts.auto');
         populateCardTagFilters();
     }
 
@@ -1062,6 +1124,17 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             cardTagFilterContainer.appendChild(l);
         });
+    }
+
+    // v5.5.2：循環切換朗讀語言（自動 → zh-TW → en-US → ja-JP → ko-KR），並用當前卡示範發音
+    function cycleTtsLang() {
+        const cur = TTS_LANGS.indexOf(currentDeckSettings.ttsLang ?? 'auto');
+        currentDeckSettings.ttsLang = TTS_LANGS[(cur + 1) % TTS_LANGS.length];
+        const meta = deckList.find(d => d.id === currentDeckId);
+        if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
+        ttsLangBtn.textContent = currentDeckSettings.ttsLang !== 'auto' ? currentDeckSettings.ttsLang : t('tts.auto');
+        const demo = (historyIndex >= 0 && historyIndex < history.length) ? currentFullDeck.find(c => c.card_id === history[historyIndex]) : null;
+        if (demo) speakText(demo.fields[0]); // 切換即示範朗讀當前卡
     }
 
     // v5.4.0：切換顯示模式（翻面 <-> 雙面），立即重繪卡面
@@ -1117,22 +1190,40 @@ document.addEventListener('DOMContentLoaded', () => {
         return { id: compact.i, title: compact.t, cards: compact.c.map(([card_id, fields, tags, notes]) => ({ card_id, fields, tags, notes })) };
     }
 
-    // v5.4.0：牌組設定 → 複製分享連結
-    async function copyShareLink(id) {
+    // v5.4.0：牌組設定 → 分享（v5.5.0 改為開啟 QR Modal）
+    let currentShareUrl = '';
+    async function openShareModal(id) {
         const cards = getDeckData(id);
         if (!cards) return;
         try {
             const payload = await encodeDeckForUrl({ id, title: deckList.find(d => d.id === id)?.title || id, cards });
-            if (payload.length > 32768) { await appAlert(t('dlg.share_too_big'), t('do.share')); return; }
-            const url = location.href.split('#')[0] + '#d=' + payload;
-            try {
-                await navigator.clipboard.writeText(url);
-                await appAlert(t('dlg.share_done'), t('do.share'));
-            } catch (e) {
-                await appAlert(t('dlg.share_fail', { u: url }), t('do.share'));
+            if (payload.length > 32768) { await appAlert(t('dlg.share_too_big'), t('share.title')); return; }
+            currentShareUrl = location.href.split('#')[0] + '#d=' + payload;
+            shareUrlBox.textContent = currentShareUrl;
+
+            // QR：qrcode-generator（QR 容量約 2300 bytes，過大或無 lib 時降級顯示提示）
+            qrContainer.innerHTML = '';
+            if (typeof qrcode === 'undefined') {
+                qrContainer.innerHTML = `<span class="text-xs font-bold text-stone-400 px-4">${t('share.qr_unavailable')}</span>`;
+            } else if (payload.length > 2300) {
+                qrContainer.innerHTML = `<span class="text-xs font-bold text-stone-400 px-4">${t('share.qr_too_big')}</span>`;
+            } else {
+                const qr = qrcode(0, 'M');
+                qr.addData(currentShareUrl);
+                qr.make();
+                const n = qr.getModuleCount();
+                const quiet = 4;
+                let rects = '';
+                for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+                    if (qr.isDark(r, c)) rects += `<rect x="${c + quiet}" y="${r + quiet}" width="1" height="1"/>`;
+                }
+                qrContainer.innerHTML = `<svg viewBox="0 0 ${n + quiet * 2} ${n + quiet * 2}" width="180" height="180" shape-rendering="crispEdges" role="img" aria-label="${t('share.title')} QR"><rect width="${n + quiet * 2}" height="${n + quiet * 2}" fill="#ffffff"/><g fill="#171717">${rects}</g></svg>`;
             }
+            shareModal.classList.remove('hidden');
+            hideAllMenus();
+            shareCopyBtn.focus();
         } catch (e) {
-            await appAlert(t('dlg.share_invalid'), t('do.share'));
+            await appAlert(t('dlg.share_invalid'), t('share.title'));
         }
     }
 
@@ -1166,6 +1257,79 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             processNewDeck(deck.cards, deck.id, deck.title);
         }
+    }
+
+    // v5.5.4：匯入格式規則（純文字版，供使用者複製）
+    function buildFormatSpec() {
+        if (I18N_LANG === 'en') {
+            return `FlipDeck import format rules
+===========================
+[JSON (recommended)]
+Top level is a flat array of card objects:
+[{"card_id":"c1","fields":["front","back","notes (optional)"],"tags":["tag (optional)"]}]
+- card_id: unique string within the deck
+- fields[0]: front side (required, non-empty)
+- fields[1]: back / translation
+- fields[2+]: extra notes (rendered with line breaks)
+- tags: string array, used for tag filtering
+[TXT / CSV]
+One card per line, fields separated by ";"; "//" inside a field means a line break.
+front;back;notes
+[Backup]
+flipdeck_backup_*.json (from "Backup All") can be uploaded directly: same-id decks are overwritten (your progress is kept), new decks are added.`;
+        }
+        return `FlipDeck 匯入格式規則
+===========================
+【JSON（推薦）】
+最外層為卡片物件陣列：
+[{"card_id":"c1","fields":["正面","背面","補充(可選)"],"tags":["標籤(可選)"]}]
+- card_id：牌組內唯一字串
+- fields[0]：正面（必填、非空字串）
+- fields[1]：背面／翻譯
+- fields[2+]：補充說明（顯示時自動換行）
+- tags：字串陣列，用於標籤篩選
+【TXT / CSV】
+每行一張卡，欄位以「;」分隔，欄位內以「//」表示換行：
+正面;背面;補充
+【備份檔】
+flipdeck_backup_*.json（「全域備份」產生）可直接上傳還原；同 id 牌組覆蓋內容、保留你的學習進度。`;
+    }
+
+    // v5.5.4：給使用者 AI Agent 的現成提示詞——貼給 ChatGPT/Claude 等即可產生可匯入的 JSON
+    function buildAgentPrompt() {
+        if (I18N_LANG === 'en') {
+            return `Please generate a FlipDeck deck and output ONLY a plain JSON array (no markdown code fences, no comments).
+Format rules:
+- Each card: {"card_id": "<unique id>", "fields": ["<front>", "<back>", "<extra note (optional)>"], "tags": ["<tag (optional)>"]}
+- fields[0] is the front side (required, non-empty string); fields[1] is the back; fields[2+] are extra notes
+- card_id must be unique within the whole file
+- UTF-8 only
+Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and example sentences")`;
+        }
+        return `請幫我產生 FlipDeck 單字卡牌組，只輸出「純 JSON 陣列」（不要 markdown 程式碼區塊、不要註解）。
+格式規則：
+- 每張卡片：{"card_id": "<唯一ID>", "fields": ["<正面>", "<背面>", "<補充說明(可選)>"], "tags": ["<標籤(可選)>"]}
+- fields[0] 為正面（必填、非空字串）；fields[1] 為背面；fields[2] 以後為補充說明
+- card_id 在整份檔案內不可重複
+- 全部使用 UTF-8
+主題：（請填寫你要的主題，例如「多益 500 核心單字，含音標與中文例句」）`;
+    }
+
+    async function copyWithFeedback(btn, text) {
+        const original = btn.textContent;
+        btn.textContent = t('fg.copied'); // 立即回饋，複製非同步進行
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (e) {
+            // fallback：建立暫態 textarea 選取複製
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+        }
+        setTimeout(() => { btn.textContent = original; }, 1500);
     }
 
     function showAllCardsView() { cardSearchInput.value = ''; allCardsModal.classList.remove('hidden'); hideAllMenus(); renderAllCardsTable(); cardSearchInput.focus(); }
@@ -1288,9 +1452,9 @@ document.addEventListener('DOMContentLoaded', () => {
             deckOptionsModal.classList.add('hidden'); renderHomeScreen();
         };
         const deckOptionsShareBtn = document.getElementById('deck-options-share-btn');
-        if (deckOptionsShareBtn) deckOptionsShareBtn.onclick = async () => {
+        if (deckOptionsShareBtn) deckOptionsShareBtn.onclick = () => {
             deckOptionsModal.classList.add('hidden');
-            await copyShareLink(id);
+            openShareModal(id);
         };
         const deckOptionsJsonBtn = document.getElementById('deck-options-json-btn');
         if (deckOptionsJsonBtn) deckOptionsJsonBtn.onclick = () => {
