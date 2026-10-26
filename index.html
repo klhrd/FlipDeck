@@ -186,7 +186,10 @@
 
                 <!-- 貼上區（點「貼上內容」展開） -->
                 <div id="paste-import-section" class="hidden space-y-2">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500 block" data-i18n="qs.paste_title">貼上內容</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="qs.paste_title">貼上內容</span>
+                        <button id="paste-copy-agent-btn" class="text-[10px] font-bold text-teal-700 dark:text-teal-300 hover:underline flex items-center gap-1" data-i18n-aria="fg.copy_prompt" aria-label="複製 AI Agent 提示詞"><span class="material-symbols-outlined !text-sm">content_copy</span><span data-i18n="fg.copy_prompt">複製 AI Agent 提示詞</span></button>
+                    </div>
                     <textarea id="paste-import-area" rows="3" data-i18n-placeholder="qs.paste_ph" class="w-full px-4 py-3 bg-stone-100 dark:bg-stone-800 border-none rounded-2xl text-xs font-mono outline-none focus:ring-2 focus:ring-teal-600 resize-y" placeholder="..."></textarea>
                     <button id="paste-import-btn" class="w-full py-3 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-stone-950 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all" data-i18n="qs.paste_btn">解析並匯入</button>
                     <details class="text-xs text-stone-500 dark:text-stone-400">

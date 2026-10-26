@@ -799,6 +799,10 @@ document.addEventListener('DOMContentLoaded', () => {
         fgCopyPromptBtn.onclick = () => copyWithFeedback(fgCopyPromptBtn, buildAgentPrompt());
         fgCopySpecBtn.onclick = () => copyWithFeedback(fgCopySpecBtn, buildFormatSpec());
 
+        // v5.7.2：貼上區快速複製 AI Agent 提示詞（不用開格式說明 Modal）
+        const pasteCopyAgentBtn = document.getElementById('paste-copy-agent-btn');
+        if (pasteCopyAgentBtn) pasteCopyAgentBtn.onclick = () => copyWithFeedback(pasteCopyAgentBtn, buildAgentPrompt());
+
         // --- v5.6.0：直接貼上匯入 ---
         pasteImportBtn.onclick = async () => {
             const raw = pasteImportArea.value;
@@ -1166,11 +1170,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tags.forEach(t => {
             const l = document.createElement('label');
             l.className = "flex items-center space-x-3 cursor-pointer py-2 px-2 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-xl";
-            const checked = currentDeckSettings.filterTags.includes(t) ? 'checked' : '';
+            // v5.7.2：預設全部打勾（filterTags 空陣列 = 未篩選 = 全部顯示）
+            const checked = currentDeckSettings.filterTags.length === 0 || currentDeckSettings.filterTags.includes(t) ? 'checked' : '';
             l.innerHTML = `<input type="checkbox" ${checked} value="${t}" class="w-5 h-5 rounded-lg border-stone-300 text-stone-900 focus:ring-teal-600"> <span class="text-sm font-bold text-stone-600 dark:text-stone-400">${t}</span>`;
             l.querySelector('input').onchange = () => {
-                const checked = Array.from(cardTagFilterContainer.querySelectorAll('input:checked')).map(i => i.value);
-                currentDeckSettings.filterTags = checked;
+                const checkedValues = Array.from(cardTagFilterContainer.querySelectorAll('input:checked')).map(i => i.value);
+                // 全部勾選 = 回到未篩選（空陣列），避免無標籤卡被排除
+                const allTags = tags;
+                currentDeckSettings.filterTags = allTags.every(t => checkedValues.includes(t)) ? [] : checkedValues;
                 const meta = deckList.find(d => d.id === currentDeckId);
                 if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
                 updateLearningDeck(); updateUI();
