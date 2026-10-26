@@ -77,25 +77,32 @@ function runTests() {
     click(document.getElementById('close-how-to-use-modal-btn'));
 
     click(document.getElementById('home-menu-btn'));
-    click(document.getElementById('create-new-deck-btn'));
+    click(document.getElementById('home-menu-add-btn'));
+    ok('新增按鈕 → 新增選項開啟（scratch/upload/paste）', visible('quick-start-modal') && !!document.getElementById('add-scratch-btn'));
+    click(document.getElementById('add-scratch-btn'));
     ok('從空白建立 → 編輯器開啟', visible('deck-editor-modal'));
     click(document.getElementById('close-deck-editor-modal-btn'));
     ok('無修改 → 編輯器直接關閉', !visible('deck-editor-modal'));
 
-    // --- 語言切換（驗證 data-i18n 結構健康） ---
+    // --- 語言切換（透過設定 Modal，驗證 data-i18n 結構健康） ---
     click(document.getElementById('home-menu-btn'));
-    click(document.getElementById('home-menu-lang-btn'));
+    click(document.getElementById('home-menu-settings-btn'));
+    ok('設定按鈕 → 設定 Modal 開啟', visible('settings-modal'));
+    click(document.getElementById('settings-lang-btn'));
     ok('切換語言後標題變英文', document.querySelector('[data-i18n="app.menu"]').textContent === 'Menu');
     ok('從空白建立已翻譯（結尾標籤修復驗證）', document.querySelector('[data-i18n="menu.create_blank"]').textContent === 'Create from Scratch');
     ok('顯示全卡片已翻譯', document.querySelector('[data-i18n="menu.show_all"]').textContent === 'All Cards (Search)');
-    click(document.getElementById('home-menu-lang-btn'));
+    click(document.getElementById('settings-lang-btn'));
     ok('切回中文', document.querySelector('[data-i18n="app.menu"]').textContent === '主選單');
-    click(document.getElementById('home-menu-close-btn'));
+    click(document.getElementById('close-settings-modal-btn'));
 
     // --- v5.5.4：匯入格式說明 Modal + AI Agent 提示詞複製 ---
+    // --- v5.5.4：格式說明 Modal（透過貼上入口） ---
     click(document.getElementById('home-menu-btn'));
     click(document.getElementById('home-menu-add-btn'));
-    ok('快速開啟（含格式說明）開啟', visible('quick-start-modal'));
+    ok('新增選項開啟（含格式說明折疊）', visible('quick-start-modal'));
+    click(document.getElementById('add-paste-btn'));
+    ok('貼上區展開', !document.getElementById('paste-import-section').classList.contains('hidden'));
     click(document.getElementById('open-format-guide-btn'));
     ok('完整說明 Modal 開啟', visible('format-guide-modal'));
     click(document.getElementById('fg-copy-prompt-btn'));
@@ -136,16 +143,23 @@ function runTests() {
         ok('範例載入 → 學習畫面', visible('main-screen'));
         const deckPanel = document.getElementById('menu-panel');
 
+        // --- 學習選單：快速列 [回首頁][下載][設定][顯示模式] ---
         click(document.getElementById('menu-btn'));
         ok('學習選單開啟', isOpen(deckPanel));
+        click(document.getElementById('deck-menu-settings-btn'));
+        ok('設定按鈕 → 設定 Modal 開啟 + 牌組區顯示', visible('settings-modal') && !document.getElementById('deck-settings-items').classList.contains('hidden'));
         ok('字型大小顯示預設 2.5（防護生效）', document.getElementById('font-size-value').textContent === '2.5');
         ok('每日新卡顯示預設 20', document.getElementById('new-limit-value').textContent === '20');
-        ok('顯示模式顯示「翻面」', document.getElementById('display-mode-btn').textContent === '翻面');
+        click(document.getElementById('close-settings-modal-btn'));
 
+        // 顯示模式在快速列（icon 按鈕）
+        const dmIcon = document.getElementById('display-mode-icon');
+        ok('顯示模式 icon 預設 flip（翻面）', dmIcon.textContent === 'flip');
         click(document.getElementById('display-mode-btn'));
-        ok('切換雙面模式', document.getElementById('display-mode-btn').textContent === '雙面');
+        ok('切換雙面模式 → icon 變 visibility', dmIcon.textContent === 'visibility');
         ok('「點擊 翻面」提示膠囊隱藏', document.getElementById('hint-flip-pill').classList.contains('hidden'));
         click(document.getElementById('display-mode-btn'));
+        ok('切回翻面模式', dmIcon.textContent === 'flip');
 
         click(document.getElementById('menu-btn'));
         click(document.getElementById('show-stats-btn'));
@@ -165,14 +179,15 @@ function runTests() {
             ok('點擊朗讀鈕無錯誤', true);
         }
 
-        // --- v5.5.2：朗讀語言循環切換 ---
-        click(document.getElementById('menu-btn'));
+        // --- v5.5.2：朗讀語言循環切換（透過設定 Modal，4 項循環） ---
+        click(document.getElementById('deck-menu-settings-btn'));
         const ttsBtn = document.getElementById('tts-lang-btn');
         ok('朗讀語言列顯示（TTS 可用環境）', !document.getElementById('tts-lang-row').classList.contains('hidden'));
         click(ttsBtn); ok('切到 zh-TW', ttsBtn.textContent === 'zh-TW');
+        click(ttsBtn); ok('切到 en-GB', ttsBtn.textContent === 'en-GB');
         click(ttsBtn); ok('切到 en-US', ttsBtn.textContent === 'en-US');
-        click(ttsBtn); click(ttsBtn); click(ttsBtn); ok('循環回「自動」', ttsBtn.textContent === '自動');
-        click(document.getElementById('deck-menu-close-btn'));
+        click(ttsBtn); ok('循環回「自動」', ttsBtn.textContent === '自動');
+        click(document.getElementById('close-settings-modal-btn'));
 
         // --- v5.5.0：分享 Modal（QR 無 lib 環境降級）---
         click(document.getElementById('deck-menu-home-btn'));

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.6.0</title>
+    <title>FlipDeck v5.7.0</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -115,17 +115,12 @@
             <h2 class="text-xs uppercase tracking-widest font-black text-stone-500" data-i18n="app.menu">主選單</h2>
             <button id="home-menu-close-btn" data-i18n-aria="aria.close_menu" aria-label="關閉選單" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <!-- v5.4.2：快速列分組雙列（3+3），不再依賴 flex-wrap 換行 -->
-        <div class="mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl space-y-2">
-            <div class="flex justify-around">
-                <button id="home-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">add_circle</span></button>
-                <button id="home-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">fullscreen</span></button>
-                <button id="home-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">dark_mode</span></button>
-                <button id="home-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">translate</span></button>
-            </div>
+        <!-- v5.7.0：首頁選單快速列收斂為 [新增][設定]；設定全在設定選單 -->
+        <div class="flex justify-around mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl">
+            <button id="home-menu-add-btn" data-i18n-aria="menu.add" aria-label="新增" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">add_circle</span></button>
+            <button id="home-menu-settings-btn" data-i18n-aria="aria.open_settings" aria-label="開啟設定" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">settings</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto">
-            <li><button id="create-new-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit_note</span><span data-i18n="menu.create_blank">從空白建立</span></button></li>
             <li><button id="backup-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">backup</span><span data-i18n="menu.backup">全域備份 (.json)</span></button></li>
             <li><button id="show-how-to-use-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">help</span><span data-i18n="menu.help">操作教學</span></button></li>
         </ul>
@@ -137,60 +132,21 @@
             <h2 class="text-xs uppercase tracking-widest font-black text-stone-500" data-i18n="app.settings">設定</h2>
             <button id="deck-menu-close-btn" data-i18n-aria="aria.close_menu" aria-label="關閉選單" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <!-- v5.4.2：快速列分組雙列 —— 牌組操作 3 顆 + 顯示設定 3 顆，根除換行 -->
-        <div class="mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl space-y-2">
-            <div class="flex justify-around">
-                <button id="deck-menu-home-btn" data-i18n-aria="aria.back_home" aria-label="回到首頁" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">home</span></button>
-                <button id="deck-menu-add-btn" data-i18n-aria="menu.import" aria-label="匯入 / 範例" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">add_circle</span></button>
-                <button id="deck-menu-download-btn" data-i18n-aria="aria.download" aria-label="下載此單字集" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">download</span></button>
-            </div>
-            <div class="flex justify-around">
-                <button id="deck-menu-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">fullscreen</span></button>
-                <button id="deck-menu-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">dark_mode</span></button>
-                <button id="deck-menu-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">translate</span></button>
-            </div>
+        <!-- v5.7.1：學習選單快速列 [回首頁][下載][設定][顯示模式] -->
+        <div class="flex justify-around mb-6 p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl">
+            <button id="deck-menu-home-btn" data-i18n-aria="aria.back_home" aria-label="回到首頁" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">home</span></button>
+            <button id="deck-menu-download-btn" data-i18n-aria="aria.download" aria-label="下載此單字集" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">download</span></button>
+            <button id="deck-menu-settings-btn" data-i18n-aria="aria.open_settings" aria-label="開啟設定" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined">settings</span></button>
+            <button id="display-mode-btn" data-i18n-aria="aria.display_mode" aria-label="切換顯示模式" class="p-2.5 text-stone-400 flex-shrink-0"><span class="material-symbols-outlined" id="display-mode-icon">flip</span></button>
         </div>
         <ul class="space-y-1 flex-grow overflow-y-auto custom-scrollbar">
-            <li><button id="show-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3 text-stone-900 dark:text-white font-bold">list_alt</span><span data-i18n="menu.show_all">顯示全卡片 (搜尋)</span></button></li>
-            <li><button id="show-stats-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">insights</span><span data-i18n="menu.stats">學習統計</span></button></li>
-            <li><button id="visual-edit-deck-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">edit</span><span data-i18n="menu.visual_edit">圖形化編輯器</span></button></li>
-            <li><button id="deck-show-how-to-use-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">help</span><span data-i18n="menu.help">操作教學</span></button></li>
             <li class="pt-4 border-t border-stone-100 dark:border-stone-800">
                 <span class="text-[10px] uppercase tracking-widest font-black text-stone-500 block mb-3 pl-4" data-i18n="menu.tag_filter">標籤篩選</span>
                 <div id="card-tag-filter-container" class="space-y-1 pl-4 max-h-40 overflow-y-auto"></div>
             </li>
-            <li class="pt-4 border-t border-stone-100 dark:border-gray-800">
-                <div class="flex items-center justify-between px-4">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.font_size">字型大小</span>
-                    <div class="flex items-center space-x-3">
-                        <button id="font-size-decrease" data-i18n-aria="aria.decrease_font" aria-label="縮小字型" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">-</button>
-                        <span id="font-size-value" class="text-xs font-bold w-8 text-center">2.5</span>
-                        <button id="font-size-increase" data-i18n-aria="aria.increase_font" aria-label="放大字型" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">+</button>
-                    </div>
-                </div>
-            </li>
-            <li class="pt-4 border-t border-stone-100 dark:border-gray-800">
-                <div class="flex items-center justify-between px-4">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.daily_new">每日新卡</span>
-                    <div class="flex items-center space-x-3">
-                        <button id="new-limit-decrease" data-i18n-aria="aria.decrease_new" aria-label="減少每日新卡上限" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">-</button>
-                        <span id="new-limit-value" class="text-xs font-bold w-12 text-center">20</span>
-                        <button id="new-limit-increase" data-i18n-aria="aria.increase_new" aria-label="增加每日新卡上限" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">+</button>
-                    </div>
-                </div>
-            </li>
-            <li class="pt-4 border-t border-stone-100 dark:border-stone-800">
-                <div class="flex items-center justify-between px-4">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.display_mode">顯示模式</span>
-                    <button id="display-mode-btn" data-i18n="menu.mode_combo" data-i18n-aria="aria.display_mode" aria-label="切換顯示模式" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">翻面</button>
-                </div>
-            </li>
-            <li id="tts-lang-row" class="pt-4 border-t border-stone-100 dark:border-stone-800">
-                <div class="flex items-center justify-between px-4">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.tts_lang">朗讀語言</span>
-                    <button id="tts-lang-btn" data-i18n="tts.auto" data-i18n-aria="aria.tts_lang" aria-label="切換朗讀語言" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">自動</button>
-                </div>
-            </li>
+            <li><button id="show-all-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3 text-stone-900 dark:text-white font-bold">list_alt</span><span data-i18n="menu.show_all">顯示全卡片 (搜尋)</span></button></li>
+            <li><button id="show-stats-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">insights</span><span data-i18n="menu.stats">學習統計</span></button></li>
+            <li><button id="deck-show-how-to-use-btn" class="menu-item-btn"><span class="material-symbols-outlined mr-3">help</span><span data-i18n="menu.help">操作教學</span></button></li>
         </ul>
     </div>
 
@@ -202,31 +158,54 @@
                 <button id="close-quick-start-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
-                <label for="file-upload" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-3xl cursor-pointer hover:bg-stone-50 transition-all group">
-                    <span class="material-symbols-outlined !text-5xl text-stone-300 group-hover:text-stone-900 transition-colors mb-4">cloud_upload</span>
-                    <p class="text-sm font-bold text-stone-500" data-i18n="qs.upload">上傳 .txt, .csv, .json</p>
-                    <input id="file-upload" type="file" class="hidden" accept=".txt,.csv,.json">
-                </label>
-                <!-- v5.5.3：檔案格式說明（可折疊）；v5.5.4：連結至完整說明 -->
-                <details class="text-xs text-stone-500 dark:text-stone-400">
-                    <summary class="cursor-pointer font-bold hover:text-stone-900 dark:hover:text-white transition-colors select-none" data-i18n="qs.format_title">檔案格式說明</summary>
-                    <div class="mt-3 space-y-2 text-left">
-                        <p data-i18n="qs.format_json">JSON：卡片陣列，每張須含 card_id（字串）與 fields（正面／背面／補充），tags 可選</p>
-                        <p data-i18n="qs.format_md">Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），自動合併為「詞性 定義」並加入標籤。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）</p>
-                        <p data-i18n="qs.format_txt">TXT / CSV：每行一張卡，欄位以「;」分隔；欄位內容以「//」表示換行</p>
-                        <p data-i18n="qs.format_backup">支援直接上傳全域備份檔（flipdeck_backup_*.json）進行還原</p>
-                        <pre class="bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono" dir="ltr">[{"card_id":"c1","fields":["word","定義","補充"],"tags":["A1"]}]</pre>
-                        <pre class="bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono" dir="ltr">word;定義;補充</pre>
-                        <button id="open-format-guide-btn" class="mt-1 text-[10px] font-bold text-teal-700 dark:text-teal-300 hover:underline" data-i18n="fg.open_full">查看完整說明</button>
-                    </div>
-                </details>
-                <!-- v5.6.0：直接貼上匯入 -->
-                <div class="space-y-2">
-                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500 block" data-i18n="qs.paste_title">或直接貼上內容</span>
+                <!-- v5.7.0：新增選項——從空白建立 / 上傳檔案 / 貼上內容 -->
+                <div class="grid grid-cols-1 gap-3">
+                    <button id="add-scratch-btn" class="flex items-center gap-4 p-4 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-neutral-700 hover:border-teal-600 transition-colors text-left">
+                        <span class="material-symbols-outlined !text-3xl text-stone-300">edit_note</span>
+                        <span>
+                            <span class="block text-sm font-black text-stone-900 dark:text-white" data-i18n="menu.create_blank">從空白建立</span>
+                            <span class="block text-xs font-medium text-stone-400" data-i18n="add.scratch_desc">在圖形化編輯器中逐張輸入</span>
+                        </span>
+                    </button>
+                    <button id="add-upload-btn" class="flex items-center gap-4 p-4 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-neutral-700 hover:border-teal-600 transition-colors text-left">
+                        <span class="material-symbols-outlined !text-3xl text-stone-300">cloud_upload</span>
+                        <span>
+                            <span class="block text-sm font-black text-stone-900 dark:text-white" data-i18n="add.upload">上傳檔案</span>
+                            <span class="block text-xs font-medium text-stone-400" data-i18n="add.upload_desc">.txt、.csv、.json 或備份檔</span>
+                        </span>
+                    </button>
+                    <button id="add-paste-btn" class="flex items-center gap-4 p-4 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-neutral-700 hover:border-teal-600 transition-colors text-left">
+                        <span class="material-symbols-outlined !text-3xl text-stone-300">content_paste</span>
+                        <span>
+                            <span class="block text-sm font-black text-stone-900 dark:text-white" data-i18n="add.paste">貼上內容</span>
+                            <span class="block text-xs font-medium text-stone-400" data-i18n="add.paste_desc">JSON、Markdown 表格、TXT</span>
+                        </span>
+                    </button>
+                </div>
+                <input id="file-upload" type="file" class="hidden" accept=".txt,.csv,.json">
+
+                <!-- 貼上區（點「貼上內容」展開） -->
+                <div id="paste-import-section" class="hidden space-y-2">
+                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500 block" data-i18n="qs.paste_title">貼上內容</span>
                     <textarea id="paste-import-area" rows="3" data-i18n-placeholder="qs.paste_ph" class="w-full px-4 py-3 bg-stone-100 dark:bg-stone-800 border-none rounded-2xl text-xs font-mono outline-none focus:ring-2 focus:ring-teal-600 resize-y" placeholder="..."></textarea>
                     <button id="paste-import-btn" class="w-full py-3 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-stone-950 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all" data-i18n="qs.paste_btn">解析並匯入</button>
+                    <details class="text-xs text-stone-500 dark:text-stone-400">
+                        <summary class="cursor-pointer font-bold hover:text-stone-900 dark:hover:text-white transition-colors select-none" data-i18n="qs.format_title">檔案格式說明</summary>
+                        <div class="mt-3 space-y-2 text-left">
+                            <p data-i18n="qs.format_json">JSON：卡片陣列，每張須含 card_id（字串）與 fields（正面／背面／補充），tags 可選</p>
+                            <p data-i18n="qs.format_md">Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），自動合併為「詞性 定義」並加入標籤。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）</p>
+                            <p data-i18n="qs.format_txt">TXT / CSV：每行一張卡，欄位以「;」分隔；欄位內容以「//」表示換行</p>
+                            <p data-i18n="qs.format_backup">支援直接上傳全域備份檔（flipdeck_backup_*.json）進行還原</p>
+                            <pre class="bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono" dir="ltr">[{"card_id":"c1","fields":["word","定義","補充"],"tags":["A1"]}]</pre>
+                            <pre class="bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono" dir="ltr">word;定義;補充</pre>
+                            <button id="open-format-guide-btn" class="mt-1 text-[10px] font-bold text-teal-700 dark:text-teal-300 hover:underline" data-i18n="fg.open_full">查看完整說明</button>
+                        </div>
+                    </details>
                 </div>
-                <div class="flex space-x-2">
+
+                <!-- 範例 -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-[10px] uppercase tracking-widest font-black text-stone-500 whitespace-nowrap" data-i18n="add.examples">載入範例</span>
                     <select id="example-selector" class="flex-grow px-4 py-3 bg-stone-100 dark:bg-stone-800 border-none rounded-2xl text-sm font-medium outline-none"></select>
                     <button id="load-example-btn" data-i18n-aria="aria.load_example" aria-label="載入範例" class="w-12 h-12 flex items-center justify-center bg-teal-700 text-white rounded-2xl hover:bg-teal-800 transition-colors">
                         <span class="material-symbols-outlined">play_arrow</span>
@@ -385,6 +364,49 @@
             <div id="qr-container" class="mx-auto w-fit p-3 bg-white rounded-2xl border border-stone-100 min-h-[80px] flex items-center justify-center"></div>
             <div id="share-url-box" class="mt-4 text-[10px] font-mono text-stone-500 dark:text-stone-400 break-all max-h-16 overflow-y-auto text-left bg-stone-50 dark:bg-stone-800 rounded-xl p-3 select-all"></div>
             <button id="share-copy-btn" class="mt-4 w-full py-3.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-stone-950 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all" data-i18n="share.copy">複製連結</button>
+        </div>
+    </div>
+
+    <!-- 設定 Modal (v5.7.0：全部設定集中於此，按下設定按鈕才開啟) -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[4300] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-md dvh-90 flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
+                <h2 id="settings-title" class="text-xl font-black" data-i18n="settings.title">設定</h2>
+                <button id="close-settings-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="flex-grow overflow-y-auto p-6 custom-scrollbar">
+                <h3 class="text-xs uppercase tracking-widest font-black text-stone-500 dark:text-stone-400 mb-4" data-i18n="settings.app">應用程式</h3>
+                <div class="flex justify-around p-2 bg-stone-50 dark:bg-stone-800 rounded-2xl mb-8">
+                    <button id="settings-fullscreen-btn" data-i18n-aria="aria.fullscreen" aria-label="切換全螢幕" class="p-3 text-stone-400"><span class="material-symbols-outlined">fullscreen</span></button>
+                    <button id="settings-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-3 text-stone-400"><span class="material-symbols-outlined">dark_mode</span></button>
+                    <button id="settings-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-3 text-stone-400"><span class="material-symbols-outlined">translate</span></button>
+                </div>
+
+                <div id="deck-settings-items" class="hidden">
+                    <h3 class="text-xs uppercase tracking-widest font-black text-stone-500 dark:text-stone-400 mb-4" data-i18n="settings.deck">牌組設定</h3>
+                    <div class="flex items-center justify-between py-4 border-t border-stone-100 dark:border-gray-800">
+                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.font_size">字型大小</span>
+                        <div class="flex items-center space-x-3">
+                            <button id="font-size-decrease" data-i18n-aria="aria.decrease_font" aria-label="縮小字型" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">-</button>
+                            <span id="font-size-value" class="text-xs font-bold w-8 text-center">2.5</span>
+                            <button id="font-size-increase" data-i18n-aria="aria.increase_font" aria-label="放大字型" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">+</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between py-4 border-t border-stone-100 dark:border-gray-800">
+                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.daily_new">每日新卡</span>
+                        <div class="flex items-center space-x-3">
+                            <button id="new-limit-decrease" data-i18n-aria="aria.decrease_new" aria-label="減少每日新卡上限" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">-</button>
+                            <span id="new-limit-value" class="text-xs font-bold w-12 text-center">20</span>
+                            <button id="new-limit-increase" data-i18n-aria="aria.increase_new" aria-label="增加每日新卡上限" class="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full font-bold">+</button>
+                        </div>
+                    </div>
+                    <div id="tts-lang-row" class="flex items-center justify-between py-4 border-t border-stone-100 dark:border-stone-800">
+                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.tts_lang">朗讀語言</span>
+                        <button id="tts-lang-btn" data-i18n="tts.auto" data-i18n-aria="aria.tts_lang" aria-label="切換朗讀語言" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">自動</button>
+                    </div>
+                </div>
+                <p id="deck-settings-hint" class="hidden text-center text-xs font-bold text-stone-400 py-4" data-i18n="settings.deck_hint">進入學習畫面時可用</p>
+            </div>
         </div>
     </div>
 

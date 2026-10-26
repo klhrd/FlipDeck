@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.6.0 (Paste Import) =====
+// ===== FlipDeck v5.7.0 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -20,8 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadExampleBtn = document.getElementById('load-example-btn');
     
     const homeMenuBtn = document.getElementById('home-menu-btn');
-    const homeMenuThemeBtn = document.getElementById('home-menu-theme-btn');
-    const homeMenuLangBtn = document.getElementById('home-menu-lang-btn');
+    const homeMenuSettingsBtn = document.getElementById('home-menu-settings-btn');
     const statsTotalDecks = document.getElementById('stats-total-decks');
     const statsTotalCards = document.getElementById('stats-total-cards');
     const sortBySelect = document.getElementById('sort-by');
@@ -36,8 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuOverlay = document.getElementById('menu-overlay');
     const homeMenuPanel = document.getElementById('home-menu-panel');
     const homeMenuAddBtn = document.getElementById('home-menu-add-btn');
-    const createNewDeckBtn = document.getElementById('create-new-deck-btn');
-    const homeMenuFullscreenBtn = document.getElementById('home-menu-fullscreen-btn');
     const homeMenuCloseBtn = document.getElementById('home-menu-close-btn');
     const backupAllBtn = document.getElementById('backup-all-btn');
     const showHowToUseBtn = document.getElementById('show-how-to-use-btn');
@@ -45,15 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuBtn = document.getElementById('menu-btn');
     const menuPanel = document.getElementById('menu-panel');
     const deckMenuHomeBtn = document.getElementById('deck-menu-home-btn');
-    const deckMenuAddBtn = document.getElementById('deck-menu-add-btn');
     const deckMenuDownloadBtn = document.getElementById('deck-menu-download-btn');
-    const deckMenuFullscreenBtn = document.getElementById('deck-menu-fullscreen-btn');
-    const deckMenuThemeBtn = document.getElementById('deck-menu-theme-btn');
-    const deckMenuLangBtn = document.getElementById('deck-menu-lang-btn');
+    const deckMenuSettingsBtn = document.getElementById('deck-menu-settings-btn');
     const deckMenuCloseBtn = document.getElementById('deck-menu-close-btn');
     const showAllBtn = document.getElementById('show-all-btn');
     const showStatsBtn = document.getElementById('show-stats-btn');
-    const visualEditDeckBtn = document.getElementById('visual-edit-deck-btn');
     const deckShowHowToUseBtn = document.getElementById('deck-show-how-to-use-btn');
     const cardTagFilterContainer = document.getElementById('card-tag-filter-container');
     const fontSizeDecrease = document.getElementById('font-size-decrease');
@@ -114,6 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const fgCopySpecBtn = document.getElementById('fg-copy-spec-btn');
     const pasteImportArea = document.getElementById('paste-import-area');
     const pasteImportBtn = document.getElementById('paste-import-btn');
+    const pasteImportSection = document.getElementById('paste-import-section');
+    const addScratchBtn = document.getElementById('add-scratch-btn');
+    const addUploadBtn = document.getElementById('add-upload-btn');
+    const addPasteBtn = document.getElementById('add-paste-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettingsModalBtn = document.getElementById('close-settings-modal-btn');
+    const settingsFullscreenBtn = document.getElementById('settings-fullscreen-btn');
+    const settingsThemeBtn = document.getElementById('settings-theme-btn');
+    const settingsLangBtn = document.getElementById('settings-lang-btn');
+    const deckSettingsItems = document.getElementById('deck-settings-items');
+    const deckSettingsHint = document.getElementById('deck-settings-hint');
     const editorBulkBar = document.getElementById('editor-bulk-bar');
     const editorSelectAllPage = document.getElementById('editor-select-all-page');
     const editorSelectedCount = document.getElementById('editor-selected-count');
@@ -527,17 +531,18 @@ document.addEventListener('DOMContentLoaded', () => {
         displayCardStack(); updateUI(); saveDeckState(currentDeckId, currentCardStatus);
     }
 
-    // v5.5.0：Web Speech API 朗讀——v5.5.2：優先使用牌組設定語言（auto = 內容偵測 CJK→zh-TW / 其餘 en-US）
+    // v5.5.0：Web Speech API 朗讀——v5.5.2：優先使用牌組設定語言
+    // v5.7.0：預設（auto）改為英式英文 en-GB
     function speakText(text) {
         if (!('speechSynthesis' in window) || !text) return;
         speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         const pref = currentDeckSettings.ttsLang;
-        u.lang = (pref && pref !== 'auto') ? pref : (/[\u4e00-\u9fff]/.test(text) ? 'zh-TW' : 'en-US');
+        u.lang = (pref && pref !== 'auto') ? pref : (/[\u4e00-\u9fff]/.test(text) ? 'zh-TW' : 'en-GB');
         speechSynthesis.speak(u);
     }
     const canSpeak = 'speechSynthesis' in window;
-    const TTS_LANGS = ['auto', 'zh-TW', 'en-US', 'ja-JP', 'ko-KR'];
+    const TTS_LANGS = ['auto', 'zh-TW', 'en-GB', 'en-US'];
 
     function displayCardStack() {
         cardStackContainer.innerHTML = '';
@@ -699,29 +704,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function bindEventListeners() {
         // --- 選單開啟按鈕 ---
         homeMenuBtn.onclick = (e) => { e.stopPropagation(); toggleMenu('home'); };
-        menuBtn.onclick = (e) => { e.stopPropagation(); toggleMenu('deck'); applyCurrentDeckSettings(); };
+        menuBtn.onclick = (e) => { e.stopPropagation(); toggleMenu('deck'); };
         menuOverlay.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 首頁選單內按鈕 ---
         homeMenuAddBtn.onclick = (e) => { e.stopPropagation(); openQuickStartModal(); };
-        homeMenuFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
-        homeMenuThemeBtn.onclick = (e) => { e.stopPropagation(); toggleTheme(); };
-        homeMenuLangBtn.onclick = (e) => { e.stopPropagation(); toggleLang(); };
-        createNewDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(); hideAllMenus(); };
+        homeMenuSettingsBtn.onclick = (e) => { e.stopPropagation(); openSettingsModal(); };
         backupAllBtn.onclick = (e) => { e.stopPropagation(); backupAllData(); };
         showHowToUseBtn.onclick = (e) => { e.stopPropagation(); openHowToUseModal(); };
         homeMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 學習選單內按鈕 ---
         deckMenuHomeBtn.onclick = (e) => { e.stopPropagation(); backToHomeScreen(); hideAllMenus(); };
-        deckMenuAddBtn.onclick = (e) => { e.stopPropagation(); openQuickStartModal(); };
         deckMenuDownloadBtn.onclick = (e) => { e.stopPropagation(); downloadData('json'); hideAllMenus(); };
-        deckMenuFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
-        deckMenuThemeBtn.onclick = (e) => { e.stopPropagation(); toggleTheme(); };
-        deckMenuLangBtn.onclick = (e) => { e.stopPropagation(); toggleLang(); };
+        deckMenuSettingsBtn.onclick = (e) => { e.stopPropagation(); openSettingsModal(); };
         showAllBtn.onclick = (e) => { e.stopPropagation(); showAllCardsView(); };
         showStatsBtn.onclick = (e) => { e.stopPropagation(); showStatsView(); };
-        visualEditDeckBtn.onclick = (e) => { e.stopPropagation(); openDeckEditor(currentDeckId); hideAllMenus(); };
         deckShowHowToUseBtn.onclick = (e) => { e.stopPropagation(); openHowToUseModal(); };
         fontSizeIncrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(0.2); };
         fontSizeDecrease.onclick = (e) => { e.stopPropagation(); changeDeckFontSize(-0.2); };
@@ -729,8 +727,22 @@ document.addEventListener('DOMContentLoaded', () => {
         newLimitDecrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(-5); };
         displayModeBtn.onclick = (e) => { e.stopPropagation(); changeDisplayMode(); };
         ttsLangBtn.onclick = (e) => { e.stopPropagation(); cycleTtsLang(); };
-        ttsLangRow.classList.toggle('hidden', !canSpeak); // 無 TTS 環境隱藏整列
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
+
+        // --- 新增選項（v5.7.0） ---
+        addScratchBtn.onclick = () => { quickStartModal.classList.add('hidden'); openDeckEditor(); };
+        addUploadBtn.onclick = () => fileUpload.click();
+        addPasteBtn.onclick = () => {
+            const show = pasteImportSection.classList.toggle('hidden') === false;
+            if (show) pasteImportArea.focus();
+        };
+
+        // --- 設定 Modal（v5.7.0） ---
+        closeSettingsModalBtn.onclick = () => settingsModal.classList.add('hidden');
+        settingsFullscreenBtn.onclick = (e) => { e.stopPropagation(); toggleFullScreen(); };
+        settingsThemeBtn.onclick = (e) => { e.stopPropagation(); toggleTheme(); };
+        settingsLangBtn.onclick = (e) => { e.stopPropagation(); toggleLang(); };
+        ttsLangRow.classList.toggle('hidden', !canSpeak);
 
         // --- 融合 Modal 按鈕 ---
         const modalJsonBtn = document.getElementById('modal-json-btn');
@@ -821,14 +833,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // v4.5.0 P6：Modal 開啟時 Tab 焦點鎖定在 Modal 內（focus trap）
             if (e.key === 'Tab') {
-                const top = [appConfirmModal, deckEditorModal, editDeckModal, shareModal, formatGuideModal, allCardsModal, deckOptionsModal, statsModal, howToUseModal, quickStartModal]
+                const top = [appConfirmModal, deckEditorModal, editDeckModal, shareModal, formatGuideModal, settingsModal, allCardsModal, deckOptionsModal, statsModal, howToUseModal, quickStartModal]
                     .find(m => !m.classList.contains('hidden'));
                 if (top) trapTab(top, e);
                 return;
             }
 
             // 任一 Modal 或選單開啟中（或焦點在輸入框）時，不攔截按鍵
-            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal, statsModal, shareModal, formatGuideModal]
+            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal, statsModal, shareModal, formatGuideModal, settingsModal]
                 .some(m => !m.classList.contains('hidden'))
                 || !menuOverlay.classList.contains('hidden')
                 || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName || '');
@@ -887,7 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // v4.2.0 P6：Escape 依 z-index 由高到低關閉最上層視窗
     function handleEscape() {
         if (confirmResolveFn) { confirmResolveFn(false); return; }
-        const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, statsModal, shareModal, formatGuideModal, editDeckModal, deckEditorModal];
+        const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, statsModal, shareModal, formatGuideModal, settingsModal, editDeckModal, deckEditorModal];
         for (let i = stack.length - 1; i >= 0; i--) {
             if (!stack[i].classList.contains('hidden')) {
                 // v4.3.0：編輯器有未儲存變更時，先經確認再關閉
@@ -924,11 +936,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyThemeIcons() {
         const isDark = document.documentElement.classList.contains('dark');
-        [homeMenuThemeBtn, deckMenuThemeBtn].forEach(b => {
+        [settingsThemeBtn].forEach(b => {
             if (!b) return;
             b.querySelector('span').textContent = isDark ? 'light_mode' : 'dark_mode';
             b.setAttribute('aria-label', isDark ? t('aria.theme_light') : t('aria.theme_dark'));
         });
+    }
+
+    // v5.7.0：設定 Modal——所有設定集中於此；牌組設定僅在學習中顯示
+    function openSettingsModal() {
+        hideAllMenus();
+        const inDeck = !mainScreen.classList.contains('hidden') && currentDeckId;
+        deckSettingsItems.classList.toggle('hidden', !inDeck);
+        deckSettingsHint.classList.toggle('hidden', !!inDeck);
+        if (inDeck) applyCurrentDeckSettings();
+        settingsModal.classList.remove('hidden');
     }
 
     // v5.2.0：語言切換（zh ↔ en），靜態 HTML 由 applyI18n 套用、動態內容重渲染
@@ -1127,9 +1149,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         fontSizeValue.textContent = currentDeckSettings.fontSize.toFixed(1);
         newLimitValue.textContent = (currentDeckSettings.newPerDay ?? 0) > 0 ? currentDeckSettings.newPerDay : t('menu.unlimited');
-        const dual = currentDeckSettings.displayMode === 'dual';
-        displayModeBtn.textContent = dual ? t('menu.mode_dual') : t('menu.mode_combo');
-        hintFlipPill.classList.toggle('hidden', dual); // v5.4.0：雙面模式無翻面操作
+        hintFlipPill.classList.toggle('hidden', currentDeckSettings.displayMode === 'dual');
+        applyDisplayModeIcon();
         ttsLangBtn.textContent = (currentDeckSettings.ttsLang && currentDeckSettings.ttsLang !== 'auto') ? currentDeckSettings.ttsLang : t('tts.auto');
         populateCardTagFilters();
     }
@@ -1169,14 +1190,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // v5.4.0：切換顯示模式（翻面 <-> 雙面），立即重繪卡面
+    // v5.7.1：顯示模式移至學習選單快速列（icon 按鈕），settings 內不再顯示
     function changeDisplayMode() {
         currentDeckSettings.displayMode = currentDeckSettings.displayMode === 'dual' ? 'combo' : 'dual';
         const meta = deckList.find(d => d.id === currentDeckId);
         if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
-        const dual = currentDeckSettings.displayMode === 'dual';
-        displayModeBtn.textContent = dual ? t('menu.mode_dual') : t('menu.mode_combo');
-        hintFlipPill.classList.toggle('hidden', dual);
+        applyDisplayModeIcon();
+        hintFlipPill.classList.toggle('hidden', currentDeckSettings.displayMode === 'dual');
         displayCardStack();
+    }
+
+    function applyDisplayModeIcon() {
+        const dual = currentDeckSettings.displayMode === 'dual';
+        const icon = document.getElementById('display-mode-icon');
+        if (icon) icon.textContent = dual ? 'visibility' : 'flip';
+        displayModeBtn.setAttribute('aria-label', dual ? t('menu.mode_dual') : t('menu.mode_combo'));
+        displayModeBtn.title = dual ? t('menu.mode_dual') : t('menu.mode_combo');
     }
 
     function changeDeckFontSize(step) {
@@ -1588,8 +1617,7 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         deckOptionsModal.classList.remove('hidden');
         deckOptionsTitle.textContent = t('do.title');
         deckTitleInput.value = d.title;
-        deckTitleInput.focus();
-        deckTitleInput.select();
+        // v5.7.0：不自動 focus（避免行動端直接跳出鍵盤）
         saveDeckOptionsBtn.onclick = () => {
             d.title = deckTitleInput.value; saveDeckList();
             deckOptionsModal.classList.add('hidden'); renderHomeScreen();
