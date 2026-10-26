@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorNextPageBtn = document.getElementById('editor-next-page-btn');
     const editorPageIndicator = document.getElementById('editor-page-indicator');
     const shareModal = document.getElementById('share-modal');
+    const shareDeckInfo = document.getElementById('share-deck-info');
     const qrContainer = document.getElementById('qr-container');
     const shareUrlBox = document.getElementById('share-url-box');
     const shareCopyBtn = document.getElementById('share-copy-btn');
@@ -1260,6 +1261,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (payload.length > 32768) { await appAlert(t('dlg.share_too_big'), t('share.title')); return; }
             currentShareUrl = location.href.split('#')[0] + '#d=' + payload;
             shareUrlBox.textContent = currentShareUrl;
+            const shareTitle = deckList.find(d => d.id === id)?.title || id;
+            shareDeckInfo.textContent = t('share.deck_info', { t: shareTitle, n: cards.length });
 
             // QR：qrcode-generator（QR 容量約 2300 bytes，過大或無 lib 時降級顯示提示）
             qrContainer.innerHTML = '';

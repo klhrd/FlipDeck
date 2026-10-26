@@ -117,6 +117,7 @@ const I18N = {
         'dlg.share_invalid': '分享連結無效或已損毀。',
         // 分享 Modal（v5.5.0）
         'share.title': '分享牌組', 'share.copy': '複製連結', 'share.copied': '已複製！',
+        'share.deck_info': '「{t}」（{n} 張卡片）',
         'share.qr_unavailable': '此環境不支援 QR 產生，請直接複製連結',
         'share.qr_too_big': '牌組較大，QR 容量不足——請直接複製連結',
         'aria.speak': '朗讀正面',
@@ -233,6 +234,7 @@ const I18N = {
         'dlg.share_too_big': 'This deck is too large even after compression. Use "Backup All" instead.',
         'dlg.share_invalid': 'The share link is invalid or corrupted.',
         'share.title': 'Share Deck', 'share.copy': 'Copy Link', 'share.copied': 'Copied!',
+        'share.deck_info': '"{t}" ({n} cards)',
         'share.qr_unavailable': 'QR generation unavailable here — copy the link instead',
         'share.qr_too_big': 'Deck too large for a QR code — copy the link instead',
         'aria.speak': 'Speak front side',

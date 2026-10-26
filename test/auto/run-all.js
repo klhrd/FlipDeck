@@ -15,7 +15,8 @@ const suites = [
     'share.test.js',    // 分享編解碼 round-trip / 壓縮 / 損毀防護
     'smoke.test.js',    // jsdom 冒煙：完整啟動 + 選單互動 + 顯示模式 + 語言切換
     'numbers.test.js',  // 數字回歸：SM-2 / 進度 / 到期 / 統計視窗全數核對
-    'paste.test.js'     // 貼上匯入：分流 + Markdown 救援接合（真實亂序資料）
+    'paste.test.js',     // 貼上匯入：分流 + Markdown 救援接合（真實亂序資料）
+    'share-title.test.js' // 分享標題整合：codec + 顯示
 ];
 
 let failed = 0;

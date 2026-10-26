@@ -198,6 +198,7 @@ function runTests() {
             click(document.getElementById('deck-options-share-btn'));
             setTimeout(() => {
                 ok('分享 Modal 開啟', visible('share-modal'));
+                ok('分享視窗顯示牌組標題', document.getElementById('share-deck-info').textContent.includes('高中 6000 單字'));
                 ok('QR 降級提示顯示（無 lib 環境）', document.getElementById('qr-container').textContent.length > 0);
                 ok('連結框有內容', document.getElementById('share-url-box').textContent.includes('#d='));
                 document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
