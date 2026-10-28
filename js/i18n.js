@@ -25,6 +25,8 @@ const I18N = {
         'menu.font_size': '字型大小', 'menu.daily_new': '每日新卡', 'menu.unlimited': '無上限',
         'menu.display_mode': '顯示模式', 'menu.mode_combo': '翻面', 'menu.mode_dual': '雙面',
         'menu.tts_lang': '朗讀語言', 'tts.auto': '自動',
+        'menu.review_dir': '複習方向', 'menu.dir_forward': '正面→背面', 'menu.dir_reverse': '背面→正面',
+        'menu.front_field': '正面欄位', 'menu.back_field': '背面欄位', 'menu.front_sub': '正面小字', 'menu.sub_none': '無',
         // 快速開始
         'qs.title': '新增單字集', 'qs.upload': '上傳 .txt, .csv, .json',
         'ex.hs6000': '高中 6000 單字', 'ex.verbs': '動詞三態', 'ex.elements': '元素週期表', 'ex.capitals': '國家與首都',
@@ -47,9 +49,9 @@ const I18N = {
         'qs.paste_btn': '解析並匯入',
         'qs.paste_ph': '支援 JSON、Markdown 表格（| 單字 | 詞性 | 中文 |）、TXT（; 分欄）——AI 產生的內容直接貼上即可',
         'qs.paste_deckname': '貼上匯入',
-        'qs.format_md': 'Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），自動合併為「詞性 定義」並加入標籤。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）',
+        'qs.format_md': 'Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），詞性保留為獨立欄位並加入標籤（正面＝單字＋詞性小字、背面＝第三欄，可於學習選單改欄位）。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）',
         'fg.md_title': 'Markdown 表格（可直接從 AI 對話複製）',
-        'fg.md_desc': '每列一張卡，欄位依序對應（第一欄＝正面）。若第二欄全部是詞性（n.、v.、phr. 等），背面自動合併為「詞性 + 定義」並將詞性加入標籤。表頭列與「---」分隔列自動略過；因換行遺失產生的尾部碎片依「（）佔位優先 → ；未完接合」規則盡力復原——貼上後會開啟編輯器供你檢查修正。',
+        'fg.md_desc': '每列一張卡，欄位依序對應（第一欄＝正面）。若第二欄全部是詞性（n.、v.、phr. 等），詞性保留為獨立欄位並加入標籤：正面＝單字（詞性以小字呈現）、背面＝第三欄，欄位角色可於學習選單隨時更改。表頭列與「---」分隔列自動略過；因換行遺失產生的尾部碎片依「（）佔位優先 → ；未完接合」規則盡力復原——貼上後會開啟編輯器供你檢查修正。',
         'dlg.paste_empty': '沒有偵測到可匯入的內容',
         'dlg.paste_json': 'JSON 解析失敗，請檢查格式',
         'dlg.paste_shape': '無法辨識內容：需為 JSON 陣列、Markdown 表格或 TXT（欄位以 ; 分隔）',
@@ -62,7 +64,7 @@ const I18N = {
         // JSON 編輯器
         'json.title': 'JSON 原始碼編輯', 'json.save': '儲存變更',
         // 牌組選項
-        'do.title': '單字集設定', 'do.name': '單字集名稱', 'do.save': '儲存設定', 'do.json': 'JSON 原始碼', 'do.delete': '刪除單字集', 'do.share': '複製分享連結',
+        'do.title': '單字集設定', 'do.name': '單字集名稱', 'do.save': '儲存設定',         'do.json': 'JSON 原始碼', 'do.delete': '刪除單字集', 'do.share': '複製分享連結', 'do.anki': '匯出 Anki TSV',
         // 操作教學
         'htu.title': '操作教學',
         'htu.s1': '點擊卡片即可翻面', 'htu.s2': '向右滑動表示「已學會」', 'htu.s3': '向左滑動表示「不熟悉」',
@@ -135,7 +137,7 @@ const I18N = {
         'aria.decrease_new': '減少每日新卡上限', 'aria.increase_new': '增加每日新卡上限',
         'aria.bulk_tags': '批次標籤', 'aria.clear_selection': '清除選取',
         'aria.search_cards': '搜尋卡片', 'aria.visual_edit': '開啟圖形化編輯器', 'aria.start_learning': '開始學習',
-        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言'
+        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.front_field': '切換正面欄位', 'aria.back_field': '切換背面欄位', 'aria.front_sub': '切換正面小字欄位'
     },
     en: {
         'app.menu': 'Menu', 'app.settings': 'Settings',
@@ -158,6 +160,8 @@ const I18N = {
         'menu.font_size': 'Font Size', 'menu.daily_new': 'Daily New Cards', 'menu.unlimited': 'Unlimited',
         'menu.display_mode': 'Card View', 'menu.mode_combo': 'Flip', 'menu.mode_dual': 'Both Sides',
         'menu.tts_lang': 'Speech Language', 'tts.auto': 'Auto',
+        'menu.review_dir': 'Review Direction', 'menu.dir_forward': 'Front→Back', 'menu.dir_reverse': 'Back→Front',
+        'menu.front_field': 'Front Field', 'menu.back_field': 'Back Field', 'menu.front_sub': 'Front Subtext', 'menu.sub_none': 'None',
         'qs.title': 'Add Deck', 'qs.upload': 'Upload .txt, .csv, .json',
         'ex.hs6000': 'High School 6000 Words', 'ex.verbs': 'Verb Tenses', 'ex.elements': 'Periodic Table', 'ex.capitals': 'Countries & Capitals',
         'qs.format_title': 'File Format Guide',
@@ -177,9 +181,9 @@ const I18N = {
         'qs.paste_btn': 'Parse & Import',
         'qs.paste_ph': 'JSON, Markdown tables (| word | pos | meaning |), or TXT (; separated) — paste AI output directly',
         'qs.paste_deckname': 'Pasted Deck',
-        'qs.format_md': 'Markdown table: column 1 = front; if column 2 is all parts of speech, back becomes "POS + definition" and POS is added as a tag. Headers and --- rows are skipped; lost-linebreak fragments are auto-stitched (imperfect cases open in the editor for review)',
+        'qs.format_md': 'Markdown table: column 1 = front; if column 2 is all parts of speech, POS is kept as its own field and added as a tag (front = word with POS subtext, back = column 3; field roles are changeable in the learn menu). Headers and --- rows are skipped; lost-linebreak fragments are auto-stitched (imperfect cases open in the editor for review)',
         'fg.md_title': 'Markdown table (paste straight from AI chats)',
-        'fg.md_desc': 'One card per row, columns map in order (column 1 = front). If column 2 is always a part of speech (n., v., phr.), the back becomes "POS + definition" and the POS is added as a tag. Header and --- rows are skipped; fragments lost to missing line breaks are stitched by the "（） placeholder first → ；-unfinished" rule — the editor opens afterwards so you can review and fix.',
+        'fg.md_desc': 'One card per row, columns map in order (column 1 = front). If column 2 is always a part of speech (n., v., phr.), POS is kept as its own field and added as a tag: front = word (POS shown as small subtext), back = column 3; field roles can be changed anytime in the learn menu. Header and --- rows are skipped; fragments lost to missing line breaks are stitched by the "（） placeholder first → ；-unfinished" rule — the editor opens afterwards so you can review and fix.',
         'dlg.paste_empty': 'Nothing importable detected',
         'dlg.paste_json': 'JSON parse failed — check the syntax',
         'dlg.paste_shape': 'Unrecognized content: expected a JSON array, a Markdown table, or TXT (; separated)',
@@ -189,7 +193,7 @@ const I18N = {
         'ac.detail': 'Detail', 'ac.detail_on': 'Detail ✓', 'aria.detail_toggle': 'Toggle ID / mastery / tags display',
         'ac.actions': 'Actions', 'ac.col_front': 'Front', 'ac.col_back': 'Back',
         'json.title': 'JSON Source Editor', 'json.save': 'Save Changes',
-        'do.title': 'Deck Settings', 'do.name': 'Deck Name', 'do.save': 'Save Settings', 'do.json': 'JSON Source', 'do.delete': 'Delete Deck', 'do.share': 'Copy Share Link',
+        'do.title': 'Deck Settings', 'do.name': 'Deck Name', 'do.save': 'Save Settings',         'do.json': 'JSON Source', 'do.delete': 'Delete Deck', 'do.share': 'Copy Share Link', 'do.anki': 'Export Anki TSV',
         'htu.title': 'How to Use',
         'htu.s1': 'Tap the card to flip it', 'htu.s2': 'Swipe right for "Got it"', 'htu.s3': 'Swipe left for "Forgot"',
         'htu.s4': 'Swipe up to "Skip" for now', 'htu.s5': 'Tap "Undo" within 3s to revert a judgment',
@@ -253,7 +257,7 @@ const I18N = {
         'aria.decrease_new': 'Decrease daily new-card limit', 'aria.increase_new': 'Increase daily new-card limit',
         'aria.bulk_tags': 'Batch tags', 'aria.clear_selection': 'Clear selection',
         'aria.search_cards': 'Search cards', 'aria.visual_edit': 'Open visual editor', 'aria.start_learning': 'Start Learning',
-        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language'
+        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language', 'aria.review_dir': 'Toggle review direction', 'aria.anki_export': 'Export Anki TSV', 'aria.front_field': 'Toggle front field', 'aria.back_field': 'Toggle back field', 'aria.front_sub': 'Toggle front subtext field'
     }
 };
 

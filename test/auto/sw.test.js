@@ -20,8 +20,7 @@ const mockCache = {
 };
 const caches = {
     open: async (name) => (caches._current = name, mockCache),
-    keys: async () => ['flashcard-pwa-cache-v2', 'flipdeck-cache-v5.7.0', 'flipdeck-cache-v5.7.3'],
-    match: async (req) => {
+    keys: async () => ['flashcard-pwa-cache-v2', 'flipdeck-cache-v5.7.0'],    match: async (req) => {
         const key = req.url || String(req);
         const resolved = key.startsWith('./') ? scope + key.replace('./', '') : key;
         return cacheStore.get(resolved) || undefined;
@@ -97,7 +96,8 @@ async function runFetch(url, opts) {
     fire('install', installEv);
     await installEv._p;
     assert.ok(calls.skipWaiting.length === 1, 'skipWaiting called');
-    assert.strictEqual(caches._current, 'flipdeck-cache-v5.7.3', 'opens new cache name');
+    const expectedCache = (src.match(/const CACHE_NAME = '([^']+)'/) || [])[1];
+    assert.strictEqual(caches._current, expectedCache, 'opens new cache name');
     assert.ok(calls.cacheAdd.some(u => u.includes('hs_6000.json')), 'hs_6000.json now precached');
     assert.ok(calls.cacheAdd.some(u => u.includes('Material+Symbols')), 'Material Symbols precached');
     assert.ok(!calls.cacheAdd.some(u => u.includes('jszip')), 'jszip no longer precached (dependency removed)');

@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.7.3 =====
+// ===== FlipDeck v5.8.0 (Reverse Review, Field Roles, Anki Export) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -59,6 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const hintFlipPill = document.getElementById('hint-flip-pill');
     const ttsLangBtn = document.getElementById('tts-lang-btn');
     const ttsLangRow = document.getElementById('tts-lang-row');
+    const reviewDirBtn = document.getElementById('review-dir-btn');
+    const frontFieldRow = document.getElementById('front-field-row');
+    const backFieldRow = document.getElementById('back-field-row');
+    const frontSubRow = document.getElementById('front-sub-row');
+    const frontFieldBtn = document.getElementById('front-field-btn');
+    const backFieldBtn = document.getElementById('back-field-btn');
+    const frontSubBtn = document.getElementById('front-sub-btn');
     
     const allCardsModal = document.getElementById('all-cards-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -158,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
     let editorConfirmClose = null;
 
-    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto' };
+    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto', frontField: 0, backField: 1, frontSubField: null };
     const MAX_HISTORY = 50;
     const RECENT_SKIP = 8; // v4.3.0 P5：排隊時排除最近 N 張已作答卡片，避免立即回鍋
     const DAY_MS = 86400000;
@@ -262,6 +269,12 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDeckId = id; currentFullDeck = data;
         currentCardStatus = getDeckState(id);
         currentDeckSettings = { ...DEFAULT_DECK_SETTINGS, ...meta.settings };
+        // v5.8.0 遷移：reviewDirection（forward/reverse）→ frontField/backField 欄位角色
+        if (currentDeckSettings.reviewDirection !== undefined) {
+            if (currentDeckSettings.reviewDirection === 'reverse') { currentDeckSettings.frontField = 1; currentDeckSettings.backField = 0; }
+            delete currentDeckSettings.reviewDirection;
+            persistDeckSettings();
+        }
         syncCardStatus(currentFullDeck);
         
         updateLearningDeck(); 
@@ -570,16 +583,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (visible.length === 0) { displayEndOfDeck(); return; }
 
+        // v5.8.0：欄位角色——正面/背面可選任一欄，另可掛「正面小字」（如詞性）；解析一次、頂卡與背景卡共用
+        const { ff, bf, sf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
         for (let i = visible.length - 1; i >= 0; i--) {
             const data = visible[i], isTop = (i === 0);
             const cardEl = document.createElement('div');
             cardEl.className = `combo-card absolute w-full h-full transition-all duration-300 ease-out ${isTop ? 'z-[30]' : 'pointer-events-none'}`;
             cardEl.style.transform = `translateY(${i * 16}px) scale(${1 - i * 0.05})`;
             cardEl.style.opacity = 1 - i * 0.2;
-            
+            const front = data.fields[ff] || '';
+            const back = data.fields[bf] || '';
+            const sub = sf !== null ? (data.fields[sf] || '') : '';
+            const extras = data.fields.filter((_, j) => j !== ff && j !== bf && j !== sf);
+
             if (isTop) {
                 cardEl.id = 'active-combo-card';
                 const fs = currentDeckSettings.fontSize;
+                const subHtml = sub ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${sub}</div>` : '';
                 if (currentDeckSettings.displayMode === 'dual') {
                     // v5.4.0：雙面模式 —— 正面與背面同時可見，無翻面
                     cardEl.innerHTML = `
@@ -588,10 +608,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${canSpeak ? `<button class="speak-btn absolute top-3 right-3 z-[5] p-2 text-stone-300 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" aria-label="${t('aria.speak')}" title="${t('aria.speak')}"><span class="material-symbols-outlined !text-lg">volume_up</span></button>` : ''}
                     <div class="card-inner">
                         <div class="absolute inset-0 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex flex-col items-center justify-center p-6 sm:p-8 overflow-hidden">
-                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${fs}rem">${data.fields[0]}</div>
+                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${fs}rem">${front}</div>
+                            ${sub ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mt-1" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${sub}</div>` : ''}
                             <div class="w-12 h-px bg-stone-200 dark:bg-stone-700 my-3 sm:my-4 flex-shrink-0"></div>
-                            <div class="card-content text-center text-stone-600 dark:text-stone-300 font-bold break-words w-full" style="font-size: ${fs * 0.8}rem">${data.fields[1] || ''}</div>
-                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full text-center mt-2">${data.fields.slice(2).join('<br>')}</div>
+                            <div class="card-content text-center text-stone-600 dark:text-stone-300 font-bold break-words w-full" style="font-size: ${fs * 0.8}rem">${back}</div>
+                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full text-center mt-2">${extras.join('<br>')}</div>
                         </div>
                     </div>
                 `;
@@ -602,12 +623,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${canSpeak ? `<button class="speak-btn absolute top-3 right-3 z-[5] p-2 text-stone-300 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" aria-label="${t('aria.speak')}" title="${t('aria.speak')}"><span class="material-symbols-outlined !text-lg">volume_up</span></button>` : ''}
                     <div class="card-inner">
                         <div class="absolute inset-0 backface-hidden bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
-                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div>
+                            <div class="w-full flex flex-col items-center gap-2">
+                                <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${currentDeckSettings.fontSize}rem">${front}</div>
+                                ${subHtml}
+                            </div>
                             <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-stone-400 font-bold pointer-events-none select-none">${t('learn.tap_flip')}</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
-                            <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${data.fields[1] || ''}</div>
-                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${data.fields.slice(2).join('<br>')}</div>
+                            <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${back}</div>
+                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${extras.join('<br>')}</div>
                         </div>
                     </div>
                 `;
@@ -617,10 +641,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const speakBtn = cardEl.querySelector('.speak-btn');
                 if (speakBtn) {
                     speakBtn.onpointerdown = (e) => e.stopPropagation();
-                    speakBtn.onclick = (e) => { e.stopPropagation(); speakText(data.fields[0]); };
+                    speakBtn.onclick = (e) => { e.stopPropagation(); speakText(front); };
                 }
             } else {
-                cardEl.innerHTML = `<div class="w-full h-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl flex items-center justify-center p-8"><div class="text-stone-200 dark:text-stone-800 font-bold truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">${data.fields[0]}</div></div>`;
+                cardEl.innerHTML = `<div class="w-full h-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl flex items-center justify-center p-8"><div class="text-stone-200 dark:text-stone-800 font-bold truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">${front}</div></div>`;
                 cardStackContainer.appendChild(cardEl);
             }
         }
@@ -728,6 +752,10 @@ document.addEventListener('DOMContentLoaded', () => {
         newLimitDecrease.onclick = (e) => { e.stopPropagation(); changeNewPerDay(-5); };
         displayModeBtn.onclick = (e) => { e.stopPropagation(); changeDisplayMode(); };
         ttsLangBtn.onclick = (e) => { e.stopPropagation(); cycleTtsLang(); };
+        reviewDirBtn.onclick = (e) => { e.stopPropagation(); cycleReviewDirection(); };
+        frontFieldBtn.onclick = (e) => { e.stopPropagation(); cycleFrontField(); };
+        backFieldBtn.onclick = (e) => { e.stopPropagation(); cycleBackField(); };
+        frontSubBtn.onclick = (e) => { e.stopPropagation(); cycleFrontSubField(); };
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 新增選項（v5.7.0） ---
@@ -980,21 +1008,17 @@ document.addEventListener('DOMContentLoaded', () => {
             showLoading(t('load.parsing'));
             try {
                 await nextPaint();
-                let parsed;
-                if (f.name.endsWith('.json')) {
-                    parsed = JSON.parse(ev.target.result);
-                } else {
-                    parsed = ev.target.result.trim().split('\n').map((l, i) => ({ card_id: `c_${Date.now()}_${i}`, fields: l.split(';').map(s => s.trim().replace(/\/\//g, '<br>')), tags: [] }));
-                }
-
-                // v4.4.0 P7：備份檔偵測 → 走還原流程（v5.6.0 與貼上匯入共用）
-                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.decks) && Array.isArray(parsed.deckList)) {
-                    await importBackupParsed(parsed);
+                // v5.8.0：檔案上傳重用貼上解析器——同一套支援 JSON / Markdown 表格 / TXT（; 分欄）
+                const parsed = parsePastedContent(ev.target.result, Date.now());
+                if (parsed.error) throw new Error('not a deck');
+                if (parsed.backup) { await importBackupParsed(parsed.backup); return; }
+                if (parsed.kind === 'md') {
+                    // Markdown（可能含救援接合）→ 開編輯器預覽，使用者檢查後再存
+                    quickStartModal.classList.add('hidden');
+                    openDeckEditor(null, parsed.cards);
                     return;
                 }
-
-                if (!Array.isArray(parsed)) throw new Error('not a deck');
-                processNewDeck(parsed, `d_${Date.now()}`, f.name.split('.')[0]);
+                processNewDeck(parsed.cards, `d_${Date.now()}`, f.name.split('.')[0]);
                 quickStartModal.classList.add('hidden');
             } catch (err) { appAlert(t('dlg.file_error'), t('dlg.file_error_t')); }
             finally { hideLoading(); }
@@ -1090,7 +1114,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function processNewDeck(data, id, title) {
         saveDeckData(id, data);
-        const m = { id, title, totalCards: data.length, lastOpened: Date.now(), progress: 0, settings: { ...DEFAULT_DECK_SETTINGS } };
+        // v5.8.0：三欄詞性版面自動偵測（[單字, 詞性, 定義] → 正面=單字、背面=定義、詞性小字）
+        const m = { id, title, totalCards: data.length, lastOpened: Date.now(), progress: 0, settings: { ...DEFAULT_DECK_SETTINGS, ...detectPosLayout(data) } };
         deckList.unshift(m); saveDeckList();
         const state = new Map(); data.forEach(c => state.set(c.card_id, { mastery: 1, lastTime: Date.now() }));
         saveDeckState(id, state); startGame(id);
@@ -1164,6 +1189,9 @@ document.addEventListener('DOMContentLoaded', () => {
         hintFlipPill.classList.toggle('hidden', currentDeckSettings.displayMode === 'dual');
         applyDisplayModeIcon();
         ttsLangBtn.textContent = (currentDeckSettings.ttsLang && currentDeckSettings.ttsLang !== 'auto') ? currentDeckSettings.ttsLang : t('tts.auto');
+        const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
+        reviewDirBtn.textContent = ff > bf ? t('menu.dir_reverse') : t('menu.dir_forward');
+        updateFieldMenuLabels();
         populateCardTagFilters();
     }
 
@@ -1193,6 +1221,110 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // v5.8.0：欄位角色解析——索引夾限於牌組實際欄數，保證 front≠back、sub 不與正背面衝突
+    function resolveFieldIndices(settings, deckData) {
+        const maxF = deckData.reduce((m, c) => Math.max(m, (c.fields?.length || 1) - 1), 0);
+        let ff = Number.isInteger(settings.frontField) ? Math.min(Math.max(settings.frontField, 0), maxF) : 0;
+        let bf = Number.isInteger(settings.backField) ? Math.min(Math.max(settings.backField, 0), maxF) : 1;
+        if (maxF === 0) { bf = 0; }
+        else if (ff === bf) { bf = ff === 0 ? 1 : 0; }
+        let sf = Number.isInteger(settings.frontSubField) ? settings.frontSubField : null;
+        if (sf === null || sf < 0 || sf > maxF || sf === ff || sf === bf) sf = null;
+        return { ff, bf, sf };
+    }
+
+    function maxFieldCount() {
+        return currentFullDeck.reduce((m, c) => Math.max(m, c.fields?.length || 1), 0);
+    }
+
+    function persistDeckSettings() {
+        const meta = deckList.find(d => d.id === currentDeckId);
+        if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
+    }
+
+    // 欄位按鈕標籤：以第一張卡的內容預覽（無內容則顯示欄序號）
+    function fieldPreviewLabel(i) {
+        const f = (currentFullDeck[0]?.fields?.[i] || '').replace(/<br>/g, ' ').trim();
+        return f ? (f.length > 6 ? f.slice(0, 6) + '…' : f) : String(i + 1);
+    }
+
+    // 僅在牌組含 3 欄以上資料時顯示欄位角色設定（兩欄牌組用「複習方向」即可）
+    function updateFieldMenuLabels() {
+        const show = maxFieldCount() > 2;
+        frontFieldRow.classList.toggle('hidden', !show);
+        backFieldRow.classList.toggle('hidden', !show);
+        frontSubRow.classList.toggle('hidden', !show);
+        if (!show) return;
+        const { ff, bf, sf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
+        frontFieldBtn.textContent = fieldPreviewLabel(ff);
+        backFieldBtn.textContent = fieldPreviewLabel(bf);
+        frontSubBtn.textContent = sf === null ? t('menu.sub_none') : fieldPreviewLabel(sf);
+    }
+
+    function cycleFrontField() {
+        const n = maxFieldCount(); if (n <= 2) return;
+        const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
+        let next = (ff + 1) % n; if (next === bf) next = (next + 1) % n;
+        currentDeckSettings.frontField = next;
+        if (currentDeckSettings.frontSubField === next) currentDeckSettings.frontSubField = null;
+        persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
+    }
+
+    function cycleBackField() {
+        const n = maxFieldCount(); if (n <= 2) return;
+        const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
+        let next = (bf + 1) % n; if (next === ff) next = (next + 1) % n;
+        currentDeckSettings.backField = next;
+        if (currentDeckSettings.frontSubField === next) currentDeckSettings.frontSubField = null;
+        persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
+    }
+
+    function cycleFrontSubField() {
+        const n = maxFieldCount(); if (n <= 2) return;
+        const { ff, bf, sf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
+        const candidates = Array.from({ length: n }, (_, i) => i).filter(i => i !== ff && i !== bf);
+        if (candidates.length === 0) return;
+        const cur = sf === null ? -1 : candidates.indexOf(sf);
+        currentDeckSettings.frontSubField = (cur + 1 >= candidates.length) ? null : candidates[cur + 1];
+        persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
+    }
+
+    // v5.8.0：複習方向——正面欄與背面欄對調（單鍵快速反向）
+    function cycleReviewDirection() {
+        const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
+        currentDeckSettings.frontField = bf;
+        currentDeckSettings.backField = ff;
+        persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
+    }
+
+    // v5.8.0：三欄詞性版面偵測（fields=[單字, 詞性, 定義]）→ 正面=單字、背面=定義、詞性掛正面小字
+    function detectPosLayout(data) {
+        const ok = data.length > 0 && data.every(c => Array.isArray(c.fields) && c.fields.length >= 3 && (c.fields[0] || '') && POS_RE.test((c.fields[1] || '').trim()));
+        return ok ? { frontField: 0, backField: 2, frontSubField: 1 } : {};
+    }
+
+    // v5.8.0：匯出 Anki 相容 TSV（依欄位角色映射：正面\t背面（含補充）\t標籤）
+    function exportAnkiTSV(id) {
+        const cards = getDeckData(id);
+        if (!cards || cards.length === 0) return;
+        const s = { ...DEFAULT_DECK_SETTINGS, ...(deckList.find(x => x.id === id)?.settings || {}) };
+        const { ff, bf } = resolveFieldIndices(s, cards);
+        const tsv = cards.filter(c => c.fields && c.fields[ff])
+            .map(c => {
+                const clean = v => (v || '').replace(/\t/g, ' ').replace(/\n/g, '<br>');
+                const extras = c.fields.filter((_, i) => i !== ff && i !== bf).join('<br>');
+                const front = clean(c.fields[ff]);
+                const back = clean((c.fields[bf] || '') + (extras ? '<br>' + extras : ''));
+                const tags = (c.tags || []).join(' ');
+                return [front, back, tags].join('\t');
+            }).join('\n');
+        const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = `flipdeck_${(deckList.find(x => x.id === id)?.title || id).replace(/[^\w\u4e00-\u9fff]/g, '_')}.txt`;
+        a.click(); URL.revokeObjectURL(url);
+    }
+
     // v5.5.2：循環切換朗讀語言（自動 → zh-TW → en-US → ja-JP → ko-KR），並用當前卡示範發音
     function cycleTtsLang() {
         const cur = TTS_LANGS.indexOf(currentDeckSettings.ttsLang ?? 'auto');
@@ -1201,7 +1333,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
         ttsLangBtn.textContent = currentDeckSettings.ttsLang !== 'auto' ? currentDeckSettings.ttsLang : t('tts.auto');
         const demo = (historyIndex >= 0 && historyIndex < history.length) ? currentFullDeck.find(c => c.card_id === history[historyIndex]) : null;
-        if (demo) speakText(demo.fields[0]); // 切換即示範朗讀當前卡
+        if (demo) { const { ff } = resolveFieldIndices(currentDeckSettings, currentFullDeck); speakText(demo.fields[ff] || ''); }
     }
 
     // v5.4.0：切換顯示模式（翻面 <-> 雙面），立即重繪卡面
@@ -1349,6 +1481,12 @@ Top level is a flat array of card objects:
 - fields[1]: back / translation
 - fields[2+]: extra notes (rendered with line breaks)
 - tags: string array, used for tag filtering
+[Markdown table]
+| Word | POS | Meaning |
+| --- | --- | --- |
+| apple | n. | 蘋果 |
+- One card per row; header and --- separator rows are skipped.
+- If column 2 is always a part of speech (n./v./phr.), it is kept as its own field and added as a tag: front = word (POS shown as small subtext), back = column 3. Field roles can be changed later in the learn menu (supports column 1 & 3 selection).
 [TXT / CSV]
 One card per line, fields separated by ";"; "//" inside a field means a line break.
 front;back;notes
@@ -1369,7 +1507,7 @@ flipdeck_backup_*.json (from "Backup All") can be uploaded directly: same-id dec
 | 單字 | 詞性 | 中文 |
 | --- | --- | --- |
 | apple | n. | 蘋果 |
-- 第一欄＝正面；第二欄若全是詞性（n./v./phr.…），背面自動合併為「詞性 定義」並將詞性加入標籤
+- 第一欄＝正面；若第二欄全是詞性（n./v./phr.…），詞性保留為獨立欄位並加入標籤：正面＝單字（詞性以小字呈現）、背面＝第三欄。欄位角色可於學習選單隨時更改（支援選第一、三欄等任意組合）
 - 表頭列與「---」分隔列自動略過
 【TXT / CSV】
 每行一張卡，欄位以「;」分隔，欄位內以「//」表示換行：
@@ -1459,7 +1597,7 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
     //   1) 含「（）／，，」佔位的卡（正面序）優先各吃一個
     //   2) 尾端未完（；，、（）／）的卡（正面序）反向各吃一個
     //   3) 仍有剩餘 → 接到該行最後一張卡
-    // 詞性欄合併：若所有列第 2 欄皆為詞性（n./v./phr.…），背面 =「詞性 定義」、詞性入標籤
+    // 詞性欄合併：若所有列第 2 欄皆為詞性（n./v./phr.…），fields 保留為 [單字, 詞性, 定義]、詞性入標籤
     function parseMarkdownTable(lines, ts = Date.now()) {
         const isSepRow = cells => cells.length > 0 && cells.every(c => /^:?-{2,}:?$/.test(c) || c === '');
         const rows = [];
@@ -1512,9 +1650,9 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         const cards = rowCards.map((r, i) => {
             if (r.cells[0] === '') return null;
             if (posCol) {
+                // v5.8.0：詞性欄保留為獨立欄位（fields=[單字, 詞性, 定義]）＋詞性入標籤；顯示版面由 detectPosLayout 於建檔時自動設定
                 const pos = r.cells[1].replace(/\.$/, '');
-                const def = (r.cells[2] + r.extras.join('')).trim();
-                return { card_id: `p_${ts}_${i}`, fields: [r.cells[0], `${r.cells[1]} ${def}`.trim()], tags: [pos] };
+                return { card_id: `p_${ts}_${i}`, fields: [r.cells[0], r.cells[1], (r.cells[2] + r.extras.join('')).trim()], tags: [pos] };
             }
             return { card_id: `p_${ts}_${i}`, fields: [...r.cells, ...r.extras], tags: [] };
         }).filter(Boolean);
@@ -1663,6 +1801,11 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         if (deckOptionsShareBtn) deckOptionsShareBtn.onclick = () => {
             deckOptionsModal.classList.add('hidden');
             openShareModal(id);
+        };
+        const deckOptionsAnkiBtn = document.getElementById('deck-options-anki-btn');
+        if (deckOptionsAnkiBtn) deckOptionsAnkiBtn.onclick = () => {
+            deckOptionsModal.classList.add('hidden');
+            exportAnkiTSV(id);
         };
         const deckOptionsJsonBtn = document.getElementById('deck-options-json-btn');
         if (deckOptionsJsonBtn) deckOptionsJsonBtn.onclick = () => {

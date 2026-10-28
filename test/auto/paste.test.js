@@ -12,7 +12,7 @@ const POS_RE = eval(posReMatch[1]);
 eval(extractFn('parseMarkdownTable'));
 eval(extractFn('parsePastedContent'));
 
-// ---- T1: 乾淨表格（表頭 + 分隔列 + 詞性欄合併） ----
+// ---- T1: 乾淨表格（表頭 + 分隔列 + 詞性欄保留獨立） ----
 {
     const cards = parseMarkdownTable([
         '| 單字 | 詞性 | 中文 |',
@@ -21,11 +21,11 @@ eval(extractFn('parsePastedContent'));
         '| go by | phr. | 依據…判斷 |'
     ], 1000);
     assert.strictEqual(cards.length, 2, 'header skipped');
-    assert.deepStrictEqual(cards[0].fields, ['apple', 'n. 蘋果'], 'POS merged into back');
+    assert.deepStrictEqual(cards[0].fields, ['apple', 'n.', '蘋果'], 'POS kept as own field');
     assert.deepStrictEqual(cards[0].tags, ['n'], 'POS added as tag');
-    assert.deepStrictEqual(cards[1].fields, ['go by', 'phr. 依據…判斷']);
+    assert.deepStrictEqual(cards[1].fields, ['go by', 'phr.', '依據…判斷']);
     assert.deepStrictEqual(cards[1].tags, ['phr']);
-    console.log('T1 clean table + POS merge: OK');
+    console.log('T1 clean table + POS kept as field: OK');
 }
 
 // ---- T2: 真實資料——合併行救援（pole/ladder；碎片「杆」接回竿；） ----
@@ -37,8 +37,8 @@ eval(extractFn('parsePastedContent'));
     assert.strictEqual(cards.length, 2);
     const pole = cards.find(c => c.fields[0] === 'pole');
     const ladder = cards.find(c => c.fields[0] === 'ladder');
-    assert.ok(pole.fields[1].includes('竿；杆'), `pole def 竿；杆 實際：「${pole.fields[1]}」`);
-    assert.ok(ladder.fields[1].includes('梯子'), 'ladder def');
+    assert.ok(pole.fields[2].includes('竿；杆'), `pole def 竿；杆 實際：「${pole.fields[2]}」`);
+    assert.ok(ladder.fields[2].includes('梯子'), 'ladder def');
     assert.deepStrictEqual(pole.tags, ['n'], 'POS tag');
     console.log('T2 merged-row rescue (pole/ladder): OK');
 }
@@ -50,9 +50,9 @@ eval(extractFn('parsePastedContent'));
     ], 3000);
     const tap = cards.find(c => c.fields[0] === 'tap');
     const pea = cards.find(c => c.fields[0] === 'pea');
-    assert.ok(tap.fields[1].includes('輕觸'), 'tap gets 輕觸');
-    assert.ok(tap.fields[1].includes('輕拍輕敲'), 'tap gets 輕拍輕敲…');
-    assert.ok(pea.fields[1].includes('豌豆'), 'pea clean');
+    assert.ok(tap.fields[2].includes('輕觸'), 'tap gets 輕觸');
+    assert.ok(tap.fields[2].includes('輕拍輕敲'), 'tap gets 輕拍輕敲…');
+    assert.ok(pea.fields[2].includes('豌豆'), 'pea clean');
     console.log('T3 placeholder-priority rescue (flame/tap/pea): OK');
 }
 
@@ -64,9 +64,9 @@ eval(extractFn('parsePastedContent'));
     const one = cards.find(c => c.fields[0] === 'one by one');
     const put = cards.find(c => c.fields[0] === 'put sth out');
     const med = cards.find(c => c.fields[0] === 'medical');
-    assert.ok(one.fields[1].includes('一個接一個地'), `one by one 實際：「${one.fields[1]}」`);
-    assert.ok(put.fields[1].includes('撲滅…'), `put sth out 實際：「${put.fields[1]}」`);
-    assert.ok(med.fields[1].includes('醫療的'), `medical 實際：「${med.fields[1]}」`);
+    assert.ok(one.fields[2].includes('一個接一個地'), `one by one 實際：「${one.fields[2]}」`);
+    assert.ok(put.fields[2].includes('撲滅…'), `put sth out 實際：「${put.fields[2]}」`);
+    assert.ok(med.fields[2].includes('醫療的'), `medical 實際：「${med.fields[2]}」`);
     console.log('T4 reverse-stitch rescue (one-by-one line): OK');
 }
 
@@ -76,8 +76,8 @@ eval(extractFn('parsePastedContent'));
         '| wrap | v. | 用…包／／| crispy | adj. | 酥脆的 |圍 |裹 |'
     ], 5000);
     const wrap = cards[0];
-    assert.ok(wrap.fields[1].includes('圍') && wrap.fields[1].includes('裹'), `wrap 實際：「${wrap.fields[1]}」`);
-    assert.ok(cards[1].fields[1].includes('酥脆的'));
+    assert.ok(wrap.fields[2].includes('圍') && wrap.fields[2].includes('裹'), `wrap 實際：「${wrap.fields[2]}」`);
+    assert.ok(cards[1].fields[2].includes('酥脆的'));
     console.log('T5 multi-slot rescue (wrap): OK');
 }
 
@@ -116,6 +116,35 @@ eval(extractFn('parsePastedContent'));
     assert.deepStrictEqual(cards[0].fields, ['word', '蘋果'], '2-col in-order');
     assert.deepStrictEqual(cards[0].tags, [], 'no tag');
     console.log('T7 2-col table in-order: OK');
+}
+
+// ---- T8: detectPosLayout——三欄詞性版面偵測（v5.8.0 欄位角色） ----
+{
+    eval(extractFn('detectPosLayout'));
+    const pos3 = [
+        { fields: ['apple', 'n.', '蘋果'], tags: ['n'] },
+        { fields: ['go by', 'phr.', '依據…判斷'], tags: ['phr'] }
+    ];
+    assert.deepStrictEqual(detectPosLayout(pos3), { frontField: 0, backField: 2, frontSubField: 1 }, '3-col POS layout');
+    assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'd'] }]), {}, '2-col untouched');
+    assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', '不是詞性', 'd2'] }]), {}, 'mixed POS column rejected');
+    assert.deepStrictEqual(detectPosLayout([]), {}, 'empty deck');
+    assert.deepStrictEqual(detectPosLayout([{ fields: ['', 'n.', 'd'] }]), {}, 'empty front rejected');
+    console.log('T8 detectPosLayout: OK');
+}
+
+// ---- T9: resolveFieldIndices——夾限、front≠back、sub 衝突防護 ----
+{
+    eval(extractFn('resolveFieldIndices'));
+    const deck3 = [{ fields: ['a', 'b', 'c'] }];
+    assert.deepStrictEqual(resolveFieldIndices({ frontField: 0, backField: 1, frontSubField: null }, deck3), { ff: 0, bf: 1, sf: null }, 'default');
+    assert.deepStrictEqual(resolveFieldIndices({ frontField: 1, backField: 0, frontSubField: null }, deck3), { ff: 1, bf: 0, sf: null }, 'reverse mapping kept');
+    assert.deepStrictEqual(resolveFieldIndices({ frontField: 9, backField: 2, frontSubField: null }, deck3), { ff: 2, bf: 0, sf: null }, 'out-of-range clamped');
+    assert.deepStrictEqual(resolveFieldIndices({ frontField: 2, backField: 2, frontSubField: null }, deck3), { ff: 2, bf: 0, sf: null }, 'ff===bf resolved');
+    assert.deepStrictEqual(resolveFieldIndices({ frontField: 0, backField: 2, frontSubField: 1 }, deck3), { ff: 0, bf: 2, sf: 1 }, 'POS sub layout');
+    assert.deepStrictEqual(resolveFieldIndices({ frontField: 0, backField: 2, frontSubField: 2 }, deck3), { ff: 0, bf: 2, sf: null }, 'sub conflicts with back → null');
+    assert.deepStrictEqual(resolveFieldIndices({}, [{ fields: ['only'] }]), { ff: 0, bf: 0, sf: null }, 'single-field deck');
+    console.log('T9 resolveFieldIndices: OK');
 }
 
 console.log('\nALL PASTE IMPORT TESTS PASSED');
