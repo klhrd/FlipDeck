@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.7.0 =====
+// ===== FlipDeck v5.7.3 =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -754,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeStatsModalBtn.onclick = () => statsModal.classList.add('hidden');
         if (emptyStateCta) emptyStateCta.onclick = () => openQuickStartModal();
 
-        // --- 顯示全部：跳至卡片 / 暫停切換（事件委派，表格重建後仍有效） ---
+        // --- 顯示全部：跳至卡片 / 暫停切換 / 詳細模式切換（事件委派，表格重建後仍有效） ---
         allCardsTable.onclick = (e) => {
             const jump = e.target.closest('.jump-to-card-btn');
             if (jump) {
@@ -768,11 +768,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (st) {
                     st.suspended = !st.suspended;
                     st.lastTime = Date.now();
-                    upcomingQueue = upcomingQueue.filter(qid => qid !== sus.dataset.id); // 移出待答佇列
+                    upcomingQueue = upcomingQueue.filter(qid => qid !== sus.dataset.id);
                     saveDeckState(currentDeckId, currentCardStatus);
                     renderAllCardsTable();
                 }
             }
+        };
+        const acDetailToggle = document.getElementById('ac-detail-toggle-btn');
+        if (acDetailToggle) acDetailToggle.onclick = () => {
+            allCardsDetail = !allCardsDetail;
+            acDetailToggle.querySelector('[data-i18n]').textContent = allCardsDetail ? t('ac.detail_on') : t('ac.detail');
+            acDetailToggle.querySelector('.material-symbols-outlined').textContent = allCardsDetail ? 'visibility' : 'info';
+            renderAllCardsTable();
         };
 
         // --- 分享 Modal（v5.5.0） ---
@@ -1593,30 +1600,50 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             <p class="text-[10px] text-stone-400 font-bold text-center pt-1">${t('st.rule')}</p>
         `;
     }
+    // v5.7.3：詳細模式（預設清爽——只顯示正面/背面/操作；開啟後追加 ID/熟練度/補充/標籤）
+    let allCardsDetail = false;
+
     function renderAllCardsTable() {
         const q = cardSearchInput.value.toLowerCase().trim();
-        let html = `<thead><tr class="text-stone-400 text-[10px] uppercase tracking-widest"><th class="p-4">${t('ac.col_mastery')}</th>`;
-        const fields = currentFullDeck[0]?.fields.length || 0;
-        for (let i = 1; i <= fields; i++) html += `<th class="p-4">${t('ac.col_field')} ${i}</th>`;
-        html += `<th class="p-4">${t('ac.col_tags')}</th></tr></thead><tbody>`;
-        
+        const detail = allCardsDetail;
+
+        // 表頭
+        let html = '<thead><tr class="text-stone-400 text-[10px] uppercase tracking-widest">';
+        html += `<th class="p-4">${t('ac.actions')}</th>`;
+        html += `<th class="p-4">${t('ac.col_front')}</th>`;
+        html += `<th class="p-4">${t('ac.col_back')}</th>`;
+        if (detail) {
+            const extras = Math.max((currentFullDeck[0]?.fields.length || 2) - 2, 0);
+            for (let i = 0; i < extras; i++) html += `<th class="p-4">${t('ac.col_field')} ${i + 3}</th>`;
+            html += `<th class="p-4">${t('ac.col_mastery')}</th>`;
+            html += `<th class="p-4">${t('ac.col_tags')}</th>`;
+        }
+        html += '</tr></thead><tbody>';
+
         currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || (c.tags && c.tags.some(t => t.toLowerCase().includes(q)))).forEach(c => {
             const st = currentCardStatus.get(c.card_id);
             const m = st?.mastery ?? 1;
             const isSuspended = !!st?.suspended;
             const isLeech = !!st?.leech;
-            html += `<tr class="hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors ${isSuspended ? 'opacity-40' : ''}">
-                <td class="p-4">
-                    <div class="flex items-center gap-2 mb-1">
-                        <button class="jump-to-card-btn p-1 text-stone-400 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${t('aria.jump')}" title="${t('aria.jump')}"><span class="material-symbols-outlined !text-sm">my_location</span></button>
-                        <button class="suspend-btn p-1 ${isSuspended ? 'text-stone-900 dark:text-white' : 'text-stone-400'} hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}" title="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}"><span class="material-symbols-outlined !text-sm">${isSuspended ? 'play_arrow' : 'pause'}</span></button>
-                        ${isLeech ? `<span class="material-symbols-outlined !text-sm text-red-400" title="${t('aria.leech')}" aria-label="${t('aria.leech')}">bug</span>` : ''}
-                        <div class="text-[9px] font-mono text-stone-400">${c.card_id}</div>
-                    </div>
-                    <div class="flex space-x-0.5">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-teal-600 dark:bg-teal-400':'bg-stone-200 dark:bg-stone-700'}"></div>`).join('')}</div>
-                </td>`;
-            c.fields.forEach(f => html += `<td class="p-4 text-stone-600 dark:text-stone-400 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
-            html += `<td class="p-4"><div class="flex flex-wrap gap-1">${(c.tags || []).map(t => `<span class="px-2 py-0.5 bg-stone-100 dark:bg-stone-800 rounded text-[10px] font-bold">${t}</span>`).join('')}</div></td></tr>`;
+            html += `<tr class="hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors ${isSuspended ? 'opacity-40' : ''}">`;
+            // 操作欄
+            html += `<td class="p-4"><div class="flex items-center gap-1">
+                <button class="jump-to-card-btn p-1 text-stone-400 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${t('aria.jump')}" title="${t('aria.jump')}"><span class="material-symbols-outlined !text-sm">my_location</span></button>
+                <button class="suspend-btn p-1 ${isSuspended ? 'text-stone-900 dark:text-white' : 'text-stone-400'} hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" data-id="${c.card_id}" aria-label="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}" title="${isSuspended ? t('aria.unsuspend') : t('aria.suspend')}"><span class="material-symbols-outlined !text-sm">${isSuspended ? 'play_arrow' : 'pause'}</span></button>
+                ${isLeech && detail ? `<span class="material-symbols-outlined !text-sm text-red-400" title="${t('aria.leech')}" aria-label="${t('aria.leech')}">bug</span>` : ''}
+            </div></td>`;
+            // 正面 / 背面（永遠顯示）
+            html += `<td class="p-4 text-stone-900 dark:text-white font-bold">${c.fields[0] || ''}</td>`;
+            html += `<td class="p-4 text-stone-600 dark:text-stone-400 font-medium">${c.fields[1] || ''}</td>`;
+            if (detail) {
+                // 補充欄位
+                c.fields.slice(2).forEach(f => html += `<td class="p-4 text-stone-400 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
+                // 熟練度 + ID
+                html += `<td class="p-4"><div class="flex space-x-0.5 mb-1">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-teal-600 dark:bg-teal-400':'bg-stone-200 dark:bg-stone-700'}"></div>`).join('')}</div><div class="text-[9px] font-mono text-stone-400">${c.card_id}</div></td>`;
+                // 標籤
+                html += `<td class="p-4"><div class="flex flex-wrap gap-1">${(c.tags || []).map(t => `<span class="px-2 py-0.5 bg-stone-100 dark:bg-stone-800 rounded text-[10px] font-bold">${t}</span>`).join('')}</div></td>`;
+            }
+            html += '</tr>';
         });
         allCardsTable.innerHTML = html + '</tbody>';
     }

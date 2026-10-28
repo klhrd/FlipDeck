@@ -57,6 +57,8 @@ const I18N = {
         // 顯示全部
         'ac.title': '單字集管理', 'ac.visual_edit': '圖形化編輯', 'ac.json': 'JSON 原始碼',
         'ac.search_ph': '搜尋關鍵字或標籤...', 'ac.col_mastery': 'ID / 熟練度', 'ac.col_field': '欄位', 'ac.col_tags': '標籤',
+        'ac.detail': '詳細', 'ac.detail_on': '詳細 ✓', 'aria.detail_toggle': '切換 ID / 熟練度 / 標籤顯示',
+        'ac.actions': '操作', 'ac.col_front': '正面', 'ac.col_back': '背面',
         // JSON 編輯器
         'json.title': 'JSON 原始碼編輯', 'json.save': '儲存變更',
         // 牌組選項
@@ -184,6 +186,8 @@ const I18N = {
         'dlg.paste_fields': 'Some cards are missing the fields array',
         'ac.title': 'Deck Manager', 'ac.visual_edit': 'Visual Edit', 'ac.json': 'JSON Source',
         'ac.search_ph': 'Search keyword or tags...', 'ac.col_mastery': 'ID / Mastery', 'ac.col_field': 'Field', 'ac.col_tags': 'Tags',
+        'ac.detail': 'Detail', 'ac.detail_on': 'Detail ✓', 'aria.detail_toggle': 'Toggle ID / mastery / tags display',
+        'ac.actions': 'Actions', 'ac.col_front': 'Front', 'ac.col_back': 'Back',
         'json.title': 'JSON Source Editor', 'json.save': 'Save Changes',
         'do.title': 'Deck Settings', 'do.name': 'Deck Name', 'do.save': 'Save Settings', 'do.json': 'JSON Source', 'do.delete': 'Delete Deck', 'do.share': 'Copy Share Link',
         'htu.title': 'How to Use',

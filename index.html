@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.7.0</title>
+    <title>FlipDeck v5.7.3</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -29,7 +29,7 @@
     
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-200 min-h-screen p-0">
+<body class="bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-200 min-h-screen p-0 overflow-x-hidden">
 
     <div id="app" class="w-full max-w-6xl mx-auto min-h-screen sm:min-h-0">
 
@@ -225,7 +225,8 @@
                 <div class="flex items-center justify-between">
                     <h2 id="all-cards-title" class="text-xl font-black" data-i18n="ac.title">單字集管理</h2>
                     <div class="flex flex-wrap items-center justify-end gap-2">
-                        <button id="modal-editor-btn" data-i18n-aria="aria.visual_edit" aria-label="開啟圖形化編輯器" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">edit</span><span data-i18n="ac.visual_edit">圖形化編輯</span></button>
+                        <button id="ac-detail-toggle-btn" data-i18n-aria="aria.detail_toggle" aria-label="切換詳細資訊" class="px-3 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold flex items-center gap-1"><span class="material-symbols-outlined !text-sm">info</span><span data-i18n="ac.detail">詳細</span></button>
+                        <button id="modal-editor-btn" data-i18n-aria="aria.visual_edit" aria-label="開啟圖形化編輯器" class="px-3 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold flex items-center gap-1"><span class="material-symbols-outlined !text-sm">edit</span><span data-i18n="ac.visual_edit">圖形化編輯</span></button>
                         <button id="modal-json-btn" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold flex items-center"><span class="material-symbols-outlined !text-sm mr-2">code</span><span data-i18n="ac.json">JSON 原始碼</span></button>
                         <button id="close-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
                     </div>
