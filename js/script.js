@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.8.0 (Reverse Review, Field Roles, Anki Export) =====
+// ===== FlipDeck v5.8.1 (Field Roles, POS Layout, Anki Export) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -552,7 +552,9 @@ document.addEventListener('DOMContentLoaded', () => {
         speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         const pref = currentDeckSettings.ttsLang;
-        u.lang = (pref && pref !== 'auto') ? pref : (/[\u4e00-\u9fff]/.test(text) ? 'zh-TW' : 'en-GB');
+        const cjk = /[\u4e00-\u9fff]/.test(text);
+        // v5.8.1：偏好語言與內容語種不符時（如反向複習提示為中文、牌組釘 en-GB）退回內容偵測，避免用錯誤語音朗讀
+        u.lang = (pref && pref !== 'auto' && (pref.startsWith('zh') === cjk)) ? pref : (cjk ? 'zh-TW' : 'en-GB');
         speechSynthesis.speak(u);
     }
     const canSpeak = 'speechSynthesis' in window;
@@ -1112,10 +1114,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function processNewDeck(data, id, title) {
+    function processNewDeck(data, id, title, extraSettings = {}) {
+        // v5.8.0：三欄詞性版面自動偵測（[單字, 詞性, 定義] → 正面=單字、背面=定義、詞性小字）；v5.8.1 須在存檔前執行（偵測會順手正規化資料）
+        const settings = { ...DEFAULT_DECK_SETTINGS, ...detectPosLayout(data), ...extraSettings };
         saveDeckData(id, data);
-        // v5.8.0：三欄詞性版面自動偵測（[單字, 詞性, 定義] → 正面=單字、背面=定義、詞性小字）
-        const m = { id, title, totalCards: data.length, lastOpened: Date.now(), progress: 0, settings: { ...DEFAULT_DECK_SETTINGS, ...detectPosLayout(data) } };
+        const m = { id, title, totalCards: data.length, lastOpened: Date.now(), progress: 0, settings };
         deckList.unshift(m); saveDeckList();
         const state = new Map(); data.forEach(c => state.set(c.card_id, { mastery: 1, lastTime: Date.now() }));
         saveDeckState(id, state); startGame(id);
@@ -1189,8 +1192,6 @@ document.addEventListener('DOMContentLoaded', () => {
         hintFlipPill.classList.toggle('hidden', currentDeckSettings.displayMode === 'dual');
         applyDisplayModeIcon();
         ttsLangBtn.textContent = (currentDeckSettings.ttsLang && currentDeckSettings.ttsLang !== 'auto') ? currentDeckSettings.ttsLang : t('tts.auto');
-        const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
-        reviewDirBtn.textContent = ff > bf ? t('menu.dir_reverse') : t('menu.dir_forward');
         updateFieldMenuLabels();
         populateCardTagFilters();
     }
@@ -1289,7 +1290,7 @@ document.addEventListener('DOMContentLoaded', () => {
         persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
     }
 
-    // v5.8.0：複習方向——正面欄與背面欄對調（單鍵快速反向）
+    // v5.8.0：複習方向——正面欄與背面欄對調（單鍵快速反向）；v5.8.1 按鈕改為誠實的「對調」動作鈕（不再以索引推斷方向標籤）
     function cycleReviewDirection() {
         const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
         currentDeckSettings.frontField = bf;
@@ -1297,10 +1298,24 @@ document.addEventListener('DOMContentLoaded', () => {
         persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
     }
 
+    // v5.8.1：正規化詞性版面中的不一致卡列——fields[1] 是定義（非詞性）且第 3 欄空 → 定義遞補至第 3 欄
+    //（涵蓋：編輯器新增列直接打定義、混合欄數表格的 2 欄列、[單字, 定義] 列）
+    function normalizePosOddCards(data) {
+        data.forEach(c => {
+            if (!Array.isArray(c.fields) || c.fields.length < 2) return;
+            if (!POS_RE.test((c.fields[1] || '').trim()) && !(c.fields[2] || '').trim()) {
+                c.fields = [c.fields[0], '', c.fields[1], ...c.fields.slice(3)];
+            }
+        });
+    }
+
     // v5.8.0：三欄詞性版面偵測（fields=[單字, 詞性, 定義]）→ 正面=單字、背面=定義、詞性掛正面小字
+    // v5.8.1：改 50% 門檻（不再全有全無），偵測成功時順手正規化不一致卡列；偵測失敗不動資料
     function detectPosLayout(data) {
-        const ok = data.length > 0 && data.every(c => Array.isArray(c.fields) && c.fields.length >= 3 && (c.fields[0] || '') && POS_RE.test((c.fields[1] || '').trim()));
-        return ok ? { frontField: 0, backField: 2, frontSubField: 1 } : {};
+        const posCount = data.filter(c => Array.isArray(c.fields) && c.fields.length >= 3 && POS_RE.test((c.fields[1] || '').trim())).length;
+        if (posCount === 0 || posCount * 2 < data.length) return {};
+        normalizePosOddCards(data);
+        return { frontField: 0, backField: 2, frontSubField: 1 };
     }
 
     // v5.8.0：匯出 Anki 相容 TSV（依欄位角色映射：正面\t背面（含補充）\t標籤）
@@ -1373,8 +1388,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // v5.4.0：URL 分享編碼 —— 靜態資料（id/標題/卡片）→ 精簡 JSON → deflate-raw → base64url
+    // v5.8.1：非預設的欄位角色（frontField/backField/frontSubField）一併帶入（鍵 s）
     async function encodeDeckForUrl(deck) {
+        const s = deck.settings || {};
+        const roles = {};
+        if (Number.isInteger(s.frontField)) roles.frontField = s.frontField;
+        if (Number.isInteger(s.backField)) roles.backField = s.backField;
+        if (Number.isInteger(s.frontSubField)) roles.frontSubField = s.frontSubField;
+        // 任一角色非預設才帶 s 鍵，且三鍵完整帶入（避免部分遺失造成版面不一致）
+        const isDefault = (roles.frontField ?? DEFAULT_DECK_SETTINGS.frontField) === DEFAULT_DECK_SETTINGS.frontField
+            && (roles.backField ?? DEFAULT_DECK_SETTINGS.backField) === DEFAULT_DECK_SETTINGS.backField
+            && (roles.frontSubField ?? DEFAULT_DECK_SETTINGS.frontSubField) === DEFAULT_DECK_SETTINGS.frontSubField;
         const compact = { i: deck.id, t: deck.title, c: deck.cards.map(c => [c.card_id, c.fields, c.tags || [], c.notes || '']) };
+        if (Object.keys(roles).length > 0 && !isDefault) compact.s = roles;
         const buf = new TextEncoder().encode(JSON.stringify(compact));
         const stream = new Blob([buf]).stream().pipeThrough(new CompressionStream('deflate-raw'));
         const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -1394,7 +1420,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const json = new TextDecoder().decode(await new Response(stream).arrayBuffer());
         const compact = JSON.parse(json);
         if (!compact || !Array.isArray(compact.c) || compact.c.length === 0) throw new Error('bad payload');
-        return { id: compact.i, title: compact.t, cards: compact.c.map(([card_id, fields, tags, notes]) => ({ card_id, fields, tags, notes })) };
+        // v5.8.1：還原欄位角色（僅接受整數鍵，其餘交由 resolveFieldIndices 夾限）
+        const s = (compact.s && typeof compact.s === 'object') ? compact.s : null;
+        const settings = s ? {
+            ...(Number.isInteger(s.frontField) ? { frontField: s.frontField } : {}),
+            ...(Number.isInteger(s.backField) ? { backField: s.backField } : {}),
+            ...(Number.isInteger(s.frontSubField) ? { frontSubField: s.frontSubField } : {})
+        } : null;
+        return { id: compact.i, title: compact.t, cards: compact.c.map(([card_id, fields, tags, notes]) => ({ card_id, fields, tags, notes })), settings };
     }
 
     // v5.4.0：牌組設定 → 分享（v5.5.0 改為開啟 QR Modal）
@@ -1403,7 +1436,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cards = getDeckData(id);
         if (!cards) return;
         try {
-            const payload = await encodeDeckForUrl({ id, title: deckList.find(d => d.id === id)?.title || id, cards });
+            const payload = await encodeDeckForUrl({ id, title: deckList.find(d => d.id === id)?.title || id, cards, settings: deckList.find(d => d.id === id)?.settings });
             if (payload.length > 32768) { await appAlert(t('dlg.share_too_big'), t('share.title')); return; }
             currentShareUrl = location.href.split('#')[0] + '#d=' + payload;
             shareUrlBox.textContent = currentShareUrl;
@@ -1464,7 +1497,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderHomeScreen();
             await appAlert(t('dlg.share_imported', { t: deck.title }), t('do.share'));
         } else {
-            processNewDeck(deck.cards, deck.id, deck.title);
+            // v5.8.1：分享連結自帶欄位角色時優先採用（覆蓋既有牌組時尊重接收端設定，不變更）
+            processNewDeck(deck.cards, deck.id, deck.title, deck.settings || {});
         }
     }
 
@@ -1863,6 +1897,8 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         const isNew = !id;
         const data = isNew ? (prefill && prefill.length ? prefill : [{ card_id: `c_${Date.now()}_0`, fields: ["", "", ""], tags: [] }]) : getDeckData(id);
         if (!data) return;
+        // v5.8.1：偵測詞性版面（50% 門檻，成功時順手正規化不一致卡列）→ 編輯器欄位標籤改為「正面／詞性／定義」
+        const posLayout = Object.keys(detectPosLayout(data)).length > 0;
 
         // 工作副本：陣列為唯一資料來源，分頁後只有當頁存在於 DOM，輸入即時寫回（6498 張也不再卡）
         const workingCards = data.map(c => ({
@@ -1921,6 +1957,11 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             if (isNew) {
                 processNewDeck(newRows, `d_${Date.now()}`, t('ed.untitled'));
             } else {
+                // v5.8.1：詞性版面牌組存檔前正規化（新增列直接打定義 → 定義遞補第 3 欄，避免背面顯示錯欄）
+                const meta0 = deckList.find(d => d.id === id);
+                if (meta0 && meta0.settings?.frontField === 0 && meta0.settings?.backField === 2 && meta0.settings?.frontSubField === 1) {
+                    normalizePosOddCards(newRows);
+                }
                 saveDeckData(id, newRows);
                 const meta = deckList.find(d => d.id === id);
                 if (meta) { meta.totalCards = newRows.length; saveDeckList(); }
@@ -2002,10 +2043,10 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input type="text" placeholder="${t('ed.front_ph')}" value="${escapeAttr(card.fields[0] || '')}" class="px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-teal-600 font-bold">
-                    <input type="text" placeholder="${t('ed.back_ph')}" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-teal-600">
+                    <input type="text" placeholder="${posLayout ? t('ed.pos_ph') : t('ed.back_ph')}" value="${escapeAttr(card.fields[1] || '')}" class="px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-teal-600">
                 </div>
                 <div class="flex flex-col gap-2">
-                    <input type="text" placeholder="${t('ed.notes_ph')}" value="${escapeAttr(card.fields[2] || '')}" class="px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-teal-600 opacity-60">
+                    <input type="text" placeholder="${posLayout ? t('ed.def_ph') : t('ed.notes_ph')}" value="${escapeAttr(card.fields[2] || '')}" class="px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-teal-600 opacity-60">
                     <input type="text" placeholder="${t('ed.tags_ph')}" value="${escapeAttr(card.tags)}" class="tag-input px-4 py-2 bg-white dark:bg-stone-900 border-none rounded-xl text-[10px] font-mono outline-none focus:ring-2 focus:ring-teal-600 text-stone-400">
                 </div>
             `;

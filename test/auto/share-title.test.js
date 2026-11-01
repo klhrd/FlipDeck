@@ -4,6 +4,10 @@ const { readScript, extractFn: libExtract } = require('./lib');
 
 const src = readScript();
 const extractFn = (name) => libExtract(src, name);
+// v5.8.1：encodeDeckForUrl 參照 DEFAULT_DECK_SETTINGS——從生產源碼抽取避免副本漂移
+const ddsMatch = src.match(/const DEFAULT_DECK_SETTINGS = (\{[^;]+\});/);
+assert.ok(ddsMatch, 'DEFAULT_DECK_SETTINGS found in source');
+const DEFAULT_DECK_SETTINGS = eval('(' + ddsMatch[1] + ')');
 eval(extractFn('encodeDeckForUrl'));
 eval(extractFn('decodeDeckFromUrl'));
 

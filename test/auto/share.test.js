@@ -6,6 +6,10 @@ const src = readScript();
 const extractFn = (name) => libExtract(src, name);
 const encSrc = extractFn('encodeDeckForUrl');
 const decSrc = extractFn('decodeDeckFromUrl');
+// v5.8.1：encodeDeckForUrl 參照 DEFAULT_DECK_SETTINGS（判斷欄位角色是否非預設）——從生產源碼抽取避免副本漂移
+const ddsMatch = src.match(/const DEFAULT_DECK_SETTINGS = (\{[^;]+\});/);
+assert.ok(ddsMatch, 'DEFAULT_DECK_SETTINGS found in source');
+const DEFAULT_DECK_SETTINGS = eval('(' + ddsMatch[1] + ')');
 
 (async () => {
     eval(encSrc);
@@ -49,6 +53,18 @@ const decSrc = extractFn('decodeDeckFromUrl');
     try { await decodeDeckFromUrl(payload + 'AAAA'); } catch (e) { threw = true; } // 附加位元組破壞 deflate
     assert.ok(threw, 'truncated/extended payload throws');
     console.log('T3 corrupted payload rejected: OK');
+
+    // ---- T4 (v5.8.1): 欄位角色隨 payload 分享 ----
+    // 預設角色 → 不帶 s 鍵
+    const plain = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontField: 0, backField: 1, frontSubField: null } }));
+    assert.strictEqual(plain.settings, null, 'default roles → no s key');
+    // 非預設角色 → 帶 s 鍵 round-trip
+    const custom = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontField: 0, backField: 2, frontSubField: 1, fontSize: 3 } }));
+    assert.deepStrictEqual(custom.settings, { frontField: 0, backField: 2, frontSubField: 1 }, 'custom roles round-trip');
+    // 非整數值 → 過濾
+    const dirty = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontField: 'x', backField: 2 } }));
+    assert.deepStrictEqual(dirty.settings, { backField: 2 }, 'non-integer values filtered');
+    console.log('T4 field-roles in payload: OK');
 
     console.log('\nALL v5.4.0 SHARE CODEC TESTS PASSED');
 })().catch(e => { console.error('TEST FAILED:', e.message); process.exit(1); });

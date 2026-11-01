@@ -118,19 +118,38 @@ eval(extractFn('parsePastedContent'));
     console.log('T7 2-col table in-order: OK');
 }
 
-// ---- T8: detectPosLayout——三欄詞性版面偵測（v5.8.0 欄位角色） ----
+// ---- T8: detectPosLayout——50% 門檻偵測 + 不一致卡列正規化（v5.8.1） ----
 {
     eval(extractFn('detectPosLayout'));
+    eval(extractFn('normalizePosOddCards'));
+    // 全 POS → 偵測成功
     const pos3 = [
         { fields: ['apple', 'n.', '蘋果'], tags: ['n'] },
         { fields: ['go by', 'phr.', '依據…判斷'], tags: ['phr'] }
     ];
     assert.deepStrictEqual(detectPosLayout(pos3), { frontField: 0, backField: 2, frontSubField: 1 }, '3-col POS layout');
+    // 2 欄牌組不觸發
     assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'd'] }]), {}, '2-col untouched');
-    assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', '不是詞性', 'd2'] }]), {}, 'mixed POS column rejected');
+    // 50% 門檻：2 張中 1 張詞性 → 偵測成功
+    assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', '不是詞性', 'd2'] }]), { frontField: 0, backField: 2, frontSubField: 1 }, '50% threshold detects');
+    // 低於 50%：3 張中 1 張詞性 → 不偵測、不動資料
+    const low = [{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', 'x', 'd2'] }, { fields: ['w3', 'y', 'd3'] }];
+    assert.deepStrictEqual(detectPosLayout(low), {}, 'below 50% rejected');
+    assert.deepStrictEqual(low[0].fields, ['w', 'n.', 'd'], 'no mutation on rejection');
     assert.deepStrictEqual(detectPosLayout([]), {}, 'empty deck');
-    assert.deepStrictEqual(detectPosLayout([{ fields: ['', 'n.', 'd'] }]), {}, 'empty front rejected');
-    console.log('T8 detectPosLayout: OK');
+    // 正規化：[單字, 定義] 列（無第 3 欄）→ 定義遞補第 3 欄、詞性槽清空
+    const mixed = [{ fields: ['a', 'n.', 'x'] }, { fields: ['b', '定義'] }];
+    detectPosLayout(mixed);
+    assert.deepStrictEqual(mixed[1].fields, ['b', '', '定義'], 'odd card normalized (def → slot 3)');
+    // 正規化不動已含第 3 欄的列
+    const keep = [{ fields: ['a', 'n.', 'x'] }, { fields: ['b', 'def', 'note'] }];
+    detectPosLayout(keep);
+    assert.deepStrictEqual(keep[1].fields, ['b', 'def', 'note'], 'card with non-empty slot 3 untouched');
+    // 編輯器新增列（第 3 欄空字串）也會遞補
+    const added = [{ fields: ['a', 'n.', 'x'] }, { fields: ['b', '定義', ''] }];
+    detectPosLayout(added);
+    assert.deepStrictEqual(added[1].fields, ['b', '', '定義'], 'editor-added row normalized');
+    console.log('T8 detectPosLayout threshold + normalization: OK');
 }
 
 // ---- T9: resolveFieldIndices——夾限、front≠back、sub 衝突防護 ----

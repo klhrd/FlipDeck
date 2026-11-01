@@ -25,8 +25,8 @@ const I18N = {
         'menu.font_size': '字型大小', 'menu.daily_new': '每日新卡', 'menu.unlimited': '無上限',
         'menu.display_mode': '顯示模式', 'menu.mode_combo': '翻面', 'menu.mode_dual': '雙面',
         'menu.tts_lang': '朗讀語言', 'tts.auto': '自動',
-        'menu.review_dir': '複習方向', 'menu.dir_forward': '正面→背面', 'menu.dir_reverse': '背面→正面',
-        'menu.front_field': '正面欄位', 'menu.back_field': '背面欄位', 'menu.front_sub': '正面小字', 'menu.sub_none': '無',
+        'menu.review_dir': '複習方向', 'menu.dir_swap': '對調',
+        'menu.front_field': '正面欄位', 'menu.back_field': '背面欄位', 'menu.front_sub': '提示小字', 'menu.sub_none': '無',
         // 快速開始
         'qs.title': '新增單字集', 'qs.upload': '上傳 .txt, .csv, .json',
         'ex.hs6000': '高中 6000 單字', 'ex.verbs': '動詞三態', 'ex.elements': '元素週期表', 'ex.capitals': '國家與首都',
@@ -76,7 +76,7 @@ const I18N = {
         'ed.select_page': '全選本頁', 'ed.selected': '已選 {n} 張',
         'ed.tags_ph': '標籤（用逗號隔開）', 'ed.add': '加入', 'ed.remove': '移除',
         'ed.save_all': '儲存全部變更',
-        'ed.front_ph': '正面 (必填)', 'ed.back_ph': '背面 (解釋/翻譯)', 'ed.notes_ph': '補充備註 (Notes)',
+        'ed.front_ph': '正面 (必填)', 'ed.back_ph': '背面 (解釋/翻譯)', 'ed.notes_ph': '補充備註 (Notes)', 'ed.pos_ph': '詞性 (n./adj./phr.)', 'ed.def_ph': '定義 (背面)',
         'ed.card_n': '卡片 #{n}', 'ed.no_match': '沒有符合的卡片',
         'ed.count': '共 {n} 張卡片', 'ed.count_match': '共 {n} 張卡片 · 符合 {m} 張',
         // 統計
@@ -137,7 +137,7 @@ const I18N = {
         'aria.decrease_new': '減少每日新卡上限', 'aria.increase_new': '增加每日新卡上限',
         'aria.bulk_tags': '批次標籤', 'aria.clear_selection': '清除選取',
         'aria.search_cards': '搜尋卡片', 'aria.visual_edit': '開啟圖形化編輯器', 'aria.start_learning': '開始學習',
-        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.front_field': '切換正面欄位', 'aria.back_field': '切換背面欄位', 'aria.front_sub': '切換正面小字欄位'
+        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.front_field': '切換正面欄位', 'aria.back_field': '切換背面欄位', 'aria.front_sub': '切換提示小字欄位'
     },
     en: {
         'app.menu': 'Menu', 'app.settings': 'Settings',
@@ -160,8 +160,8 @@ const I18N = {
         'menu.font_size': 'Font Size', 'menu.daily_new': 'Daily New Cards', 'menu.unlimited': 'Unlimited',
         'menu.display_mode': 'Card View', 'menu.mode_combo': 'Flip', 'menu.mode_dual': 'Both Sides',
         'menu.tts_lang': 'Speech Language', 'tts.auto': 'Auto',
-        'menu.review_dir': 'Review Direction', 'menu.dir_forward': 'Front→Back', 'menu.dir_reverse': 'Back→Front',
-        'menu.front_field': 'Front Field', 'menu.back_field': 'Back Field', 'menu.front_sub': 'Front Subtext', 'menu.sub_none': 'None',
+        'menu.review_dir': 'Review Direction', 'menu.dir_swap': 'Swap',
+        'menu.front_field': 'Front Field', 'menu.back_field': 'Back Field', 'menu.front_sub': 'Prompt Subtext', 'menu.sub_none': 'None',
         'qs.title': 'Add Deck', 'qs.upload': 'Upload .txt, .csv, .json',
         'ex.hs6000': 'High School 6000 Words', 'ex.verbs': 'Verb Tenses', 'ex.elements': 'Periodic Table', 'ex.capitals': 'Countries & Capitals',
         'qs.format_title': 'File Format Guide',
@@ -203,7 +203,7 @@ const I18N = {
         'ed.select_page': 'Select page', 'ed.selected': '{n} selected',
         'ed.tags_ph': 'Tags (comma separated)', 'ed.add': 'Add', 'ed.remove': 'Remove',
         'ed.save_all': 'Save All Changes',
-        'ed.front_ph': 'Front (required)', 'ed.back_ph': 'Back (definition/translation)', 'ed.notes_ph': 'Notes',
+        'ed.front_ph': 'Front (required)', 'ed.back_ph': 'Back (definition/translation)', 'ed.notes_ph': 'Notes', 'ed.pos_ph': 'POS (n./adj./phr.)', 'ed.def_ph': 'Definition (back)',
         'ed.card_n': 'Card #{n}', 'ed.no_match': 'No matching cards',
         'ed.count': '{n} cards', 'ed.count_match': '{n} cards · {m} matched',
         'st.title': 'Statistics',
