@@ -61,6 +61,8 @@ const mkCard = (id, tags = []) => ({ card_id: id, fields: [id, '', ''], tags });
 
 // ---- T2: matchesDeckFilter ----
 {
+    // v5.8.2：matchesDeckFilter 改用 effectiveTags——測試環境從生產源碼抽取補齊
+    eval(extractFn('effectiveTags'));
     let currentDeckSettings = { filterTags: [] };
     eval(matchesDeckFilterSrc);
     const t = mkCard('x', ['verb', 'level1']);
@@ -74,7 +76,17 @@ const mkCard = (id, tags = []) => ({ card_id: id, fields: [id, '', ''], tags });
     assert.strictEqual(matchesDeckFilter(t), false, 'tagged card excluded by untagged filter');
     currentDeckSettings = { filterTags: ['noun', 'verb'] };
     assert.strictEqual(matchesDeckFilter(t), true, 'multi-filter OR semantics');
-    console.log('T2 matchesDeckFilter: OK (none/tag/untagged/multi)');
+    // v5.8.2：欄位合成標籤參與篩選
+    const w = { card_id: 'z', fields: ['word', 'n.', '定義'], tags: [] };
+    currentDeckSettings = { filterTags: [], tagFields: [] };
+    assert.strictEqual(matchesDeckFilter(w), true, 'no tagFields default');
+    currentDeckSettings = { filterTags: ['n.'], tagFields: [1] };
+    assert.strictEqual(matchesDeckFilter(w), true, 'field-derived tag matches');
+    currentDeckSettings = { filterTags: ['n.'], tagFields: [] };
+    assert.strictEqual(matchesDeckFilter(w), false, 'field tag ignored without tagFields');
+    currentDeckSettings = { filterTags: ['untagged'], tagFields: [1] };
+    assert.strictEqual(matchesDeckFilter(w), false, 'field tag counts as tagged');
+    console.log('T2 matchesDeckFilter: OK (none/tag/untagged/multi/field-derived)');
 }
 
 // ---- T3: serializeEditorRows ----

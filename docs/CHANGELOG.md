@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.9.0] - 2026-11-01
+### Added（欄位管理 v2——每欄多角色）
+- **正面／背面可多欄**：`frontFields`/`backFields` 為索引陣列，按勾選順序拼接顯示（如「正面＝單字＋音標」「背面＝中文＋例句」）；Anki TSV 匯出與分享同步多欄語意。
+- **「隱藏」角色**：欄位保留在資料中但不顯示——不必再勉強掛標籤來藏欄位。
+- **欄位管理 UI**：學習選單改為每欄一列、五個 chips（正面／背面／小字／標籤／隱藏），取代原三列循環鈕＋標籤 chips。正/背互斥（單選轉移）、小字單選、標籤/隱藏多選；未勾選欄位照舊落背面下方（兩欄牌組完全不變，仍只用「對調」）。
+- **空欄位不再渲染空行**：多欄拼接時過濾空值（`joinFields`）。
+- **遷移**：`frontField`/`backField`（v5.8.x 單欄）→ `frontFields`/`backFields`，於載入牌組時自動轉換。
+- **分享連結**：`s` 鍵攜帶完整五角色（frontFields/backFields/frontSubField/tagFields/hiddenFields），settings 缺鍵時以預設值補齊，避免部分遺失。
+- **測試**：`paste.test.js` T8/T9 改為新結構（`detectPosLayout` 多欄回傳、`resolveFieldRoles` 夾限/去重/空組防護）、`share.test.js` T4 改五角色 round-trip。
+
+### Changed
+- **版本號升級**：v5.8.2 -> v5.9.0；SW `CACHE_NAME` 同步 bump。
+
+## [5.8.2] - 2026-11-01
+### Added（欄位角色第二階：欄位 → 標籤）
+- **「標籤欄位」多選 chips**：學習選單（3 欄以上牌組）新增「標籤欄位」列——任一欄可指定為標籤來源（可多選），例如把詞性欄、分類欄變成 tag 分類；chips 以第一張卡內容預覽、`aria-pressed` 標示啟用狀態。
+- **有效標籤（`effectiveTags`）**：既有 tags + 指定欄位內容**虛擬合成**，不動卡片資料、隨時可逆。標籤篩選、篩選清單 chips、Anki TSV 匯出、「顯示全部」搜尋與標籤欄顯示全部改用有效標籤；`untagged` 語意同步（含欄位標籤即視為已標籤）。
+- **metadata 語意**：指定為標籤來源的欄位不再渲染為卡面補充（Anki 匯出背面同樣排除）。
+- **分享連結**：payload 的 `s` 鍵支援 `tagFields`（非空陣列即帶入，非整數值過濾）；接收端新匯入時套用。
+- **測試**：`paste.test.js` 新增 T10（`effectiveTags`）、`queue.test.js` T2 擴充欄位合成標籤篩選案例、`share.test.js` T4 擴充 `tagFields` round-trip。
+
+### Changed
+- **版本號升級**：v5.8.1 -> v5.8.2；SW `CACHE_NAME` 同步 bump。
+
 ## [5.8.1] - 2026-11-01
 ### Fixed（顯示機制修正——欄位角色七項收尾）
 - **編輯器預覽欄位錯位**：偵測到三欄詞性版面時，欄位提示動態改為「正面／詞性 (n./adj./phr.)／定義 (背面)」，不再出現「背面＝詞性、補充＝定義」的錯位觀感。

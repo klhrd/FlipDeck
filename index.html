@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.8.1</title>
+    <title>FlipDeck v5.9.0</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -410,17 +410,10 @@
                         <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.review_dir">複習方向</span>
                         <button id="review-dir-btn" data-i18n="menu.dir_swap" data-i18n-aria="aria.review_dir" aria-label="切換複習方向" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">對調</button>
                     </div>
-                    <div id="front-field-row" class="hidden flex items-center justify-between py-4 border-t border-stone-100 dark:border-stone-800">
-                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.front_field">正面欄位</span>
-                        <button id="front-field-btn" data-i18n="ac.col_front" data-i18n-aria="aria.front_field" aria-label="切換正面欄位" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white max-w-[10rem] truncate">正面</button>
-                    </div>
-                    <div id="back-field-row" class="hidden flex items-center justify-between py-4 border-t border-stone-100 dark:border-stone-800">
-                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.back_field">背面欄位</span>
-                        <button id="back-field-btn" data-i18n="ac.col_back" data-i18n-aria="aria.back_field" aria-label="切換背面欄位" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white max-w-[10rem] truncate">背面</button>
-                    </div>
-                    <div id="front-sub-row" class="hidden flex items-center justify-between py-4 border-t border-stone-100 dark:border-stone-800">
-                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.front_sub">提示小字</span>
-                        <button id="front-sub-btn" data-i18n="menu.sub_none" data-i18n-aria="aria.front_sub" aria-label="切換提示小字欄位" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white max-w-[10rem] truncate">無</button>
+                    <div id="field-mgmt-row" class="hidden py-4 border-t border-stone-100 dark:border-stone-800">
+                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.field_mgmt">欄位管理</span>
+                        <div id="field-mgmt-list" class="flex flex-col gap-2.5 mt-3"></div>
+                        <p class="text-[10px] text-stone-400 mt-2 leading-relaxed" data-i18n="menu.field_mgmt_hint">未勾選的欄位會顯示在背面下方；標籤／隱藏可多選，其餘單選</p>
                     </div>
                     <div id="tts-lang-row" class="flex items-center justify-between py-4 border-t border-stone-100 dark:border-stone-800">
                         <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.tts_lang">朗讀語言</span>

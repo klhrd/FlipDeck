@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.8.1 (Field Roles, POS Layout, Anki Export) =====
+// ===== FlipDeck v5.9.0 (Field Manager: multi-field roles, POS Layout, Anki Export) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -60,12 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const ttsLangBtn = document.getElementById('tts-lang-btn');
     const ttsLangRow = document.getElementById('tts-lang-row');
     const reviewDirBtn = document.getElementById('review-dir-btn');
-    const frontFieldRow = document.getElementById('front-field-row');
-    const backFieldRow = document.getElementById('back-field-row');
-    const frontSubRow = document.getElementById('front-sub-row');
-    const frontFieldBtn = document.getElementById('front-field-btn');
-    const backFieldBtn = document.getElementById('back-field-btn');
-    const frontSubBtn = document.getElementById('front-sub-btn');
+    const fieldMgmtRow = document.getElementById('field-mgmt-row');
+    const fieldMgmtList = document.getElementById('field-mgmt-list');
     
     const allCardsModal = document.getElementById('all-cards-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -165,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
     let editorConfirmClose = null;
 
-    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto', frontField: 0, backField: 1, frontSubField: null };
+    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto', frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [] };
     const MAX_HISTORY = 50;
     const RECENT_SKIP = 8; // v4.3.0 P5：排隊時排除最近 N 張已作答卡片，避免立即回鍋
     const DAY_MS = 86400000;
@@ -269,10 +265,14 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDeckId = id; currentFullDeck = data;
         currentCardStatus = getDeckState(id);
         currentDeckSettings = { ...DEFAULT_DECK_SETTINGS, ...meta.settings };
-        // v5.8.0 遷移：reviewDirection（forward/reverse）→ frontField/backField 欄位角色
-        if (currentDeckSettings.reviewDirection !== undefined) {
+        // v5.8.0 遷移：reviewDirection（forward/reverse）→ 欄位角色；v5.9.0 遷移：frontField/backField（單欄）→ frontFields/backFields（多欄）
+        if (currentDeckSettings.reviewDirection !== undefined || currentDeckSettings.frontField !== undefined || currentDeckSettings.backField !== undefined) {
             if (currentDeckSettings.reviewDirection === 'reverse') { currentDeckSettings.frontField = 1; currentDeckSettings.backField = 0; }
+            if (Number.isInteger(currentDeckSettings.frontField)) currentDeckSettings.frontFields = [currentDeckSettings.frontField];
+            if (Number.isInteger(currentDeckSettings.backField)) currentDeckSettings.backFields = [currentDeckSettings.backField];
             delete currentDeckSettings.reviewDirection;
+            delete currentDeckSettings.frontField;
+            delete currentDeckSettings.backField;
             persistDeckSettings();
         }
         syncCardStatus(currentFullDeck);
@@ -415,11 +415,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return { progress: Math.floor((points / (data.length * 4)) * 100), due };
     }
 
-    // v4.3.0：目前篩選條件判斷（updateLearningDeck 與「再讀一輪」共用）
+    // v4.3.0：目前篩選條件判斷（updateLearningDeck 與「再讀一輪」共用）；v5.8.2 改用有效標籤（含欄位合成標籤）
     function matchesDeckFilter(card) {
         const f = currentDeckSettings.filterTags;
         if (!f || f.length === 0) return true;
-        const ts = card.tags || [];
+        const ts = effectiveTags(card, currentDeckSettings.tagFields);
         return f.some(t => t === 'untagged' ? ts.length === 0 : ts.includes(t));
     }
 
@@ -585,18 +585,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (visible.length === 0) { displayEndOfDeck(); return; }
 
-        // v5.8.0：欄位角色——正面/背面可選任一欄，另可掛「正面小字」（如詞性）；解析一次、頂卡與背景卡共用
-        const { ff, bf, sf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
+        // v5.9.0：欄位角色——正面/背面可多欄拼接，另可掛「提示小字」、指定標籤來源與隱藏欄
+        const { ff, bf, sf, tf, hf } = resolveFieldRoles(currentDeckSettings, currentFullDeck);
+        const extrasIdx = currentFullDeck.length ? Array.from({ length: Math.max(...currentFullDeck.map(c => c.fields?.length || 0)) }, (_, j) => j).filter(j => !ff.includes(j) && !bf.includes(j) && j !== sf && !tf.includes(j) && !hf.includes(j)) : [];
         for (let i = visible.length - 1; i >= 0; i--) {
             const data = visible[i], isTop = (i === 0);
             const cardEl = document.createElement('div');
             cardEl.className = `combo-card absolute w-full h-full transition-all duration-300 ease-out ${isTop ? 'z-[30]' : 'pointer-events-none'}`;
             cardEl.style.transform = `translateY(${i * 16}px) scale(${1 - i * 0.05})`;
             cardEl.style.opacity = 1 - i * 0.2;
-            const front = data.fields[ff] || '';
-            const back = data.fields[bf] || '';
+            const front = joinFields(ff, data);
+            const back = joinFields(bf, data);
             const sub = sf !== null ? (data.fields[sf] || '') : '';
-            const extras = data.fields.filter((_, j) => j !== ff && j !== bf && j !== sf);
+            const extras = joinFields(extrasIdx, data);
 
             if (isTop) {
                 cardEl.id = 'active-combo-card';
@@ -614,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${sub ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mt-1" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${sub}</div>` : ''}
                             <div class="w-12 h-px bg-stone-200 dark:bg-stone-700 my-3 sm:my-4 flex-shrink-0"></div>
                             <div class="card-content text-center text-stone-600 dark:text-stone-300 font-bold break-words w-full" style="font-size: ${fs * 0.8}rem">${back}</div>
-                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full text-center mt-2">${extras.join('<br>')}</div>
+                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full text-center mt-2">${extras}</div>
                         </div>
                     </div>
                 `;
@@ -633,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
                             <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${back}</div>
-                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${extras.join('<br>')}</div>
+                            <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${extras}</div>
                         </div>
                     </div>
                 `;
@@ -755,9 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
         displayModeBtn.onclick = (e) => { e.stopPropagation(); changeDisplayMode(); };
         ttsLangBtn.onclick = (e) => { e.stopPropagation(); cycleTtsLang(); };
         reviewDirBtn.onclick = (e) => { e.stopPropagation(); cycleReviewDirection(); };
-        frontFieldBtn.onclick = (e) => { e.stopPropagation(); cycleFrontField(); };
-        backFieldBtn.onclick = (e) => { e.stopPropagation(); cycleBackField(); };
-        frontSubBtn.onclick = (e) => { e.stopPropagation(); cycleFrontSubField(); };
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 新增選項（v5.7.0） ---
@@ -1192,13 +1190,13 @@ document.addEventListener('DOMContentLoaded', () => {
         hintFlipPill.classList.toggle('hidden', currentDeckSettings.displayMode === 'dual');
         applyDisplayModeIcon();
         ttsLangBtn.textContent = (currentDeckSettings.ttsLang && currentDeckSettings.ttsLang !== 'auto') ? currentDeckSettings.ttsLang : t('tts.auto');
-        updateFieldMenuLabels();
+        renderFieldManagement();
         populateCardTagFilters();
     }
 
     function populateCardTagFilters() {
         cardTagFilterContainer.innerHTML = '';
-        const tags = [...new Set(currentFullDeck.flatMap(c => c.tags || []))].sort();
+        const tags = [...new Set(currentFullDeck.flatMap(c => effectiveTags(c, currentDeckSettings.tagFields)))].sort();
         if (tags.length === 0) {
             cardTagFilterContainer.innerHTML = `<p class="text-xs text-stone-400 pl-4 italic">${t('menu.no_tags')}</p>`;
             return;
@@ -1222,20 +1220,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // v5.8.0：欄位角色解析——索引夾限於牌組實際欄數，保證 front≠back、sub 不與正背面衝突
-    function resolveFieldIndices(settings, deckData) {
+    // v5.9.0：欄位角色解析——正/背可多欄（按勾選順序拼接），索引夾限、正背去重、空組防護
+    function resolveFieldRoles(settings, deckData) {
         const maxF = deckData.reduce((m, c) => Math.max(m, (c.fields?.length || 1) - 1), 0);
-        let ff = Number.isInteger(settings.frontField) ? Math.min(Math.max(settings.frontField, 0), maxF) : 0;
-        let bf = Number.isInteger(settings.backField) ? Math.min(Math.max(settings.backField, 0), maxF) : 1;
-        if (maxF === 0) { bf = 0; }
-        else if (ff === bf) { bf = ff === 0 ? 1 : 0; }
-        let sf = Number.isInteger(settings.frontSubField) ? settings.frontSubField : null;
-        if (sf === null || sf < 0 || sf > maxF || sf === ff || sf === bf) sf = null;
-        return { ff, bf, sf };
+        const clamp = v => (Number.isInteger(v) && v >= 0 && v <= maxF) ? v : null;
+        const clean = a => (Array.isArray(a) ? a : []).map(clamp).filter(v => v !== null);
+        let ff = clean(settings.frontFields);
+        let bf = clean(settings.backFields).filter(i => !ff.includes(i)); // 正面優先，背面去重
+        if (ff.length === 0 && bf.length === 0) { ff = [0]; if (maxF > 0) bf = [1]; }
+        else if (ff.length === 0) { ff = [bf.includes(0) ? Math.min(1, maxF) : 0]; }
+        const s = clamp(settings.frontSubField);
+        const sf = (s !== null && !ff.includes(s) && !bf.includes(s)) ? s : null;
+        const tf = clean(settings.tagFields);
+        const hf = clean(settings.hiddenFields);
+        return { ff, bf, sf, tf, hf, maxF };
+    }
+
+    // v5.9.0：多欄拼接（過濾空欄，不渲染空行）
+    function joinFields(idxs, card) {
+        return (idxs || []).map(i => (card.fields?.[i] || '').trim()).filter(Boolean).join('<br>');
     }
 
     function maxFieldCount() {
         return currentFullDeck.reduce((m, c) => Math.max(m, c.fields?.length || 1), 0);
+    }
+
+    // v5.8.2：有效標籤 = 既有 tags + 指定欄位（tagFields）的內容——虛擬合成、不動資料、隨時可逆
+    function effectiveTags(card, tagFields) {
+        const tf = Array.isArray(tagFields) ? tagFields : [];
+        if (tf.length === 0) return card.tags || [];
+        const dyn = tf.map(i => (card.fields?.[i] || '').replace(/<br>/g, ' ').trim()).filter(Boolean);
+        return [...(card.tags || []), ...dyn];
     }
 
     function persistDeckSettings() {
@@ -1249,52 +1264,75 @@ document.addEventListener('DOMContentLoaded', () => {
         return f ? (f.length > 6 ? f.slice(0, 6) + '…' : f) : String(i + 1);
     }
 
-    // 僅在牌組含 3 欄以上資料時顯示欄位角色設定（兩欄牌組用「複習方向」即可）
-    function updateFieldMenuLabels() {
+    // 僅在牌組含 3 欄以上資料時顯示欄位管理（兩欄牌組用「複習方向」即可）
+    // v5.9.0：每欄一列五 chips（正面／背面／小字／標籤／隱藏），取代原循環鈕與標籤 chips
+    function renderFieldManagement() {
         const show = maxFieldCount() > 2;
-        frontFieldRow.classList.toggle('hidden', !show);
-        backFieldRow.classList.toggle('hidden', !show);
-        frontSubRow.classList.toggle('hidden', !show);
+        fieldMgmtRow.classList.toggle('hidden', !show);
+        fieldMgmtList.innerHTML = '';
         if (!show) return;
-        const { ff, bf, sf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
-        frontFieldBtn.textContent = fieldPreviewLabel(ff);
-        backFieldBtn.textContent = fieldPreviewLabel(bf);
-        frontSubBtn.textContent = sf === null ? t('menu.sub_none') : fieldPreviewLabel(sf);
+        const { ff, bf, sf, tf, hf } = resolveFieldRoles(currentDeckSettings, currentFullDeck);
+        for (let i = 0; i < maxFieldCount(); i++) {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between gap-2';
+            const label = document.createElement('span');
+            label.className = 'text-xs font-bold text-stone-600 dark:text-stone-300 truncate';
+            label.textContent = fieldPreviewLabel(i);
+            const chips = document.createElement('div');
+            chips.className = 'flex flex-wrap gap-1.5 justify-end';
+            [{ key: 'front', on: ff.includes(i) }, { key: 'back', on: bf.includes(i) }, { key: 'sub', on: sf === i }, { key: 'tag', on: tf.includes(i) }, { key: 'hide', on: hf.includes(i) }]
+                .forEach(r => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.textContent = t('menu.role_' + r.key);
+                    b.setAttribute('aria-pressed', r.on ? 'true' : 'false');
+                    b.setAttribute('aria-label', t('menu.role_' + r.key) + '：' + fieldPreviewLabel(i));
+                    b.className = r.on
+                        ? 'px-2 py-1 bg-teal-700 dark:bg-teal-500 text-white dark:text-stone-950 rounded-lg text-[10px] font-bold'
+                        : 'px-2 py-1 bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 rounded-lg text-[10px] font-bold';
+                    b.onclick = (e) => { e.stopPropagation(); toggleFieldRole(r.key, i); };
+                    chips.appendChild(b);
+                });
+            row.appendChild(label);
+            row.appendChild(chips);
+            fieldMgmtList.appendChild(row);
+        }
     }
 
-    function cycleFrontField() {
-        const n = maxFieldCount(); if (n <= 2) return;
-        const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
-        let next = (ff + 1) % n; if (next === bf) next = (next + 1) % n;
-        currentDeckSettings.frontField = next;
-        if (currentDeckSettings.frontSubField === next) currentDeckSettings.frontSubField = null;
-        persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
+    // v5.9.0：角色切換——正/背互斥（單選轉移）、小字單選、標籤/隱藏多選
+    function toggleFieldRole(role, i) {
+        const s = currentDeckSettings;
+        const arr = k => (Array.isArray(s[k]) ? [...s[k]] : []);
+        if (role === 'front') {
+            const f = arr('frontFields');
+            if (f.includes(i)) s.frontFields = f.filter(x => x !== i);
+            else { s.frontFields = [...f, i]; s.backFields = arr('backFields').filter(x => x !== i); if (s.frontSubField === i) s.frontSubField = null; }
+        } else if (role === 'back') {
+            const b = arr('backFields');
+            if (b.includes(i)) s.backFields = b.filter(x => x !== i);
+            else { s.backFields = [...b, i]; s.frontFields = arr('frontFields').filter(x => x !== i); if (s.frontSubField === i) s.frontSubField = null; }
+        } else if (role === 'sub') {
+            const wasSub = s.frontSubField === i;
+            s.frontSubField = wasSub ? null : i;
+            if (!wasSub) { s.frontFields = arr('frontFields').filter(x => x !== i); s.backFields = arr('backFields').filter(x => x !== i); }
+        } else if (role === 'tag') {
+            const tf2 = arr('tagFields');
+            s.tagFields = tf2.includes(i) ? tf2.filter(x => x !== i) : [...tf2, i];
+        } else if (role === 'hide') {
+            const h = arr('hiddenFields');
+            s.hiddenFields = h.includes(i) ? h.filter(x => x !== i) : [...h, i];
+        }
+        persistDeckSettings();
+        applyCurrentDeckSettings();
+        updateLearningDeck(); updateUI();
+        displayCardStack();
     }
 
-    function cycleBackField() {
-        const n = maxFieldCount(); if (n <= 2) return;
-        const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
-        let next = (bf + 1) % n; if (next === ff) next = (next + 1) % n;
-        currentDeckSettings.backField = next;
-        if (currentDeckSettings.frontSubField === next) currentDeckSettings.frontSubField = null;
-        persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
-    }
-
-    function cycleFrontSubField() {
-        const n = maxFieldCount(); if (n <= 2) return;
-        const { ff, bf, sf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
-        const candidates = Array.from({ length: n }, (_, i) => i).filter(i => i !== ff && i !== bf);
-        if (candidates.length === 0) return;
-        const cur = sf === null ? -1 : candidates.indexOf(sf);
-        currentDeckSettings.frontSubField = (cur + 1 >= candidates.length) ? null : candidates[cur + 1];
-        persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
-    }
-
-    // v5.8.0：複習方向——正面欄與背面欄對調（單鍵快速反向）；v5.8.1 按鈕改為誠實的「對調」動作鈕（不再以索引推斷方向標籤）
+    // v5.8.0：複習方向——正面欄與背面欄對調（單鍵快速反向）；v5.8.1 按鈕改為誠實的「對調」動作鈕；v5.9.0 交換正/背兩組
     function cycleReviewDirection() {
-        const { ff, bf } = resolveFieldIndices(currentDeckSettings, currentFullDeck);
-        currentDeckSettings.frontField = bf;
-        currentDeckSettings.backField = ff;
+        const { ff, bf } = resolveFieldRoles(currentDeckSettings, currentFullDeck);
+        currentDeckSettings.frontFields = bf;
+        currentDeckSettings.backFields = ff;
         persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
     }
 
@@ -1309,28 +1347,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // v5.8.0：三欄詞性版面偵測（fields=[單字, 詞性, 定義]）→ 正面=單字、背面=定義、詞性掛正面小字
+    // v5.8.0：三欄詞性版面偵測（fields=[單字, 詞性, 定義]）→ 正面=單字、背面=定義、詞性掛提示小字
     // v5.8.1：改 50% 門檻（不再全有全無），偵測成功時順手正規化不一致卡列；偵測失敗不動資料
+    // v5.9.0：回傳多欄角色結構
     function detectPosLayout(data) {
         const posCount = data.filter(c => Array.isArray(c.fields) && c.fields.length >= 3 && POS_RE.test((c.fields[1] || '').trim())).length;
         if (posCount === 0 || posCount * 2 < data.length) return {};
         normalizePosOddCards(data);
-        return { frontField: 0, backField: 2, frontSubField: 1 };
+        return { frontFields: [0], backFields: [2], frontSubField: 1 };
     }
 
-    // v5.8.0：匯出 Anki 相容 TSV（依欄位角色映射：正面\t背面（含補充）\t標籤）
+    // v5.8.0：匯出 Anki 相容 TSV（依欄位角色映射：正面\t背面（含補充）\t標籤）；v5.9.0 多欄拼接
     function exportAnkiTSV(id) {
         const cards = getDeckData(id);
         if (!cards || cards.length === 0) return;
         const s = { ...DEFAULT_DECK_SETTINGS, ...(deckList.find(x => x.id === id)?.settings || {}) };
-        const { ff, bf } = resolveFieldIndices(s, cards);
-        const tsv = cards.filter(c => c.fields && c.fields[ff])
+        const { ff, bf, sf, tf, hf } = resolveFieldRoles(s, cards);
+        const maxLen = Math.max(...cards.map(c => c.fields?.length || 0));
+        const extrasIdx = Array.from({ length: maxLen }, (_, j) => j).filter(j => !ff.includes(j) && !bf.includes(j) && j !== sf && !tf.includes(j) && !hf.includes(j));
+        const tsv = cards.filter(c => c.fields && c.fields[ff[0]])
             .map(c => {
                 const clean = v => (v || '').replace(/\t/g, ' ').replace(/\n/g, '<br>');
-                const extras = c.fields.filter((_, i) => i !== ff && i !== bf).join('<br>');
-                const front = clean(c.fields[ff]);
-                const back = clean((c.fields[bf] || '') + (extras ? '<br>' + extras : ''));
-                const tags = (c.tags || []).join(' ');
+                const front = clean(joinFields(ff, c));
+                const extras = joinFields(extrasIdx, c);
+                const back = clean((joinFields(bf, c) + (extras ? '<br>' + extras : '')));
+                const tags = effectiveTags(c, s.tagFields).join(' ');
                 return [front, back, tags].join('\t');
             }).join('\n');
         const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
@@ -1348,7 +1389,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
         ttsLangBtn.textContent = currentDeckSettings.ttsLang !== 'auto' ? currentDeckSettings.ttsLang : t('tts.auto');
         const demo = (historyIndex >= 0 && historyIndex < history.length) ? currentFullDeck.find(c => c.card_id === history[historyIndex]) : null;
-        if (demo) { const { ff } = resolveFieldIndices(currentDeckSettings, currentFullDeck); speakText(demo.fields[ff] || ''); }
+        if (demo) { const { ff } = resolveFieldRoles(currentDeckSettings, currentFullDeck); speakText(joinFields(ff, demo)); }
     }
 
     // v5.4.0：切換顯示模式（翻面 <-> 雙面），立即重繪卡面
@@ -1391,16 +1432,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // v5.8.1：非預設的欄位角色（frontField/backField/frontSubField）一併帶入（鍵 s）
     async function encodeDeckForUrl(deck) {
         const s = deck.settings || {};
+        const d = DEFAULT_DECK_SETTINGS;
         const roles = {};
-        if (Number.isInteger(s.frontField)) roles.frontField = s.frontField;
-        if (Number.isInteger(s.backField)) roles.backField = s.backField;
-        if (Number.isInteger(s.frontSubField)) roles.frontSubField = s.frontSubField;
-        // 任一角色非預設才帶 s 鍵，且三鍵完整帶入（避免部分遺失造成版面不一致）
-        const isDefault = (roles.frontField ?? DEFAULT_DECK_SETTINGS.frontField) === DEFAULT_DECK_SETTINGS.frontField
-            && (roles.backField ?? DEFAULT_DECK_SETTINGS.backField) === DEFAULT_DECK_SETTINGS.backField
-            && (roles.frontSubField ?? DEFAULT_DECK_SETTINGS.frontSubField) === DEFAULT_DECK_SETTINGS.frontSubField;
+        const arrRoles = (v) => (Array.isArray(v) ? v.filter(Number.isInteger) : []);
+        const ff = arrRoles(Array.isArray(s.frontFields) ? s.frontFields : d.frontFields);
+        const bf = arrRoles(Array.isArray(s.backFields) ? s.backFields : d.backFields);
+        const tf = arrRoles(Array.isArray(s.tagFields) ? s.tagFields : d.tagFields);
+        const hf = arrRoles(Array.isArray(s.hiddenFields) ? s.hiddenFields : d.hiddenFields);
+        const sf = Number.isInteger(s.frontSubField) ? s.frontSubField : null;
+        // v5.9.0：任一角色非預設才帶 s 鍵，且完整帶入（避免部分遺失造成版面不一致）
+        const isDefault = JSON.stringify([ff, bf, sf, tf, hf]) === JSON.stringify([d.frontFields, d.backFields, d.frontSubField, d.tagFields, d.hiddenFields]);
         const compact = { i: deck.id, t: deck.title, c: deck.cards.map(c => [c.card_id, c.fields, c.tags || [], c.notes || '']) };
-        if (Object.keys(roles).length > 0 && !isDefault) compact.s = roles;
+        if (!isDefault) compact.s = { frontFields: ff, backFields: bf, frontSubField: sf, tagFields: tf, hiddenFields: hf };
         const buf = new TextEncoder().encode(JSON.stringify(compact));
         const stream = new Blob([buf]).stream().pipeThrough(new CompressionStream('deflate-raw'));
         const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -1420,12 +1463,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const json = new TextDecoder().decode(await new Response(stream).arrayBuffer());
         const compact = JSON.parse(json);
         if (!compact || !Array.isArray(compact.c) || compact.c.length === 0) throw new Error('bad payload');
-        // v5.8.1：還原欄位角色（僅接受整數鍵，其餘交由 resolveFieldIndices 夾限）
+        // v5.9.0：還原欄位角色（正/背/標籤/隱藏為整數陣列、小字為單一整數；渲染時照常夾限）
         const s = (compact.s && typeof compact.s === 'object') ? compact.s : null;
+        const intArr = v => (Array.isArray(v) ? [...new Set(v.filter(Number.isInteger))] : undefined);
         const settings = s ? {
-            ...(Number.isInteger(s.frontField) ? { frontField: s.frontField } : {}),
-            ...(Number.isInteger(s.backField) ? { backField: s.backField } : {}),
-            ...(Number.isInteger(s.frontSubField) ? { frontSubField: s.frontSubField } : {})
+            ...(intArr(s.frontFields) ? { frontFields: intArr(s.frontFields) } : {}),
+            ...(intArr(s.backFields) ? { backFields: intArr(s.backFields) } : {}),
+            ...(Number.isInteger(s.frontSubField) ? { frontSubField: s.frontSubField } : {}),
+            ...(intArr(s.tagFields) ? { tagFields: intArr(s.tagFields) } : {}),
+            ...(intArr(s.hiddenFields) ? { hiddenFields: intArr(s.hiddenFields) } : {})
         } : null;
         return { id: compact.i, title: compact.t, cards: compact.c.map(([card_id, fields, tags, notes]) => ({ card_id, fields, tags, notes })), settings };
     }
@@ -1792,7 +1838,12 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         }
         html += '</tr></thead><tbody>';
 
-        currentFullDeck.filter(c => !q || c.fields.some(f => f.toLowerCase().includes(q)) || (c.tags && c.tags.some(t => t.toLowerCase().includes(q)))).forEach(c => {
+        // v5.8.2：搜尋含有效標籤（含欄位合成標籤）
+        currentFullDeck.filter(c => {
+            if (!q) return true;
+            const q2 = q;
+            return c.fields.some(f => f.toLowerCase().includes(q2)) || effectiveTags(c, currentDeckSettings.tagFields).some(t => t.toLowerCase().includes(q2));
+        }).forEach(c => {
             const st = currentCardStatus.get(c.card_id);
             const m = st?.mastery ?? 1;
             const isSuspended = !!st?.suspended;
@@ -1812,8 +1863,8 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
                 c.fields.slice(2).forEach(f => html += `<td class="p-4 text-stone-400 font-medium">${f.replace(/<br>/g, ' ')}</td>`);
                 // 熟練度 + ID
                 html += `<td class="p-4"><div class="flex space-x-0.5 mb-1">${Array.from({length:5}, (_,idx)=>`<div class="w-1.5 h-1.5 rounded-full ${idx<m?'bg-teal-600 dark:bg-teal-400':'bg-stone-200 dark:bg-stone-700'}"></div>`).join('')}</div><div class="text-[9px] font-mono text-stone-400">${c.card_id}</div></td>`;
-                // 標籤
-                html += `<td class="p-4"><div class="flex flex-wrap gap-1">${(c.tags || []).map(t => `<span class="px-2 py-0.5 bg-stone-100 dark:bg-stone-800 rounded text-[10px] font-bold">${t}</span>`).join('')}</div></td>`;
+                // 標籤（v5.8.2：顯示有效標籤，含欄位合成標籤）
+                html += `<td class="p-4"><div class="flex flex-wrap gap-1">${effectiveTags(c, currentDeckSettings.tagFields).map(t => `<span class="px-2 py-0.5 bg-stone-100 dark:bg-stone-800 rounded text-[10px] font-bold">${t}</span>`).join('')}</div></td>`;
             }
             html += '</tr>';
         });
@@ -1957,9 +2008,9 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             if (isNew) {
                 processNewDeck(newRows, `d_${Date.now()}`, t('ed.untitled'));
             } else {
-                // v5.8.1：詞性版面牌組存檔前正規化（新增列直接打定義 → 定義遞補第 3 欄，避免背面顯示錯欄）
+                // v5.8.1：詞性版面牌組存檔前正規化（新增列直接打定義 → 定義遞補第 3 欄，避免背面顯示錯欄）；v5.9.0 適配多欄角色
                 const meta0 = deckList.find(d => d.id === id);
-                if (meta0 && meta0.settings?.frontField === 0 && meta0.settings?.backField === 2 && meta0.settings?.frontSubField === 1) {
+                if (meta0 && meta0.settings?.frontSubField === 1 && (meta0.settings?.backFields || []).includes(2)) {
                     normalizePosOddCards(newRows);
                 }
                 saveDeckData(id, newRows);

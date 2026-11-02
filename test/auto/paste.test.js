@@ -127,11 +127,11 @@ eval(extractFn('parsePastedContent'));
         { fields: ['apple', 'n.', '蘋果'], tags: ['n'] },
         { fields: ['go by', 'phr.', '依據…判斷'], tags: ['phr'] }
     ];
-    assert.deepStrictEqual(detectPosLayout(pos3), { frontField: 0, backField: 2, frontSubField: 1 }, '3-col POS layout');
+    assert.deepStrictEqual(detectPosLayout(pos3), { frontFields: [0], backFields: [2], frontSubField: 1 }, '3-col POS layout');
     // 2 欄牌組不觸發
     assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'd'] }]), {}, '2-col untouched');
     // 50% 門檻：2 張中 1 張詞性 → 偵測成功
-    assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', '不是詞性', 'd2'] }]), { frontField: 0, backField: 2, frontSubField: 1 }, '50% threshold detects');
+    assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', '不是詞性', 'd2'] }]), { frontFields: [0], backFields: [2], frontSubField: 1 }, '50% threshold detects');
     // 低於 50%：3 張中 1 張詞性 → 不偵測、不動資料
     const low = [{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', 'x', 'd2'] }, { fields: ['w3', 'y', 'd3'] }];
     assert.deepStrictEqual(detectPosLayout(low), {}, 'below 50% rejected');
@@ -152,18 +152,33 @@ eval(extractFn('parsePastedContent'));
     console.log('T8 detectPosLayout threshold + normalization: OK');
 }
 
-// ---- T9: resolveFieldIndices——夾限、front≠back、sub 衝突防護 ----
+// ---- T9: resolveFieldRoles——夾限、正背去重、空組防護、sub 衝突（v5.9.0 多欄角色） ----
 {
-    eval(extractFn('resolveFieldIndices'));
+    eval(extractFn('resolveFieldRoles'));
     const deck3 = [{ fields: ['a', 'b', 'c'] }];
-    assert.deepStrictEqual(resolveFieldIndices({ frontField: 0, backField: 1, frontSubField: null }, deck3), { ff: 0, bf: 1, sf: null }, 'default');
-    assert.deepStrictEqual(resolveFieldIndices({ frontField: 1, backField: 0, frontSubField: null }, deck3), { ff: 1, bf: 0, sf: null }, 'reverse mapping kept');
-    assert.deepStrictEqual(resolveFieldIndices({ frontField: 9, backField: 2, frontSubField: null }, deck3), { ff: 2, bf: 0, sf: null }, 'out-of-range clamped');
-    assert.deepStrictEqual(resolveFieldIndices({ frontField: 2, backField: 2, frontSubField: null }, deck3), { ff: 2, bf: 0, sf: null }, 'ff===bf resolved');
-    assert.deepStrictEqual(resolveFieldIndices({ frontField: 0, backField: 2, frontSubField: 1 }, deck3), { ff: 0, bf: 2, sf: 1 }, 'POS sub layout');
-    assert.deepStrictEqual(resolveFieldIndices({ frontField: 0, backField: 2, frontSubField: 2 }, deck3), { ff: 0, bf: 2, sf: null }, 'sub conflicts with back → null');
-    assert.deepStrictEqual(resolveFieldIndices({}, [{ fields: ['only'] }]), { ff: 0, bf: 0, sf: null }, 'single-field deck');
-    console.log('T9 resolveFieldIndices: OK');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [] }, deck3), { ff: [0], bf: [1], sf: null, tf: [], hf: [], maxF: 2 }, 'defaults');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [1], backFields: [0], frontSubField: null }, deck3), { ff: [1], bf: [0], sf: null, tf: [], hf: [], maxF: 2 }, 'reverse mapping kept');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [9, 2], backFields: [2] }, deck3), { ff: [2], bf: [], sf: null, tf: [], hf: [], maxF: 2 }, 'out-of-range clamped + back overlap removed');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [], backFields: [] }, deck3), { ff: [0], bf: [1], sf: null, tf: [], hf: [], maxF: 2 }, 'both empty → fallback');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [], backFields: [0] }, deck3), { ff: [1], bf: [0], sf: null, tf: [], hf: [], maxF: 2 }, 'front empty → non-back fallback');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [0], backFields: [2], frontSubField: 1 }, deck3), { ff: [0], bf: [2], sf: 1, tf: [], hf: [], maxF: 2 }, 'POS sub layout');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [0], backFields: [2], frontSubField: 2 }, deck3), { ff: [0], bf: [2], sf: null, tf: [], hf: [], maxF: 2 }, 'sub conflicts with back → null');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [0], backFields: [1], frontSubField: 7, tagFields: [1, 5], hiddenFields: [3] }, deck3), { ff: [0], bf: [1], sf: null, tf: [1], hf: [], maxF: 2 }, 'tag/hide clamped, sub out-of-range null');
+    assert.deepStrictEqual(resolveFieldRoles({}, [{ fields: ['only'] }]), { ff: [0], bf: [], sf: null, tf: [], hf: [], maxF: 0 }, 'single-field deck');
+    console.log('T9 resolveFieldRoles: OK');
+}
+
+// ---- T10: effectiveTags——欄位合成虛擬標籤（v5.8.2 標籤欄位） ----
+{
+    eval(extractFn('effectiveTags'));
+    const card = { fields: ['connected', 'adj.', '有來往的；有關係的'], tags: ['unit3'] };
+    assert.deepStrictEqual(effectiveTags(card, []), ['unit3'], 'no tagFields → real tags only');
+    assert.deepStrictEqual(effectiveTags(card, undefined), ['unit3'], 'undefined tagFields → real tags only');
+    assert.deepStrictEqual(effectiveTags(card, [1]), ['unit3', 'adj.'], 'POS field merged as tag');
+    assert.deepStrictEqual(effectiveTags(card, [1, 2]), ['unit3', 'adj.', '有來往的；有關係的'], 'multiple tag fields');
+    assert.deepStrictEqual(effectiveTags({ fields: ['w'], tags: ['t'] }, [1, 5]), ['t'], 'missing fields skipped');
+    assert.deepStrictEqual(effectiveTags({ fields: ['w', '', 'x'], tags: [] }, [1]), [], 'empty field skipped');
+    console.log('T10 effectiveTags: OK');
 }
 
 console.log('\nALL PASTE IMPORT TESTS PASSED');

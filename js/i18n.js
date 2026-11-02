@@ -26,7 +26,8 @@ const I18N = {
         'menu.display_mode': '顯示模式', 'menu.mode_combo': '翻面', 'menu.mode_dual': '雙面',
         'menu.tts_lang': '朗讀語言', 'tts.auto': '自動',
         'menu.review_dir': '複習方向', 'menu.dir_swap': '對調',
-        'menu.front_field': '正面欄位', 'menu.back_field': '背面欄位', 'menu.front_sub': '提示小字', 'menu.sub_none': '無',
+        'menu.field_mgmt': '欄位管理', 'menu.field_mgmt_hint': '未勾選的欄位會顯示在背面下方；標籤／隱藏可多選，其餘單選',
+        'menu.role_front': '正面', 'menu.role_back': '背面', 'menu.role_sub': '小字', 'menu.role_tag': '標籤', 'menu.role_hide': '隱藏',
         // 快速開始
         'qs.title': '新增單字集', 'qs.upload': '上傳 .txt, .csv, .json',
         'ex.hs6000': '高中 6000 單字', 'ex.verbs': '動詞三態', 'ex.elements': '元素週期表', 'ex.capitals': '國家與首都',
@@ -137,7 +138,7 @@ const I18N = {
         'aria.decrease_new': '減少每日新卡上限', 'aria.increase_new': '增加每日新卡上限',
         'aria.bulk_tags': '批次標籤', 'aria.clear_selection': '清除選取',
         'aria.search_cards': '搜尋卡片', 'aria.visual_edit': '開啟圖形化編輯器', 'aria.start_learning': '開始學習',
-        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.front_field': '切換正面欄位', 'aria.back_field': '切換背面欄位', 'aria.front_sub': '切換提示小字欄位'
+        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.field_mgmt': '管理欄位角色'
     },
     en: {
         'app.menu': 'Menu', 'app.settings': 'Settings',
@@ -161,7 +162,8 @@ const I18N = {
         'menu.display_mode': 'Card View', 'menu.mode_combo': 'Flip', 'menu.mode_dual': 'Both Sides',
         'menu.tts_lang': 'Speech Language', 'tts.auto': 'Auto',
         'menu.review_dir': 'Review Direction', 'menu.dir_swap': 'Swap',
-        'menu.front_field': 'Front Field', 'menu.back_field': 'Back Field', 'menu.front_sub': 'Prompt Subtext', 'menu.sub_none': 'None',
+        'menu.field_mgmt': 'Field Manager', 'menu.field_mgmt_hint': 'Unselected fields show below the back; Tag/Hide are multi-select, others single',
+        'menu.role_front': 'Front', 'menu.role_back': 'Back', 'menu.role_sub': 'Sub', 'menu.role_tag': 'Tag', 'menu.role_hide': 'Hide',
         'qs.title': 'Add Deck', 'qs.upload': 'Upload .txt, .csv, .json',
         'ex.hs6000': 'High School 6000 Words', 'ex.verbs': 'Verb Tenses', 'ex.elements': 'Periodic Table', 'ex.capitals': 'Countries & Capitals',
         'qs.format_title': 'File Format Guide',
@@ -257,7 +259,7 @@ const I18N = {
         'aria.decrease_new': 'Decrease daily new-card limit', 'aria.increase_new': 'Increase daily new-card limit',
         'aria.bulk_tags': 'Batch tags', 'aria.clear_selection': 'Clear selection',
         'aria.search_cards': 'Search cards', 'aria.visual_edit': 'Open visual editor', 'aria.start_learning': 'Start Learning',
-        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language', 'aria.review_dir': 'Toggle review direction', 'aria.anki_export': 'Export Anki TSV', 'aria.front_field': 'Toggle front field', 'aria.back_field': 'Toggle back field', 'aria.front_sub': 'Toggle front subtext field'
+        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language', 'aria.review_dir': 'Toggle review direction', 'aria.anki_export': 'Export Anki TSV', 'aria.field_mgmt': 'Manage field roles'
     }
 };
 

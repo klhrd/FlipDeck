@@ -54,16 +54,21 @@ const DEFAULT_DECK_SETTINGS = eval('(' + ddsMatch[1] + ')');
     assert.ok(threw, 'truncated/extended payload throws');
     console.log('T3 corrupted payload rejected: OK');
 
-    // ---- T4 (v5.8.1): 欄位角色隨 payload 分享 ----
+    // ---- T4 (v5.9.0): 欄位角色隨 payload 分享 ----
     // 預設角色 → 不帶 s 鍵
-    const plain = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontField: 0, backField: 1, frontSubField: null } }));
+    const plain = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [] } }));
     assert.strictEqual(plain.settings, null, 'default roles → no s key');
-    // 非預設角色 → 帶 s 鍵 round-trip
-    const custom = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontField: 0, backField: 2, frontSubField: 1, fontSize: 3 } }));
-    assert.deepStrictEqual(custom.settings, { frontField: 0, backField: 2, frontSubField: 1 }, 'custom roles round-trip');
+    // 非預設角色 → 帶 s 鍵 round-trip（完整五鍵）
+    const custom = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontFields: [0], backFields: [2], frontSubField: 1, tagFields: [1], hiddenFields: [] } }));
+    assert.deepStrictEqual(custom.settings, { frontFields: [0], backFields: [2], frontSubField: 1, tagFields: [1], hiddenFields: [] }, 'custom roles round-trip');
     // 非整數值 → 過濾
-    const dirty = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontField: 'x', backField: 2 } }));
-    assert.deepStrictEqual(dirty.settings, { backField: 2 }, 'non-integer values filtered');
+    const dirty = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { frontFields: ['x', 2], backFields: [0] } }));
+    assert.deepStrictEqual(dirty.settings, { frontFields: [2], backFields: [0], tagFields: [], hiddenFields: [] }, 'non-integer values filtered');
+    // tagFields：非空陣列才帶、過濾非整數
+    const tf = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { tagFields: [1, 'x', 2] } }));
+    assert.deepStrictEqual(tf.settings, { frontFields: [0], backFields: [1], tagFields: [1, 2], hiddenFields: [] }, 'tagFields round-trip');
+    const tfEmpty = await decodeDeckFromUrl(await encodeDeckForUrl({ ...deck, settings: { tagFields: [] } }));
+    assert.strictEqual(tfEmpty.settings, null, 'default tagFields → no s key');
     console.log('T4 field-roles in payload: OK');
 
     console.log('\nALL v5.4.0 SHARE CODEC TESTS PASSED');
