@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.9.0 (Field Manager: multi-field roles, POS Layout, Anki Export) =====
+// ===== FlipDeck v5.9.2 (Field Manager + POS as tag source, Anki Export) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -275,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
             delete currentDeckSettings.backField;
             persistDeckSettings();
         }
+        sanitizeFilterTags();
         syncCardStatus(currentFullDeck);
         
         updateLearningDeck(); 
@@ -1299,6 +1300,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // v5.9.2：淨化 filterTags——有效標籤集合變動（關閉欄位標籤、編輯器刪標籤）後移除已不存在的篩選條件，
+    // 避免看不見的殘留篩選讓學習佇列默默變空；全數失效即回到未篩選
+    function sanitizeFilterTags() {
+        if (!currentDeckSettings.filterTags || currentDeckSettings.filterTags.length === 0) return;
+        const avail = new Set(currentFullDeck.flatMap(c => effectiveTags(c, currentDeckSettings.tagFields)));
+        const next = currentDeckSettings.filterTags.filter(t => avail.has(t));
+        if (next.length !== currentDeckSettings.filterTags.length) {
+            currentDeckSettings.filterTags = next;
+            persistDeckSettings();
+            updateLearningDeck(); updateUI();
+        }
+    }
+
     // v5.9.0：角色切換——正/背互斥（單選轉移）、小字單選、標籤/隱藏多選
     function toggleFieldRole(role, i) {
         const s = currentDeckSettings;
@@ -1323,6 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
             s.hiddenFields = h.includes(i) ? h.filter(x => x !== i) : [...h, i];
         }
         persistDeckSettings();
+        if (role === 'tag') sanitizeFilterTags();
         applyCurrentDeckSettings();
         updateLearningDeck(); updateUI();
         displayCardStack();
@@ -1349,12 +1364,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // v5.8.0：三欄詞性版面偵測（fields=[單字, 詞性, 定義]）→ 正面=單字、背面=定義、詞性掛提示小字
     // v5.8.1：改 50% 門檻（不再全有全無），偵測成功時順手正規化不一致卡列；偵測失敗不動資料
-    // v5.9.0：回傳多欄角色結構
+    // v5.9.0：回傳多欄角色結構；v5.9.1：詞性欄自動設為標籤來源（取代寫入真實 tags）
     function detectPosLayout(data) {
         const posCount = data.filter(c => Array.isArray(c.fields) && c.fields.length >= 3 && POS_RE.test((c.fields[1] || '').trim())).length;
         if (posCount === 0 || posCount * 2 < data.length) return {};
         normalizePosOddCards(data);
-        return { frontFields: [0], backFields: [2], frontSubField: 1 };
+        return { frontFields: [0], backFields: [2], frontSubField: 1, tagFields: [1] };
     }
 
     // v5.8.0：匯出 Anki 相容 TSV（依欄位角色映射：正面\t背面（含補充）\t標籤）；v5.9.0 多欄拼接
@@ -1536,6 +1551,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (!ok) return;
         if (existing) {
+            // v5.9.2：接收端欄位角色為全預設時，套用送出端角色（或重新偵測詞性版面）——
+            // 避免舊兩欄設定遇上新三欄資料而背面錯位；自訂過角色的接收端則完全尊重原設定
+            const d = DEFAULT_DECK_SETTINGS, es = existing.settings || {};
+            const pristine = ['frontFields', 'backFields', 'frontSubField', 'tagFields', 'hiddenFields']
+                .every(k => JSON.stringify(es[k] ?? d[k]) === JSON.stringify(d[k]));
+            if (pristine) existing.settings = { ...es, ...(deck.settings || detectPosLayout(deck.cards)) };
             saveDeckData(deck.id, deck.cards);
             existing.title = deck.title;
             existing.totalCards = deck.cards.length;
@@ -1566,7 +1587,7 @@ Top level is a flat array of card objects:
 | --- | --- | --- |
 | apple | n. | 蘋果 |
 - One card per row; header and --- separator rows are skipped.
-- If column 2 is always a part of speech (n./v./phr.), it is kept as its own field and added as a tag: front = word (POS shown as small subtext), back = column 3. Field roles can be changed later in the learn menu (supports column 1 & 3 selection).
+- If column 2 is always a part of speech (n./v./phr.), it is kept as its own field and auto-assigned as a tag source (adjustable in the field manager): front = word (POS shown as small subtext), back = column 3. Field roles can be changed later in the learn menu (supports column 1 & 3 selection).
 [TXT / CSV]
 One card per line, fields separated by ";"; "//" inside a field means a line break.
 front;back;notes
@@ -1587,7 +1608,7 @@ flipdeck_backup_*.json (from "Backup All") can be uploaded directly: same-id dec
 | 單字 | 詞性 | 中文 |
 | --- | --- | --- |
 | apple | n. | 蘋果 |
-- 第一欄＝正面；若第二欄全是詞性（n./v./phr.…），詞性保留為獨立欄位並加入標籤：正面＝單字（詞性以小字呈現）、背面＝第三欄。欄位角色可於學習選單隨時更改（支援選第一、三欄等任意組合）
+- 第一欄＝正面；若第二欄全是詞性（n./v./phr.…），詞性保留為獨立欄位並自動設為標籤來源（可於欄位管理調整）：正面＝單字（詞性以小字呈現）、背面＝第三欄。欄位角色可於學習選單隨時更改（支援選第一、三欄等任意組合）
 - 表頭列與「---」分隔列自動略過
 【TXT / CSV】
 每行一張卡，欄位以「;」分隔，欄位內以「//」表示換行：
@@ -1677,7 +1698,7 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
     //   1) 含「（）／，，」佔位的卡（正面序）優先各吃一個
     //   2) 尾端未完（；，、（）／）的卡（正面序）反向各吃一個
     //   3) 仍有剩餘 → 接到該行最後一張卡
-    // 詞性欄合併：若所有列第 2 欄皆為詞性（n./v./phr.…），fields 保留為 [單字, 詞性, 定義]、詞性入標籤
+    // 詞性欄合併：若所有列第 2 欄皆為詞性（n./v./phr.…），fields 保留為 [單字, 詞性, 定義]、詞性自動設為標籤來源（v5.9.1 起不寫真實 tags）
     function parseMarkdownTable(lines, ts = Date.now()) {
         const isSepRow = cells => cells.length > 0 && cells.every(c => /^:?-{2,}:?$/.test(c) || c === '');
         const rows = [];
@@ -1730,9 +1751,9 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         const cards = rowCards.map((r, i) => {
             if (r.cells[0] === '') return null;
             if (posCol) {
-                // v5.8.0：詞性欄保留為獨立欄位（fields=[單字, 詞性, 定義]）＋詞性入標籤；顯示版面由 detectPosLayout 於建檔時自動設定
-                const pos = r.cells[1].replace(/\.$/, '');
-                return { card_id: `p_${ts}_${i}`, fields: [r.cells[0], r.cells[1], (r.cells[2] + r.extras.join('')).trim()], tags: [pos] };
+                // v5.9.1：詞性欄保留為獨立欄位（fields=[單字, 詞性, 定義]），不再寫入真實 tags——
+                // 標籤由 detectPosLayout 自動以 tagFields 虛擬合成（零汙染、可逆，避免與欄位標籤重疊）
+                return { card_id: `p_${ts}_${i}`, fields: [r.cells[0], r.cells[1], (r.cells[2] + r.extras.join('')).trim()], tags: [] };
             }
             return { card_id: `p_${ts}_${i}`, fields: [...r.cells, ...r.extras], tags: [] };
         }).filter(Boolean);
@@ -1944,10 +1965,19 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
 
     // [v4.1.3] 圖形化編輯器 (F14)；v4.1.5 修正存檔同步；v4.3.0 P5：分頁 + 搜尋 + 陣列工作副本
     // v5.6.0：prefill 參數——貼上解析結果可直接進編輯器預覽（救援碎片在此修正）
-    function openDeckEditor(id = null, prefill = null) {
+    async function openDeckEditor(id = null, prefill = null) {
         const isNew = !id;
         const data = isNew ? (prefill && prefill.length ? prefill : [{ card_id: `c_${Date.now()}_0`, fields: ["", "", ""], tags: [] }]) : getDeckData(id);
         if (!data) return;
+        // v5.9.2：圖形化編輯器僅支援 3 欄（第 4 欄起會以「; 」併入補充欄、對應欄位角色失準）——既有多欄牌組先確認
+        if (!isNew && data.some(c => (c.fields?.length || 0) > 3)) {
+            const okCols = await appConfirm({
+                title: t('dlg.ed_cols_t'),
+                message: t('dlg.ed_cols'),
+                okText: t('common.ok')
+            });
+            if (!okCols) return;
+        }
         // v5.8.1：偵測詞性版面（50% 門檻，成功時順手正規化不一致卡列）→ 編輯器欄位標籤改為「正面／詞性／定義」
         const posLayout = Object.keys(detectPosLayout(data)).length > 0;
 
@@ -2020,6 +2050,7 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
                 if (id === currentDeckId && currentFullDeck.length > 0) {
                     currentFullDeck = newRows;
                     hideUndoPill();
+                    sanitizeFilterTags(); // v5.9.2：編輯器刪標籤後淨化殘留篩選
                     resetSessionView();
                 }
             }

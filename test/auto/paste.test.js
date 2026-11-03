@@ -22,9 +22,9 @@ eval(extractFn('parsePastedContent'));
     ], 1000);
     assert.strictEqual(cards.length, 2, 'header skipped');
     assert.deepStrictEqual(cards[0].fields, ['apple', 'n.', '蘋果'], 'POS kept as own field');
-    assert.deepStrictEqual(cards[0].tags, ['n'], 'POS added as tag');
+    assert.deepStrictEqual(cards[0].tags, [], 'POS not written to real tags (v5.9.1: tag source via tagFields)');
     assert.deepStrictEqual(cards[1].fields, ['go by', 'phr.', '依據…判斷']);
-    assert.deepStrictEqual(cards[1].tags, ['phr']);
+    assert.deepStrictEqual(cards[1].tags, []);
     console.log('T1 clean table + POS kept as field: OK');
 }
 
@@ -39,7 +39,7 @@ eval(extractFn('parsePastedContent'));
     const ladder = cards.find(c => c.fields[0] === 'ladder');
     assert.ok(pole.fields[2].includes('竿；杆'), `pole def 竿；杆 實際：「${pole.fields[2]}」`);
     assert.ok(ladder.fields[2].includes('梯子'), 'ladder def');
-    assert.deepStrictEqual(pole.tags, ['n'], 'POS tag');
+    assert.deepStrictEqual(pole.tags, [], 'no real tag (v5.9.1)');
     console.log('T2 merged-row rescue (pole/ladder): OK');
 }
 
@@ -122,16 +122,16 @@ eval(extractFn('parsePastedContent'));
 {
     eval(extractFn('detectPosLayout'));
     eval(extractFn('normalizePosOddCards'));
-    // 全 POS → 偵測成功
+    // 全 POS → 偵測成功（v5.9.1：詞性欄自動設為標籤來源）
     const pos3 = [
-        { fields: ['apple', 'n.', '蘋果'], tags: ['n'] },
-        { fields: ['go by', 'phr.', '依據…判斷'], tags: ['phr'] }
+        { fields: ['apple', 'n.', '蘋果'], tags: [] },
+        { fields: ['go by', 'phr.', '依據…判斷'], tags: [] }
     ];
-    assert.deepStrictEqual(detectPosLayout(pos3), { frontFields: [0], backFields: [2], frontSubField: 1 }, '3-col POS layout');
+    assert.deepStrictEqual(detectPosLayout(pos3), { frontFields: [0], backFields: [2], frontSubField: 1, tagFields: [1] }, '3-col POS layout');
     // 2 欄牌組不觸發
     assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'd'] }]), {}, '2-col untouched');
     // 50% 門檻：2 張中 1 張詞性 → 偵測成功
-    assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', '不是詞性', 'd2'] }]), { frontFields: [0], backFields: [2], frontSubField: 1 }, '50% threshold detects');
+    assert.deepStrictEqual(detectPosLayout([{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', '不是詞性', 'd2'] }]), { frontFields: [0], backFields: [2], frontSubField: 1, tagFields: [1] }, '50% threshold detects');
     // 低於 50%：3 張中 1 張詞性 → 不偵測、不動資料
     const low = [{ fields: ['w', 'n.', 'd'] }, { fields: ['w2', 'x', 'd2'] }, { fields: ['w3', 'y', 'd3'] }];
     assert.deepStrictEqual(detectPosLayout(low), {}, 'below 50% rejected');

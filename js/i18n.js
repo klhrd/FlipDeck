@@ -4,7 +4,8 @@ const I18N = {
     zh: {
         // 通用
         'app.menu': '主選單', 'app.settings': '設定',
-        'common.cancel': '取消', 'common.close': '關閉',
+        'common.cancel': '取消', 'common.close': '關閉', 'common.ok': '確定',
+        'dlg.ed_cols_t': '多欄牌組', 'dlg.ed_cols': '此牌組有 3 欄以上的卡片。圖形化編輯器僅支援 3 欄——第 4 欄起會以「; 」併入補充欄，對應的欄位角色（小字／標籤／隱藏）會失效。建議改用「JSON 原始碼」編輯。仍要繼續？',
         // 首頁
         'home.total_cards': '卡片總數：',
         'home.sort_last': '最後閱讀', 'home.sort_title': '名稱 (A-Z)', 'home.sort_progress': '學習進度',
@@ -50,9 +51,9 @@ const I18N = {
         'qs.paste_btn': '解析並匯入',
         'qs.paste_ph': '支援 JSON、Markdown 表格（| 單字 | 詞性 | 中文 |）、TXT（; 分欄）——AI 產生的內容直接貼上即可',
         'qs.paste_deckname': '貼上匯入',
-        'qs.format_md': 'Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），詞性保留為獨立欄位並加入標籤（正面＝單字＋詞性小字、背面＝第三欄，可於學習選單改欄位）。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）',
+        'qs.format_md': 'Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），詞性保留為獨立欄位並自動設為標籤來源（可於欄位管理調整；正面＝單字＋詞性小字、背面＝第三欄）。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）',
         'fg.md_title': 'Markdown 表格（可直接從 AI 對話複製）',
-        'fg.md_desc': '每列一張卡，欄位依序對應（第一欄＝正面）。若第二欄全部是詞性（n.、v.、phr. 等），詞性保留為獨立欄位並加入標籤：正面＝單字（詞性以小字呈現）、背面＝第三欄，欄位角色可於學習選單隨時更改。表頭列與「---」分隔列自動略過；因換行遺失產生的尾部碎片依「（）佔位優先 → ；未完接合」規則盡力復原——貼上後會開啟編輯器供你檢查修正。',
+        'fg.md_desc': '每列一張卡，欄位依序對應（第一欄＝正面）。若第二欄全部是詞性（n.、v.、phr. 等），詞性保留為獨立欄位並自動設為標籤來源：正面＝單字（詞性以小字呈現）、背面＝第三欄，欄位角色可於學習選單的欄位管理隨時更改。表頭列與「---」分隔列自動略過；因換行遺失產生的尾部碎片依「（）佔位優先 → ；未完接合」規則盡力復原——貼上後會開啟編輯器供你檢查修正。',
         'dlg.paste_empty': '沒有偵測到可匯入的內容',
         'dlg.paste_json': 'JSON 解析失敗，請檢查格式',
         'dlg.paste_shape': '無法辨識內容：需為 JSON 陣列、Markdown 表格或 TXT（欄位以 ; 分隔）',
@@ -142,7 +143,8 @@ const I18N = {
     },
     en: {
         'app.menu': 'Menu', 'app.settings': 'Settings',
-        'common.cancel': 'Cancel', 'common.close': 'Close',
+        'common.cancel': 'Cancel', 'common.close': 'Close', 'common.ok': 'OK',
+        'dlg.ed_cols_t': 'Multi-field deck', 'dlg.ed_cols': 'This deck has cards with more than 3 fields. The visual editor supports only 3 — fields beyond the 3rd are merged into Notes with "; " and their field roles (subtext/tag/hide) become invalid. Consider editing the JSON source instead. Continue anyway?',
         'home.total_cards': 'Total Cards: ',
         'home.sort_last': 'Last Opened', 'home.sort_title': 'Title (A-Z)', 'home.sort_progress': 'Progress',
         'home.empty': 'No decks yet', 'home.empty_cta': 'Add Deck',
@@ -183,9 +185,9 @@ const I18N = {
         'qs.paste_btn': 'Parse & Import',
         'qs.paste_ph': 'JSON, Markdown tables (| word | pos | meaning |), or TXT (; separated) — paste AI output directly',
         'qs.paste_deckname': 'Pasted Deck',
-        'qs.format_md': 'Markdown table: column 1 = front; if column 2 is all parts of speech, POS is kept as its own field and added as a tag (front = word with POS subtext, back = column 3; field roles are changeable in the learn menu). Headers and --- rows are skipped; lost-linebreak fragments are auto-stitched (imperfect cases open in the editor for review)',
+        'qs.format_md': 'Markdown table: column 1 = front; if column 2 is all parts of speech, POS is kept as its own field and auto-assigned as a tag source (adjustable in the field manager; front = word with POS subtext, back = column 3). Headers and --- rows are skipped; lost-linebreak fragments are auto-stitched (imperfect cases open in the editor for review)',
         'fg.md_title': 'Markdown table (paste straight from AI chats)',
-        'fg.md_desc': 'One card per row, columns map in order (column 1 = front). If column 2 is always a part of speech (n., v., phr.), POS is kept as its own field and added as a tag: front = word (POS shown as small subtext), back = column 3; field roles can be changed anytime in the learn menu. Header and --- rows are skipped; fragments lost to missing line breaks are stitched by the "（） placeholder first → ；-unfinished" rule — the editor opens afterwards so you can review and fix.',
+        'fg.md_desc': 'One card per row, columns map in order (column 1 = front). If column 2 is always a part of speech (n., v., phr.), POS is kept as its own field and auto-assigned as a tag source: front = word (POS shown as small subtext), back = column 3; field roles can be changed anytime via the field manager in the learn menu. Header and --- rows are skipped; fragments lost to missing line breaks are stitched by the "（） placeholder first → ；-unfinished" rule — the editor opens afterwards so you can review and fix.',
         'dlg.paste_empty': 'Nothing importable detected',
         'dlg.paste_json': 'JSON parse failed — check the syntax',
         'dlg.paste_shape': 'Unrecognized content: expected a JSON array, a Markdown table, or TXT (; separated)',

@@ -93,6 +93,11 @@
 - [x] `reviewDirection`→`frontField/backField`→`frontFields/backFields` 二代遷移；分享連結帶新結構
 - [ ] 版面預設（英→中／中→英／聽力 等命名 preset）——後續候選，未實作
 
+## 匯入詞性標籤去重疊（2026-11-01 立案，v5.9.1）
+- [x] 移除匯入時將詞性寫入真實 tags（v5.6.0 行為）——與 `tagFields` 虛擬標籤重疊，且產生 `adj`/`adj.` 雙重 chips 與 Anki 匯出重複
+- [x] `detectPosLayout` 自動將詞性欄設為標籤來源（`tagFields: [1]`）——開箱體驗不變（詞性篩選直接可用），資料零汙染、隨時可逆
+- [x] 舊牌組已寫入的詞性 tags 保留不動（資料即事實）；同時開啟欄位標籤時可能出現新舊並存，可於編輯器批次移除
+
 ## 未來主題候選
 - [ ] 雲端同步（需先選定方案：Google Drive / Supabase / 自架後端；「連結分享」可先覆蓋無後端的分享需求）
 

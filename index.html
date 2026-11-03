@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.9.0</title>
+    <title>FlipDeck v5.9.2</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -196,7 +196,7 @@
                         <summary class="cursor-pointer font-bold hover:text-stone-900 dark:hover:text-white transition-colors select-none" data-i18n="qs.format_title">檔案格式說明</summary>
                         <div class="mt-3 space-y-2 text-left">
                             <p data-i18n="qs.format_json">JSON：卡片陣列，每張須含 card_id（字串）與 fields（正面／背面／補充），tags 可選</p>
-                            <p data-i18n="qs.format_md">Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），詞性保留為獨立欄位並加入標籤（正面＝單字＋詞性小字、背面＝第三欄，可於學習選單改欄位）。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）</p>
+                            <p data-i18n="qs.format_md">Markdown 表格：第一欄＝正面；若第二欄全是詞性（n./v./phr.），詞性保留為獨立欄位並自動設為標籤來源（可於欄位管理調整；正面＝單字＋詞性小字、背面＝第三欄）。表頭與「---」列自動略過；換行遺失的尾部碎片自動接合（不完美處會開編輯器供修正）</p>
                             <p data-i18n="qs.format_txt">TXT / CSV：每行一張卡，欄位以「;」分隔；欄位內容以「//」表示換行</p>
                             <p data-i18n="qs.format_backup">支援直接上傳全域備份檔（flipdeck_backup_*.json）進行還原</p>
                             <pre class="bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono" dir="ltr">[{"card_id":"c1","fields":["word","定義","補充"],"tags":["A1"]}]</pre>
@@ -446,7 +446,7 @@
                 </section>
                 <section>
                     <h3 class="text-xs uppercase tracking-widest font-black text-stone-500 dark:text-stone-400 mb-2" data-i18n="fg.md_title">Markdown 表格（可直接從 AI 對話複製）</h3>
-                    <p data-i18n="fg.md_desc">每列一張卡，欄位依序對應（第一欄＝正面）。若第二欄全部是詞性（n.、v.、phr. 等），詞性保留為獨立欄位並加入標籤：正面＝單字（詞性以小字呈現）、背面＝第三欄，欄位角色可於學習選單隨時更改。表頭列與「---」分隔列自動略過；因換行遺失產生的尾部碎片依「（）佔位優先 → ；未完接合」規則盡力復原——貼上後會開啟編輯器供你檢查修正。</p>
+                    <p data-i18n="fg.md_desc">每列一張卡，欄位依序對應（第一欄＝正面）。若第二欄全部是詞性（n.、v.、phr. 等），詞性保留為獨立欄位並自動設為標籤來源：正面＝單字（詞性以小字呈現）、背面＝第三欄，欄位角色可於學習選單的欄位管理隨時更改。表頭列與「---」分隔列自動略過；因換行遺失產生的尾部碎片依「（）佔位優先 → ；未完接合」規則盡力復原——貼上後會開啟編輯器供你檢查修正。</p>
                     <pre class="mt-2 bg-stone-100 dark:bg-stone-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono text-stone-700 dark:text-stone-300" dir="ltr">| 單字 | 詞性 | 中文 |
 | --- | --- | --- |
 | apple | n. | 蘋果 |
