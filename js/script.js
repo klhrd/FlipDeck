@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.9.3 (Field Manager + POS as tag source, Anki Export) =====
+// ===== FlipDeck v5.9.4 (Field Manager, POS tag-source unification, Anki Export) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -275,10 +275,18 @@ document.addEventListener('DOMContentLoaded', () => {
             delete currentDeckSettings.backField;
             persistDeckSettings();
         }
+        // v5.9.4 遷移：≤5.9.0 匯入將詞性寫入真實 tags（無點：n/phr），與 v5.9.1 欄位標籤（有點：n./phr.）重複——
+        // 詞性版面牌組自動補上 tagFields 並清除真實詞性 tags（以「存在詞性真實標籤」為閘門，冪等且不覆寫使用者關閉 chip 的選擇）
+        if (migrateLegacyPosTags(currentFullDeck, currentDeckSettings)) {
+            saveDeckData(currentDeckId, currentFullDeck);
+            persistDeckSettings();
+        }
         sanitizeFilterTags();
         syncCardStatus(currentFullDeck);
-        
-        updateLearningDeck(); 
+
+        updateLearningDeck();
+        // v5.9.4：標籤篩選區預先建立——原於開選單時懶載入，首次進選單前篩選清單是空的
+        applyCurrentDeckSettings();
         history = []; historyIndex = -1; upcomingQueue = [];
         fillUpcomingQueue();
         
@@ -1307,6 +1315,20 @@ document.addEventListener('DOMContentLoaded', () => {
             row.appendChild(chips);
             fieldMgmtList.appendChild(row);
         }
+    }
+
+    // v5.9.4：舊版詞性真實標籤遷移——詞性版面牌組若有 POS 真實 tags（≤5.9.0 匯入寫入），自動補 tagFields 並清除之
+    // 冪等：清完即無 POS 真實標籤，不會再觸發；非詞性版面或使用者自訂標籤不受影響
+    function migrateLegacyPosTags(data, settings) {
+        const hasPosTag = data.some(c => Array.isArray(c.tags) && c.tags.some(t => POS_RE.test(t)));
+        if (!hasPosTag) return false;
+        if (settings.frontSubField !== 1 || !(Array.isArray(settings.backFields) && settings.backFields.includes(2))) return false;
+        const tf = Array.isArray(settings.tagFields) ? settings.tagFields : [];
+        if (!tf.includes(1)) settings.tagFields = [...tf, 1];
+        data.forEach(c => {
+            if (Array.isArray(c.tags) && c.tags.some(t => POS_RE.test(t))) c.tags = c.tags.filter(t => !POS_RE.test(t));
+        });
+        return true;
     }
 
     // v5.9.2：淨化 filterTags——有效標籤集合變動（關閉欄位標籤、編輯器刪標籤）後移除已不存在的篩選條件，

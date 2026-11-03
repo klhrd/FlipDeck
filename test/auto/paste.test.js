@@ -185,4 +185,29 @@ eval(extractFn('parsePastedContent'));
     console.log('T10 effectiveTags: OK');
 }
 
+// ---- T11: migrateLegacyPosTags——舊版詞性真實標籤遷移（v5.9.4） ----
+{
+    eval(extractFn('migrateLegacyPosTags'));
+    const posSettings = { frontFields: [0], backFields: [2], frontSubField: 1, tagFields: [] };
+    // 舊版牌組：真實 tags 有詞性（無點）→ 補 tagFields + 清除真實詞性 tags
+    const legacy = [
+        { fields: ['apple', 'n.', '蘋果'], tags: ['n', 'unit3'] },
+        { fields: ['go by', 'phr.', '依據…判斷'], tags: ['phr'] }
+    ];
+    assert.strictEqual(migrateLegacyPosTags(legacy, posSettings), true, 'legacy deck migrated');
+    assert.deepStrictEqual(legacy[0].tags, ['unit3'], 'POS real tag stripped, custom kept');
+    assert.deepStrictEqual(legacy[1].tags, [], 'POS real tag stripped');
+    assert.deepStrictEqual(posSettings.tagFields, [1], 'tagFields added');
+    // 冪等：清完不再觸發（使用者關閉 chip 的選擇不會被覆寫）
+    assert.strictEqual(migrateLegacyPosTags(legacy, posSettings), false, 'idempotent');
+    const off = [{ fields: ['a', 'n.', 'x'], tags: [] }];
+    const offSettings = { frontSubField: 1, backFields: [2], tagFields: [] };
+    assert.strictEqual(migrateLegacyPosTags(off, offSettings), false, 'no POS real tags → untouched');
+    // 非詞性版面（如 hs_6000 兩欄合併）不受影響
+    const twoCol = [{ fields: ['able', 'adj. 能夠'], tags: ['分類'] }];
+    assert.strictEqual(migrateLegacyPosTags(twoCol, { frontSubField: null, backFields: [1], tagFields: [] }), false, 'non-POS layout untouched');
+    assert.deepStrictEqual(twoCol[0].tags, ['分類'], 'custom tags kept');
+    console.log('T11 migrateLegacyPosTags: OK');
+}
+
 console.log('\nALL PASTE IMPORT TESTS PASSED');

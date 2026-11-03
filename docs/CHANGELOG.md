@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.9.4] - 2026-11-03
+### Fixed（舊版詞性標籤清理 + 篩選區預建）
+- **舊版詞性真實標籤遷移（`migrateLegacyPosTags`）**：≤5.9.0 匯入把詞性寫進卡片真實 `tags`（無點：`n`/`v`/`phr`），與 v5.9.1 欄位標籤（有點：`n.`/`v.`/`phr.`）並存，篩選清單出現成對重複。載入牌組時自動遷移——詞性版面牌組補上 `tagFields: [1]` 並清除真實詞性 tags（自訂標籤保留）。以「存在詞性真實標籤」為閘門，冪等：清完不再觸發，使用者關閉詞性 chip 的選擇不會被覆寫；非詞性版面（如 hs_6000 兩欄合併）完全不受影響。
+- **標籤篩選區預先建立**：`applyCurrentDeckSettings`（含標籤清單渲染）原於首次開啟學習選單時才懶載入——現於 `startGame` 即建立，進選單前篩選清單已就緒。
+- **測試**：`paste.test.js` 新增 T11（遷移、冪等、非詞性版面保護）。
+
+### Changed
+- **版本號升級**：v5.9.3 -> v5.9.4；SW `CACHE_NAME` 同步 bump。
+
 ## [5.9.3] - 2026-11-03
 ### Changed（小細節打磨）
 - **滑卡效能**：全牌組最大欄數掃描加參照快取（`deckMaxFieldLen`）——hs_6000 級大牌組每次滑卡少兩趟 6498 張掃描。
