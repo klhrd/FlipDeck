@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.9.2 (Field Manager + POS as tag source, Anki Export) =====
+// ===== FlipDeck v5.9.3 (Field Manager + POS as tag source, Anki Export) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -588,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // v5.9.0：欄位角色——正面/背面可多欄拼接，另可掛「提示小字」、指定標籤來源與隱藏欄
         const { ff, bf, sf, tf, hf } = resolveFieldRoles(currentDeckSettings, currentFullDeck);
-        const extrasIdx = currentFullDeck.length ? Array.from({ length: Math.max(...currentFullDeck.map(c => c.fields?.length || 0)) }, (_, j) => j).filter(j => !ff.includes(j) && !bf.includes(j) && j !== sf && !tf.includes(j) && !hf.includes(j)) : [];
+        const extrasIdx = Array.from({ length: deckMaxFieldLen(currentFullDeck) }, (_, j) => j).filter(j => !ff.includes(j) && !bf.includes(j) && j !== sf && !tf.includes(j) && !hf.includes(j));
         for (let i = visible.length - 1; i >= 0; i--) {
             const data = visible[i], isTop = (i === 0);
             const cardEl = document.createElement('div');
@@ -1221,9 +1221,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // v5.9.3：全牌組最大欄數掃描快取（以陣列參照為鍵）——滑卡每次重繪不必重掃 6498 張
+    let deckFieldScanCache = { ref: null, maxLen: 1 };
+    function deckMaxFieldLen(deckData) {
+        if (deckFieldScanCache.ref !== deckData) {
+            deckFieldScanCache = { ref: deckData, maxLen: deckData.reduce((m, c) => Math.max(m, c.fields?.length || 1), 0) };
+        }
+        return deckFieldScanCache.maxLen;
+    }
+
     // v5.9.0：欄位角色解析——正/背可多欄（按勾選順序拼接），索引夾限、正背去重、空組防護
     function resolveFieldRoles(settings, deckData) {
-        const maxF = deckData.reduce((m, c) => Math.max(m, (c.fields?.length || 1) - 1), 0);
+        const maxF = deckMaxFieldLen(deckData) - 1;
         const clamp = v => (Number.isInteger(v) && v >= 0 && v <= maxF) ? v : null;
         const clean = a => (Array.isArray(a) ? a : []).map(clamp).filter(v => v !== null);
         let ff = clean(settings.frontFields);
@@ -1243,7 +1252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function maxFieldCount() {
-        return currentFullDeck.reduce((m, c) => Math.max(m, c.fields?.length || 1), 0);
+        return currentFullDeck.length ? deckMaxFieldLen(currentFullDeck) : 0;
     }
 
     // v5.8.2：有效標籤 = 既有 tags + 指定欄位（tagFields）的內容——虛擬合成、不動資料、隨時可逆
@@ -1277,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('div');
             row.className = 'flex items-center justify-between gap-2';
             const label = document.createElement('span');
-            label.className = 'text-xs font-bold text-stone-600 dark:text-stone-300 truncate';
+            label.className = 'text-xs font-bold text-stone-600 dark:text-stone-300 truncate min-w-0 max-w-[9rem] flex-shrink';
             label.textContent = fieldPreviewLabel(i);
             const chips = document.createElement('div');
             chips.className = 'flex flex-wrap gap-1.5 justify-end';
@@ -1314,27 +1323,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // v5.9.0：角色切換——正/背互斥（單選轉移）、小字單選、標籤/隱藏多選
+    // v5.9.3：隱藏與顯示角色互斥——點「隱藏」自動移出正/背/小字；反之指定顯示角色自動解除隱藏（避免 chip 亮起卻無效果的謊報）
     function toggleFieldRole(role, i) {
         const s = currentDeckSettings;
         const arr = k => (Array.isArray(s[k]) ? [...s[k]] : []);
+        const dropHide = () => { s.hiddenFields = arr('hiddenFields').filter(x => x !== i); };
         if (role === 'front') {
             const f = arr('frontFields');
             if (f.includes(i)) s.frontFields = f.filter(x => x !== i);
-            else { s.frontFields = [...f, i]; s.backFields = arr('backFields').filter(x => x !== i); if (s.frontSubField === i) s.frontSubField = null; }
+            else { s.frontFields = [...f, i]; s.backFields = arr('backFields').filter(x => x !== i); if (s.frontSubField === i) s.frontSubField = null; dropHide(); }
         } else if (role === 'back') {
             const b = arr('backFields');
             if (b.includes(i)) s.backFields = b.filter(x => x !== i);
-            else { s.backFields = [...b, i]; s.frontFields = arr('frontFields').filter(x => x !== i); if (s.frontSubField === i) s.frontSubField = null; }
+            else { s.backFields = [...b, i]; s.frontFields = arr('frontFields').filter(x => x !== i); if (s.frontSubField === i) s.frontSubField = null; dropHide(); }
         } else if (role === 'sub') {
             const wasSub = s.frontSubField === i;
             s.frontSubField = wasSub ? null : i;
-            if (!wasSub) { s.frontFields = arr('frontFields').filter(x => x !== i); s.backFields = arr('backFields').filter(x => x !== i); }
+            if (!wasSub) { s.frontFields = arr('frontFields').filter(x => x !== i); s.backFields = arr('backFields').filter(x => x !== i); dropHide(); }
         } else if (role === 'tag') {
             const tf2 = arr('tagFields');
             s.tagFields = tf2.includes(i) ? tf2.filter(x => x !== i) : [...tf2, i];
         } else if (role === 'hide') {
             const h = arr('hiddenFields');
-            s.hiddenFields = h.includes(i) ? h.filter(x => x !== i) : [...h, i];
+            if (h.includes(i)) s.hiddenFields = h.filter(x => x !== i);
+            else {
+                s.hiddenFields = [...h, i];
+                s.frontFields = arr('frontFields').filter(x => x !== i);
+                s.backFields = arr('backFields').filter(x => x !== i);
+                if (s.frontSubField === i) s.frontSubField = null;
+            }
         }
         persistDeckSettings();
         if (role === 'tag') sanitizeFilterTags();

@@ -155,6 +155,10 @@ eval(extractFn('parsePastedContent'));
 // ---- T9: resolveFieldRoles——夾限、正背去重、空組防護、sub 衝突（v5.9.0 多欄角色） ----
 {
     eval(extractFn('resolveFieldRoles'));
+    eval(extractFn('deckMaxFieldLen')); // v5.9.3：resolveFieldRoles 改用快取 helper，測試環境一併抽取
+    const cacheDecl = src.match(/let deckFieldScanCache = \{[^;]+\};/);
+    assert.ok(cacheDecl, 'deckFieldScanCache found in source');
+    eval(cacheDecl[0].replace('let ', 'var ')); // let 在 direct eval 內不外洩，轉 var 注入外層
     const deck3 = [{ fields: ['a', 'b', 'c'] }];
     assert.deepStrictEqual(resolveFieldRoles({ frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [] }, deck3), { ff: [0], bf: [1], sf: null, tf: [], hf: [], maxF: 2 }, 'defaults');
     assert.deepStrictEqual(resolveFieldRoles({ frontFields: [1], backFields: [0], frontSubField: null }, deck3), { ff: [1], bf: [0], sf: null, tf: [], hf: [], maxF: 2 }, 'reverse mapping kept');
