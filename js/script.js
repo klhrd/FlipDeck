@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.9.4 (Field Manager, POS tag-source unification, Anki Export) =====
+// ===== FlipDeck v5.9.5 (Field Manager, POS tag-source unification, Anki Export) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -1005,8 +1005,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // v5.2.0：語言切換（zh ↔ en），靜態 HTML 由 applyI18n 套用、動態內容重渲染
     function toggleLang() {
         setLang(I18N_LANG === 'zh' ? 'en' : 'zh');
-        refreshExampleSelector(); // v5.5.5：範例名跟隨語言
-        if (!mainScreen.classList.contains('hidden')) updateUI();
+        refreshExampleSelector(); // v5.5.5：範例名稱隨語言
+        if (!mainScreen.classList.contains('hidden')) {
+            updateUI();
+            applyCurrentDeckSettings(); // v5.9.5：重渲染學習選單動態內容（標籤篩選空狀態、欄位管理 chips 等），切語言不殘留
+        }
         else renderHomeScreen();
     }
 
