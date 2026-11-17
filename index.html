@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.9.5</title>
+    <title>FlipDeck v5.10.0</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -274,6 +274,7 @@
                     <button id="deck-options-share-btn" class="w-full py-4 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-bold rounded-2xl flex items-center justify-center" data-i18n-aria="aria.share_deck" aria-label="複製分享連結"><span class="material-symbols-outlined mr-2">link</span><span data-i18n="do.share">複製分享連結</span></button>
                     <button id="deck-options-anki-btn" class="w-full py-4 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-bold rounded-2xl flex items-center justify-center" data-i18n-aria="aria.anki_export" aria-label="匯出 Anki TSV"><span class="material-symbols-outlined mr-2">file_download</span><span data-i18n="do.anki">匯出 Anki TSV</span></button>
                     <button id="deck-options-json-btn" class="w-full py-4 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-bold rounded-2xl flex items-center justify-center"><span class="material-symbols-outlined mr-2">code</span><span data-i18n="do.json">JSON 原始碼</span></button>
+                    <button id="deck-options-reset-btn" class="w-full py-4 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-bold rounded-2xl flex items-center justify-center" data-i18n-aria="aria.reset_progress" aria-label="重置學習進度"><span class="material-symbols-outlined mr-2">restart_alt</span><span data-i18n="do.reset_progress">重置學習進度</span></button>
                     <button id="delete-deck-btn" class="w-full py-4 bg-red-50 text-red-500 font-black rounded-2xl hover:bg-red-100 transition-colors" data-i18n="do.delete">刪除單字集</button>
                 </div>
             </div>
@@ -410,8 +411,15 @@
                         <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.review_dir">複習方向</span>
                         <button id="review-dir-btn" data-i18n="menu.dir_swap" data-i18n-aria="aria.review_dir" aria-label="切換複習方向" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">對調</button>
                     </div>
+                    <div class="flex items-center justify-between py-4 border-t border-stone-100 dark:border-stone-800">
+                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.practice">自由練習</span>
+                        <button id="practice-btn" data-i18n="menu.practice_off" data-i18n-aria="aria.practice" aria-label="切換自由練習模式" class="px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white">關閉</button>
+                    </div>
                     <div id="field-mgmt-row" class="hidden py-4 border-t border-stone-100 dark:border-stone-800">
-                        <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.field_mgmt">欄位管理</span>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase tracking-widest font-black text-stone-500" data-i18n="menu.field_mgmt">欄位管理</span>
+                            <button id="field-mgmt-reset-btn" class="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white rounded-lg text-[10px] font-bold" data-i18n="menu.field_reset" data-i18n-aria="aria.field_reset" aria-label="重置欄位角色為預設">重置</button>
+                        </div>
                         <div id="field-mgmt-list" class="flex flex-col gap-2.5 mt-3"></div>
                         <p class="text-[10px] text-stone-400 mt-2 leading-relaxed" data-i18n="menu.field_mgmt_hint">未勾選的欄位會顯示在背面下方；標籤／隱藏可多選，其餘單選</p>
                     </div>

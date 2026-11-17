@@ -27,7 +27,10 @@ const I18N = {
         'menu.display_mode': '顯示模式', 'menu.mode_combo': '翻面', 'menu.mode_dual': '雙面',
         'menu.tts_lang': '朗讀語言', 'tts.auto': '自動',
         'menu.review_dir': '複習方向', 'menu.dir_swap': '對調',
-        'menu.field_mgmt': '欄位管理', 'menu.field_mgmt_hint': '未勾選的欄位會顯示在背面下方；標籤／隱藏可多選，其餘單選',
+        'menu.practice': '自由練習', 'menu.practice_on': '練習中', 'menu.practice_off': '關閉',
+        'aria.practice': '切換自由練習模式',
+        'menu.field_mgmt': '欄位管理', 'menu.field_mgmt_hint': '未勾選的欄位會顯示在背面下方；標籤／隱藏可多選，其餘單選', 'menu.field_reset': '重置',
+        'aria.field_reset': '重置欄位角色為預設',
         'menu.role_front': '正面', 'menu.role_back': '背面', 'menu.role_sub': '小字', 'menu.role_tag': '標籤', 'menu.role_hide': '隱藏',
         // 快速開始
         'qs.title': '新增單字集', 'qs.upload': '上傳 .txt, .csv, .json',
@@ -66,7 +69,8 @@ const I18N = {
         // JSON 編輯器
         'json.title': 'JSON 原始碼編輯', 'json.save': '儲存變更',
         // 牌組選項
-        'do.title': '單字集設定', 'do.name': '單字集名稱', 'do.save': '儲存設定',         'do.json': 'JSON 原始碼', 'do.delete': '刪除單字集', 'do.share': '複製分享連結', 'do.anki': '匯出 Anki TSV',
+        'do.title': '單字集設定', 'do.name': '單字集名稱', 'do.save': '儲存設定',         'do.json': 'JSON 原始碼', 'do.delete': '刪除單字集', 'do.share': '複製分享連結', 'do.anki': '匯出 Anki TSV', 'do.reset_progress': '重置學習進度',
+        'dlg.reset_progress_title': '重置學習進度？', 'dlg.reset_progress_msg': '將「{t}」全部 {n} 張卡片的學習進度重置為新卡（含答題紀錄、到期日與難卡標記），此動作無法復原。', 'dlg.reset_ok': '重置', 'dlg.reset_done': '「{t}」學習進度已重置。', 'dlg.reset_done_t': '重置完成',
         // 操作教學
         'htu.title': '操作教學',
         'htu.s1': '點擊卡片即可翻面', 'htu.s2': '向右滑動表示「已學會」', 'htu.s3': '向左滑動表示「不熟悉」',
@@ -139,7 +143,7 @@ const I18N = {
         'aria.decrease_new': '減少每日新卡上限', 'aria.increase_new': '增加每日新卡上限',
         'aria.bulk_tags': '批次標籤', 'aria.clear_selection': '清除選取',
         'aria.search_cards': '搜尋卡片', 'aria.visual_edit': '開啟圖形化編輯器', 'aria.start_learning': '開始學習',
-        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.field_mgmt': '管理欄位角色'
+        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.field_mgmt': '管理欄位角色', 'aria.reset_progress': '重置此牌組學習進度'
     },
     en: {
         'app.menu': 'Menu', 'app.settings': 'Settings',
@@ -164,7 +168,10 @@ const I18N = {
         'menu.display_mode': 'Card View', 'menu.mode_combo': 'Flip', 'menu.mode_dual': 'Both Sides',
         'menu.tts_lang': 'Speech Language', 'tts.auto': 'Auto',
         'menu.review_dir': 'Review Direction', 'menu.dir_swap': 'Swap',
-        'menu.field_mgmt': 'Field Manager', 'menu.field_mgmt_hint': 'Unselected fields show below the back; Tag/Hide are multi-select, others single',
+        'menu.practice': 'Free Practice', 'menu.practice_on': 'Active', 'menu.practice_off': 'Off',
+        'aria.practice': 'Toggle free practice mode',
+        'menu.field_mgmt': 'Field Manager', 'menu.field_mgmt_hint': 'Unselected fields show below the back; Tag/Hide are multi-select, others single', 'menu.field_reset': 'Reset',
+        'aria.field_reset': 'Reset field roles to defaults',
         'menu.role_front': 'Front', 'menu.role_back': 'Back', 'menu.role_sub': 'Sub', 'menu.role_tag': 'Tag', 'menu.role_hide': 'Hide',
         'qs.title': 'Add Deck', 'qs.upload': 'Upload .txt, .csv, .json',
         'ex.hs6000': 'High School 6000 Words', 'ex.verbs': 'Verb Tenses', 'ex.elements': 'Periodic Table', 'ex.capitals': 'Countries & Capitals',
@@ -197,7 +204,8 @@ const I18N = {
         'ac.detail': 'Detail', 'ac.detail_on': 'Detail ✓', 'aria.detail_toggle': 'Toggle ID / mastery / tags display',
         'ac.actions': 'Actions', 'ac.col_front': 'Front', 'ac.col_back': 'Back',
         'json.title': 'JSON Source Editor', 'json.save': 'Save Changes',
-        'do.title': 'Deck Settings', 'do.name': 'Deck Name', 'do.save': 'Save Settings',         'do.json': 'JSON Source', 'do.delete': 'Delete Deck', 'do.share': 'Copy Share Link', 'do.anki': 'Export Anki TSV',
+        'do.title': 'Deck Settings', 'do.name': 'Deck Name', 'do.save': 'Save Settings',         'do.json': 'JSON Source', 'do.delete': 'Delete Deck', 'do.share': 'Copy Share Link', 'do.anki': 'Export Anki TSV', 'do.reset_progress': 'Reset Progress',
+        'dlg.reset_progress_title': 'Reset learning progress?', 'dlg.reset_progress_msg': 'Reset all {n} cards in "{t}" to new (including review history, due dates and leech marks). This cannot be undone.', 'dlg.reset_ok': 'Reset', 'dlg.reset_done': '"{t}" learning progress has been reset.', 'dlg.reset_done_t': 'Progress Reset',
         'htu.title': 'How to Use',
         'htu.s1': 'Tap the card to flip it', 'htu.s2': 'Swipe right for "Got it"', 'htu.s3': 'Swipe left for "Forgot"',
         'htu.s4': 'Swipe up to "Skip" for now', 'htu.s5': 'Tap "Undo" within 3s to revert a judgment',
@@ -261,7 +269,7 @@ const I18N = {
         'aria.decrease_new': 'Decrease daily new-card limit', 'aria.increase_new': 'Increase daily new-card limit',
         'aria.bulk_tags': 'Batch tags', 'aria.clear_selection': 'Clear selection',
         'aria.search_cards': 'Search cards', 'aria.visual_edit': 'Open visual editor', 'aria.start_learning': 'Start Learning',
-        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language', 'aria.review_dir': 'Toggle review direction', 'aria.anki_export': 'Export Anki TSV', 'aria.field_mgmt': 'Manage field roles'
+        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language', 'aria.review_dir': 'Toggle review direction', 'aria.anki_export': 'Export Anki TSV', 'aria.field_mgmt': 'Manage field roles', 'aria.reset_progress': 'Reset deck learning progress'
     }
 };
 

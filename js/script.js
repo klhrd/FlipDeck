@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.9.5 (Field Manager, POS tag-source unification, Anki Export) =====
+// ===== FlipDeck v5.10.0 (Free Practice Mode, Field Manager, Anki Export) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -60,8 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const ttsLangBtn = document.getElementById('tts-lang-btn');
     const ttsLangRow = document.getElementById('tts-lang-row');
     const reviewDirBtn = document.getElementById('review-dir-btn');
+    const practiceBtn = document.getElementById('practice-btn');
     const fieldMgmtRow = document.getElementById('field-mgmt-row');
     const fieldMgmtList = document.getElementById('field-mgmt-list');
+    const fieldMgmtResetBtn = document.getElementById('field-mgmt-reset-btn');
     
     const allCardsModal = document.getElementById('all-cards-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -158,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let deckList = [], allTags = [], currentFilter = { sortBy: 'lastOpened' };
     let currentDeckId = null, currentFullDeck = [], currentLearningDeck = [], upcomingQueue = [];
     let currentCardStatus = new Map(), currentDeckSettings = {}, history = [], historyIndex = -1;
+    let practiceMode = false; // v5.10.0：自由練習——依序翻閱全部卡片，判定不影響 SM-2/進度/每日額度（session 級，進牌組即復原）
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
     let editorConfirmClose = null;
 
@@ -265,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDeckId = id; currentFullDeck = data;
         currentCardStatus = getDeckState(id);
         currentDeckSettings = { ...DEFAULT_DECK_SETTINGS, ...meta.settings };
+        practiceMode = false; // v5.10.0：進牌組一律回到正常模式（自由練習為 session 級開關）
         // v5.8.0 遷移：reviewDirection（forward/reverse）→ 欄位角色；v5.9.0 遷移：frontField/backField（單欄）→ frontFields/backFields（多欄）
         if (currentDeckSettings.reviewDirection !== undefined || currentDeckSettings.frontField !== undefined || currentDeckSettings.backField !== undefined) {
             if (currentDeckSettings.reviewDirection === 'reverse') { currentDeckSettings.frontField = 1; currentDeckSettings.backField = 0; }
@@ -338,6 +342,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // v5.0.0：SM-2 到期制排程 —— 只挑到期（含逾期與新卡 due=0）的卡片；
         // 逾期複習優先（最逾期在前），新卡（due=0 sentinel）排在其後
         // v5.1.0：排除暫停卡；套用每日新卡上限
+        // v5.10.0：自由練習——全部未暫停卡依牌組順序入佇列（不受到期/每日額度限制、不排序）
+        if (practiceMode) {
+            currentLearningDeck = currentFullDeck.filter(c => {
+                const st = currentCardStatus.get(c.card_id);
+                return st && !st.suspended && matchesDeckFilter(c);
+            });
+            return;
+        }
         const now = Date.now();
         const filtered = currentDeckSettings.filterTags?.length > 0 ? currentFullDeck.filter(matchesDeckFilter) : currentFullDeck;
         currentLearningDeck = filtered.filter(c => {
@@ -472,7 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isJudgment) markFirstInteraction();
 
         let wasIntro = false;
-        if (isJudgment && action !== 'skip') {
+        // v5.10.0：自由練習——判定完全唯讀（不動 SM-2/熟練度/每日額度），僅作為前進導航
+        if (isJudgment && action !== 'skip' && !practiceMode) {
             const id = history[historyIndex], state = currentCardStatus.get(id);
             if (state) {
                 // v5：即答（未翻面）q=5，翻面後才答對 q=4，忘記 q=2
@@ -496,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (isJudgment && prevId != null) {
+        if (isJudgment && prevId != null && !practiceMode) {
             lastAction = { cardId: prevId, prev: action === 'skip' ? null : prevSnapshot, nextId: null, wasIntro };
             showUndoPill();
         } else {
@@ -731,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const meta = deckList.find(d => d.id === currentDeckId);
         // v5.5.1：膠囊改顯示「剩 N 張到期」——答題即時遞減的回饋
         //（原顯示第 5 級張數，整個 session 都不會動，觀感像計算故障）
-        deckInfo.innerHTML = `<span class="font-black">${meta?.title || ''}</span> • ${t('learn.due_left', { n: currentLearningDeck.length })}`;
+        deckInfo.innerHTML = `<span class="font-black">${meta?.title || ''}</span> • ${t('learn.due_left', { n: currentLearningDeck.length })}${practiceMode ? ` • <span class="text-teal-700 dark:text-teal-300 font-black">${t('menu.practice')}</span>` : ''}`;
     }
 
     // =================================================================
@@ -765,6 +778,8 @@ document.addEventListener('DOMContentLoaded', () => {
         displayModeBtn.onclick = (e) => { e.stopPropagation(); changeDisplayMode(); };
         ttsLangBtn.onclick = (e) => { e.stopPropagation(); cycleTtsLang(); };
         reviewDirBtn.onclick = (e) => { e.stopPropagation(); cycleReviewDirection(); };
+        practiceBtn.onclick = (e) => { e.stopPropagation(); togglePracticeMode(); };
+        fieldMgmtResetBtn.onclick = (e) => { e.stopPropagation(); resetFieldRoles(); };
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
         // --- 新增選項（v5.7.0） ---
@@ -1202,6 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hintFlipPill.classList.toggle('hidden', currentDeckSettings.displayMode === 'dual');
         applyDisplayModeIcon();
         ttsLangBtn.textContent = (currentDeckSettings.ttsLang && currentDeckSettings.ttsLang !== 'auto') ? currentDeckSettings.ttsLang : t('tts.auto');
+        applyPracticeButton();
         renderFieldManagement();
         populateCardTagFilters();
     }
@@ -1347,6 +1363,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // v5.9.6：欄位角色重置——回預設（正面＝第 1 欄、背面＝第 2 欄）；詞性版面牌組自動回偵測版面
+    function resetFieldRoles() {
+        Object.assign(currentDeckSettings,
+            { frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [] },
+            detectPosLayout(currentFullDeck));
+        persistDeckSettings();
+        sanitizeFilterTags();
+        applyCurrentDeckSettings();
+        updateLearningDeck(); updateUI();
+        displayCardStack();
+    }
+
     // v5.9.0：角色切換——正/背互斥（單選轉移）、小字單選、標籤/隱藏多選
     // v5.9.3：隱藏與顯示角色互斥——點「隱藏」自動移出正/背/小字；反之指定顯示角色自動解除隱藏（避免 chip 亮起卻無效果的謊報）
     function toggleFieldRole(role, i) {
@@ -1391,6 +1419,26 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDeckSettings.frontFields = bf;
         currentDeckSettings.backFields = ff;
         persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
+    }
+
+    // v5.10.0：自由練習模式——依序翻閱全部（未暫停）卡片，判定唯讀、不受到期/每日額度限制、不影響 SM-2
+    function togglePracticeMode() {
+        practiceMode = !practiceMode;
+        hideUndoPill();
+        syncCardStatus(currentFullDeck);
+        updateLearningDeck();
+        history = []; historyIndex = -1; upcomingQueue = [];
+        fillUpcomingQueue();
+        applyCurrentDeckSettings();
+        updateUI();
+        showNextCard('new_game');
+    }
+
+    function applyPracticeButton() {
+        practiceBtn.textContent = practiceMode ? t('menu.practice_on') : t('menu.practice_off');
+        practiceBtn.className = practiceMode
+            ? 'px-4 py-1.5 bg-teal-700 dark:bg-teal-500 text-white dark:text-stone-950 rounded-xl text-xs font-bold'
+            : 'px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white';
     }
 
     // v5.8.1：正規化詞性版面中的不一致卡列——fields[1] 是定義（非詞性）且第 3 欄空 → 定義遞補至第 3 欄
@@ -1960,6 +2008,30 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             deckOptionsModal.classList.add('hidden');
             openEditDeckModal(id);
         };
+        // v5.9.6：重置學習進度——全部卡片回到新卡（SM-2/到期/難卡/暫停全部清除），目前學習中的牌組即時重置佇列
+        const deckOptionsResetBtn = document.getElementById('deck-options-reset-btn');
+        if (deckOptionsResetBtn) deckOptionsResetBtn.onclick = async () => {
+            deckOptionsModal.classList.add('hidden');
+            const ok = await appConfirm({
+                title: t('dlg.reset_progress_title'),
+                message: t('dlg.reset_progress_msg', { t: d.title, n: d.totalCards }),
+                okText: t('dlg.reset_ok'),
+                danger: true
+            });
+            if (!ok) return;
+            const now = Date.now();
+            // v5.9.7：due=now（立即到期）而非 due=0——重置後不受每日新卡上限阻擋、不重複計入引入數
+            const fresh = new Map();
+            getDeckData(id).forEach(c => fresh.set(c.card_id, { mastery: 1, lastTime: now, ef: 2.5, reps: 0, interval: 0, due: now, lapses: 0, suspended: false, leech: false }));
+            saveDeckState(id, fresh);
+            if (id === currentDeckId && currentFullDeck.length > 0) {
+                currentCardStatus = fresh;
+                hideUndoPill();
+                resetSessionView();
+            }
+            renderHomeScreen();
+            await appAlert(t('dlg.reset_done', { t: d.title }), t('dlg.reset_done_t'));
+        };
         deleteDeckBtn.onclick = async () => {
             const ok = await appConfirm({
                 title: t('dlg.delete_title'),
@@ -2287,7 +2359,8 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         const backHomeBtn = cardStackContainer.querySelector('#back-to-home-btn');
         if (backHomeBtn) backHomeBtn.onclick = () => backToHomeScreen();
         const restartBtn = cardStackContainer.querySelector('#restart-round-btn');
-        if (restartBtn) restartBtn.onclick = restartDeckRound;
+        // v5.10.0：自由練習下「再讀一輪」＝直接重開練習佇列（判定唯讀，無進度可重置，免確認）
+        if (restartBtn) restartBtn.onclick = () => { practiceMode ? resetSessionView() : restartDeckRound(); };
     }
 
     // v5.0.0：相對時間格式（完成畫面顯示下次到期）
@@ -2312,9 +2385,12 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             danger: true
         }).then(ok => {
             if (!ok) return;
+            // v5.9.7：重置為「立即到期」（due=now）而非「從未引入的新卡」（due=0）——
+            // 後者會被每日新卡上限（enforceNewCardLimit）擋在佇列外，額度用完時「再讀一輪」按了沒反應直接回到讀完畫面；且不重複計入每日引入數
+            const now = Date.now();
             targets.forEach(c => {
                 const st = currentCardStatus.get(c.card_id);
-                if (st) Object.assign(st, { mastery: 1, lastTime: Date.now(), ef: 2.5, reps: 0, interval: 0, due: 0, lapses: 0, leech: false });
+                if (st) Object.assign(st, { mastery: 1, lastTime: now, ef: 2.5, reps: 0, interval: 0, due: now, lapses: 0, leech: false });
             });
             saveDeckState(currentDeckId, currentCardStatus);
             startGame(currentDeckId);

@@ -115,8 +115,9 @@ const DAY = 86400000;
     ]);
     let currentDeckSettings = { filterTags: [] };
     const matchesDeckFilter = () => true;
-    let currentLearningDeck = [];
-    eval(extractFn('updateLearningDeck'));
+let currentLearningDeck = [];
+var practiceMode = false; // v5.10.0：updateLearningDeck 參照自由練習旗標（var 使 eval 外可見）
+eval(extractFn('updateLearningDeck'));
     updateLearningDeck();
 
     assert.ok(!currentLearningDeck.some(c => c.card_id === 'future'), 'future-due card excluded');

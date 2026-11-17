@@ -10,6 +10,7 @@ const undoLastActionSrc = extractFn('undoLastAction');
 const appConfirmSrc = extractFn('appConfirm');
 const sm2UpdateSrc = extractFn('sm2Update');
 const applyLapseSrc = extractFn('applyLapse');
+var practiceMode = false; // v5.10.0：showNextCard 讀取自由練習旗標（模組層 var，eval 於 makeSession 內仍解析到此）
 const DAY_MS = 86400000;
 const LEECH_THRESHOLD = 8;
 // v5.2.0: appConfirm 預設文案走 t() —— 測試環境以鍵名代替（不影響行為斷言）
@@ -105,6 +106,23 @@ function makeSession() {
         assert.strictEqual(S.queue[0], 'c', 'undo puts next card back at queue front');
         assert.strictEqual(S.lastAction, null, 'undo consumed the action');
         console.log('T1 correct+undo round-trip (SM-2 snapshot + daily allowance): OK');
+
+        // ---- T1b (v5.10.0): 自由練習——判定完全唯讀（不動 SM-2、不計額度、不跳 undo） ----
+        {
+            const S = makeSession();
+            practiceMode = true; // session 旗標為 makeSession 內 var（經此賦值切換）
+            const before = JSON.parse(JSON.stringify(Object.fromEntries([...S.status.entries()].map(([k, v]) => [k, { ...v }]))));
+            S.showNextCard('new_game');
+            S.showNextCard('correct');
+            S.showNextCard('incorrect');
+            const after = JSON.parse(JSON.stringify(Object.fromEntries([...S.status.entries()].map(([k, v]) => [k, { ...v }]))));
+            assert.deepStrictEqual(after, before, 'practice: card states fully untouched');
+            assert.ok(!S.calls.includes('adjustDailyNew:1'), 'practice: no daily allowance consumed');
+            assert.ok(!S.calls.includes('undoPillShown'), 'practice: no undo pill (nothing to undo)');
+            assert.ok(S.historyIndex >= 1, 'practice: still navigates forward');
+            practiceMode = false;
+            console.log('T1b free-practice read-only judgment: OK');
+        }
 
         // v5.4.0：雙面模式 —— 答案可見，答對記 q=4（EF 不加成）
         const S2 = makeSession();
