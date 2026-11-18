@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.10.0 (Free Practice Mode, Field Manager, Anki Export) =====
+// ===== FlipDeck v5.11.0 (UX Audit Fixes, Free Practice Mode, Field Manager) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
     let editorConfirmClose = null;
 
-    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto', frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [] };
+    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto', frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [], subSide: 'front' };
     const MAX_HISTORY = 50;
     const RECENT_SKIP = 8; // v4.3.0 P5：排隊時排除最近 N 張已作答卡片，避免立即回鍋
     const DAY_MS = 86400000;
@@ -520,7 +520,17 @@ document.addEventListener('DOMContentLoaded', () => {
             historyIndex++;
         } else {
             if (upcomingQueue.length === 0) {
-                if (currentLearningDeck.length === 0) { displayEndOfDeck(); return; }
+                if (currentLearningDeck.length === 0) {
+                    // v5.11.0 #1：讀完畫面前先落盤（原本提前 return 跳過 saveDeckState，最後一張判定重載即失）
+                    updateUI(); saveDeckState(currentDeckId, currentCardStatus);
+                    // v5.11.0 #9：篩選把佇列清空且確實有卡被篩掉 → 顯示篩選空狀態而非慶祝畫面
+                    const excludedByFilter = (currentDeckSettings.filterTags?.length > 0) && currentFullDeck.some(c => {
+                        const st = currentCardStatus.get(c.card_id);
+                        return st && !st.suspended && !matchesDeckFilter(c) && (practiceMode || (st.due ?? 0) <= Date.now());
+                    });
+                    if (excludedByFilter) { displayFilterEmpty(); return; }
+                    displayEndOfDeck(); return;
+                }
                 fillUpcomingQueue();
             }
             const nextId = upcomingQueue.shift();
@@ -583,6 +593,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const TTS_LANGS = ['auto', 'zh-TW', 'en-GB', 'en-US'];
 
     function displayCardStack() {
+        // v5.11.0 #18：記住翻面狀態——換字型/欄位角色等重渲染不再把翻開的卡彈回正面
+        const wasFlipped = document.getElementById('active-combo-card')?.querySelector('.card-inner')?.classList.contains('rotate-y-180') ?? false;
         cardStackContainer.innerHTML = '';
         const visible = [];
         if (historyIndex >= 0) {
@@ -624,7 +636,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isTop) {
                 cardEl.id = 'active-combo-card';
                 const fs = currentDeckSettings.fontSize;
-                const subHtml = sub ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${sub}</div>` : '';
+                // v5.11.0 #6：小字所在面由 subSide 決定（「對調」時自動換邊，小字跟著單字走）
+                const subOnBack = sf !== null && currentDeckSettings.subSide === 'back';
+                const subFront = sf !== null && !subOnBack ? sub : '';
+                const subBack = subOnBack ? sub : '';
+                const subHtml = subFront ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${subFront}</div>` : '';
                 if (currentDeckSettings.displayMode === 'dual') {
                     // v5.4.0：雙面模式 —— 正面與背面同時可見，無翻面
                     cardEl.innerHTML = `
@@ -634,9 +650,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-inner">
                         <div class="absolute inset-0 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex flex-col items-center justify-center p-6 sm:p-8 overflow-hidden">
                             <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${fs}rem">${front}</div>
-                            ${sub ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mt-1" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${sub}</div>` : ''}
+                            ${subFront ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mt-1" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${subFront}</div>` : ''}
                             <div class="w-12 h-px bg-stone-200 dark:bg-stone-700 my-3 sm:my-4 flex-shrink-0"></div>
                             <div class="card-content text-center text-stone-600 dark:text-stone-300 font-bold break-words w-full" style="font-size: ${fs * 0.8}rem">${back}</div>
+                            ${subBack ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mt-1" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${subBack}</div>` : ''}
                             <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full text-center mt-2">${extras}</div>
                         </div>
                     </div>
@@ -656,6 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
                             <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${back}</div>
+                            ${subBack ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mb-3" style="font-size: ${Math.max(currentDeckSettings.fontSize * 0.35, 0.8)}rem">${subBack}</div>` : ''}
                             <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${extras}</div>
                         </div>
                     </div>
@@ -672,6 +690,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 cardEl.innerHTML = `<div class="w-full h-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl flex items-center justify-center p-8"><div class="text-stone-200 dark:text-stone-800 font-bold truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">${front}</div></div>`;
                 cardStackContainer.appendChild(cardEl);
             }
+        }
+        // v5.11.0 #18：還原翻面狀態（僅 combo 模式；dual 無翻面語意）
+        if (wasFlipped && currentDeckSettings.displayMode === 'combo') {
+            document.getElementById('active-combo-card')?.querySelector('.card-inner')?.classList.add('rotate-y-180');
         }
     }
 
@@ -744,7 +766,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const meta = deckList.find(d => d.id === currentDeckId);
         // v5.5.1：膠囊改顯示「剩 N 張到期」——答題即時遞減的回饋
         //（原顯示第 5 級張數，整個 session 都不會動，觀感像計算故障）
-        deckInfo.innerHTML = `<span class="font-black">${meta?.title || ''}</span> • ${t('learn.due_left', { n: currentLearningDeck.length })}${practiceMode ? ` • <span class="text-teal-700 dark:text-teal-300 font-black">${t('menu.practice')}</span>` : ''}`;
+        deckInfo.innerHTML = practiceMode
+            // v5.11.0 #3：練習佇列全量且不清理，「剩 N 張到期」永不遞減——改顯示位置計數
+            ? `<span class="font-black">${meta?.title || ''}</span> • <span class="text-teal-700 dark:text-teal-300 font-black">${t('menu.practice')}</span> • ${t('learn.practice_pos', { i: Math.max(1, Math.min(historyIndex + 1, currentLearningDeck.length)), n: currentLearningDeck.length })}`
+            : `<span class="font-black">${meta?.title || ''}</span> • ${t('learn.due_left', { n: currentLearningDeck.length })}`;
     }
 
     // =================================================================
@@ -1024,6 +1049,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!mainScreen.classList.contains('hidden')) {
             updateUI();
             applyCurrentDeckSettings(); // v5.9.5：重渲染學習選單動態內容（標籤篩選空狀態、欄位管理 chips 等），切語言不殘留
+            // v5.11.0 #17：卡面（點擊翻面等 t() 文案）與讀完畫面一併重建
+            displayCardStack();
+            if (cardStackContainer.querySelector('#restart-round-btn')) displayEndOfDeck();
+            // v5.11.0 #17：顯示全部表格開著時同步（「詳細 ✓」狀態文案在 renderAllCardsTable 內設定）
+            if (!allCardsModal.classList.contains('hidden')) renderAllCardsTable();
         }
         else renderHomeScreen();
     }
@@ -1225,16 +1255,27 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateCardTagFilters() {
         cardTagFilterContainer.innerHTML = '';
         const tags = [...new Set(currentFullDeck.flatMap(c => effectiveTags(c, currentDeckSettings.tagFields)))].sort();
+        // v5.11.0 #13：有未標籤卡時提供「未標籤」虛擬 chip（matchesDeckFilter 的 'untagged' 分支轉正）
+        const hasUntagged = currentFullDeck.some(c => effectiveTags(c, currentDeckSettings.tagFields).length === 0);
+        if (hasUntagged) tags.push('untagged');
         if (tags.length === 0) {
             cardTagFilterContainer.innerHTML = `<p class="text-xs text-stone-400 pl-4 italic">${t('menu.no_tags')}</p>`;
             return;
         }
-        tags.forEach(t => {
+        // v5.11.0 #5：未篩選時顯示提示（「取消最後一個勾選＝全部湧回」的行為自此有明說）
+        if (currentDeckSettings.filterTags.length === 0) {
+            const hint = document.createElement('p');
+            hint.className = 'text-[10px] text-stone-400 px-2 pt-1 pb-1';
+            hint.textContent = t('menu.filter_off_hint');
+            cardTagFilterContainer.appendChild(hint);
+        }
+        tags.forEach(tag => {
             const l = document.createElement('label');
             l.className = "flex items-center space-x-3 cursor-pointer py-2 px-2 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-xl";
             // v5.7.2：預設全部打勾（filterTags 空陣列 = 未篩選 = 全部顯示）
-            const checked = currentDeckSettings.filterTags.length === 0 || currentDeckSettings.filterTags.includes(t) ? 'checked' : '';
-            l.innerHTML = `<input type="checkbox" ${checked} value="${t}" class="w-5 h-5 rounded-lg border-stone-300 text-stone-900 focus:ring-teal-600"> <span class="text-sm font-bold text-stone-600 dark:text-stone-400">${t}</span>`;
+            const checked = currentDeckSettings.filterTags.length === 0 || currentDeckSettings.filterTags.includes(tag) ? 'checked' : '';
+            const label = tag === 'untagged' ? t('menu.untagged') : tag;
+            l.innerHTML = `<input type="checkbox" ${checked} value="${tag}" class="w-5 h-5 rounded-lg border-stone-300 text-stone-900 focus:ring-teal-600"> <span class="text-sm font-bold text-stone-600 dark:text-stone-400">${label}</span>`;
             l.querySelector('input').onchange = () => {
                 const checkedValues = Array.from(cardTagFilterContainer.querySelectorAll('input:checked')).map(i => i.value);
                 // 全部勾選 = 回到未篩選（空陣列），避免無標籤卡被排除
@@ -1242,7 +1283,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentDeckSettings.filterTags = allTags.every(t => checkedValues.includes(t)) ? [] : checkedValues;
                 const meta = deckList.find(d => d.id === currentDeckId);
                 if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
-                updateLearningDeck(); updateUI();
+                populateCardTagFilters(); // v5.11.0 #5：提示列隨篩選狀態切換
+                updateLearningDeck(); purgeQueueByFilter(); updateUI(); displayCardStack(); // v5.11.0 #4：佇列同步清理＋卡面即時刷新
             };
             cardTagFilterContainer.appendChild(l);
         });
@@ -1258,18 +1300,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // v5.9.0：欄位角色解析——正/背可多欄（按勾選順序拼接），索引夾限、正背去重、空組防護
+    // v5.11.0 #2：fallback 不考慮隱藏欄——「隱藏唯一正面欄」不再被強制復活（chips 不謊報）；全欄隱藏時最後手段無視隱藏（總比白卡好）
     function resolveFieldRoles(settings, deckData) {
         const maxF = deckMaxFieldLen(deckData) - 1;
         const clamp = v => (Number.isInteger(v) && v >= 0 && v <= maxF) ? v : null;
         const clean = a => (Array.isArray(a) ? a : []).map(clamp).filter(v => v !== null);
-        let ff = clean(settings.frontFields);
-        let bf = clean(settings.backFields).filter(i => !ff.includes(i)); // 正面優先，背面去重
-        if (ff.length === 0 && bf.length === 0) { ff = [0]; if (maxF > 0) bf = [1]; }
-        else if (ff.length === 0) { ff = [bf.includes(0) ? Math.min(1, maxF) : 0]; }
+        const hf = clean(settings.hiddenFields);
+        const tf = clean(settings.tagFields);
+        const avail = Array.from({ length: maxF + 1 }, (_, i) => i).filter(i => !hf.includes(i));
+        let ff = clean(settings.frontFields).filter(i => !hf.includes(i));
+        let bf = clean(settings.backFields).filter(i => !ff.includes(i) && !hf.includes(i)); // 正面優先，背面去重
+        if (ff.length === 0 && bf.length === 0) {
+            if (avail.length > 0) { ff = [avail[0]]; if (avail.length > 1) bf = [avail[1]]; }
+            else { ff = [0]; if (maxF > 0) bf = [1]; }
+        } else if (ff.length === 0) {
+            const cand = avail.filter(i => !bf.includes(i));
+            ff = cand.length ? [cand[0]] : [bf[0]];
+        }
         const s = clamp(settings.frontSubField);
         const sf = (s !== null && !ff.includes(s) && !bf.includes(s)) ? s : null;
-        const tf = clean(settings.tagFields);
-        const hf = clean(settings.hiddenFields);
         return { ff, bf, sf, tf, hf, maxF };
     }
 
@@ -1295,9 +1344,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (meta) { meta.settings = { ...currentDeckSettings }; saveDeckList(); }
     }
 
-    // 欄位按鈕標籤：以第一張卡的內容預覽（無內容則顯示欄序號）
+    // 欄位按鈕標籤：以第一張「該欄有內容」的卡片預覽（v5.11.0 #11：第一張該欄空不再誤顯欄序號）
     function fieldPreviewLabel(i) {
-        const f = (currentFullDeck[0]?.fields?.[i] || '').replace(/<br>/g, ' ').trim();
+        const c = currentFullDeck.find(c => (c.fields?.[i] || '').trim());
+        const f = (c?.fields?.[i] || '').replace(/<br>/g, ' ').trim();
         return f ? (f.length > 6 ? f.slice(0, 6) + '…' : f) : String(i + 1);
     }
 
@@ -1352,14 +1402,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // v5.9.2：淨化 filterTags——有效標籤集合變動（關閉欄位標籤、編輯器刪標籤）後移除已不存在的篩選條件，
     // 避免看不見的殘留篩選讓學習佇列默默變空；全數失效即回到未篩選
+    // v5.11.0 #4：篩選條件變更後同步清理 upcomingQueue（原本只重算 currentLearningDeck，佇列殘留篩掉的卡）
+    function purgeQueueByFilter() {
+        upcomingQueue = upcomingQueue.filter(qid => {
+            const c = currentFullDeck.find(x => x.card_id === qid);
+            const st = currentCardStatus.get(qid);
+            return c && st && !st.suspended && matchesDeckFilter(c);
+        });
+        fillUpcomingQueue();
+    }
+
     function sanitizeFilterTags() {
         if (!currentDeckSettings.filterTags || currentDeckSettings.filterTags.length === 0) return;
         const avail = new Set(currentFullDeck.flatMap(c => effectiveTags(c, currentDeckSettings.tagFields)));
+        // v5.11.0 #13：'untagged' 為合法篩選值（有未標籤卡時），不可被淨化
+        if (currentFullDeck.some(c => effectiveTags(c, currentDeckSettings.tagFields).length === 0)) avail.add('untagged');
         const next = currentDeckSettings.filterTags.filter(t => avail.has(t));
         if (next.length !== currentDeckSettings.filterTags.length) {
             currentDeckSettings.filterTags = next;
             persistDeckSettings();
-            updateLearningDeck(); updateUI();
+            updateLearningDeck(); purgeQueueByFilter(); updateUI();
         }
     }
 
@@ -1394,6 +1456,12 @@ document.addEventListener('DOMContentLoaded', () => {
             s.frontSubField = wasSub ? null : i;
             if (!wasSub) { s.frontFields = arr('frontFields').filter(x => x !== i); s.backFields = arr('backFields').filter(x => x !== i); dropHide(); }
         } else if (role === 'tag') {
+            // v5.11.0 #14：標籤角色不適用於正面/背面欄——逐字 tags 會讓篩選清單爆炸
+            const { ff, bf } = resolveFieldRoles(currentDeckSettings, currentFullDeck);
+            if (ff.includes(i) || bf.includes(i)) {
+                appAlert(t('dlg.tag_display'), t('menu.field_mgmt'));
+                return;
+            }
             const tf2 = arr('tagFields');
             s.tagFields = tf2.includes(i) ? tf2.filter(x => x !== i) : [...tf2, i];
         } else if (role === 'hide') {
@@ -1414,10 +1482,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // v5.8.0：複習方向——正面欄與背面欄對調（單鍵快速反向）；v5.8.1 按鈕改為誠實的「對調」動作鈕；v5.9.0 交換正/背兩組
+    // v5.11.0 #6：對調時小字同步換邊（subSide）——詞性小字跟著單字走，不再黏在對調後的定義下面
     function cycleReviewDirection() {
         const { ff, bf } = resolveFieldRoles(currentDeckSettings, currentFullDeck);
         currentDeckSettings.frontFields = bf;
         currentDeckSettings.backFields = ff;
+        if (currentDeckSettings.frontSubField !== null) {
+            currentDeckSettings.subSide = currentDeckSettings.subSide === 'back' ? 'front' : 'back';
+        }
         persistDeckSettings(); applyCurrentDeckSettings(); displayCardStack();
     }
 
@@ -1470,7 +1542,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const { ff, bf, sf, tf, hf } = resolveFieldRoles(s, cards);
         const maxLen = Math.max(...cards.map(c => c.fields?.length || 0));
         const extrasIdx = Array.from({ length: maxLen }, (_, j) => j).filter(j => !ff.includes(j) && !bf.includes(j) && j !== sf && !tf.includes(j) && !hf.includes(j));
-        const tsv = cards.filter(c => c.fields && c.fields[ff[0]])
+        // v5.11.0 #15：以「拼接後的正面」判空（原本只查 ff[0]，多欄正面組會誤丟卡）；丟棄數事後回報
+        const rows = cards.filter(c => joinFields(ff, c))
             .map(c => {
                 const clean = v => (v || '').replace(/\t/g, ' ').replace(/\n/g, '<br>');
                 const front = clean(joinFields(ff, c));
@@ -1478,12 +1551,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const back = clean((joinFields(bf, c) + (extras ? '<br>' + extras : '')));
                 const tags = effectiveTags(c, s.tagFields).join(' ');
                 return [front, back, tags].join('\t');
-            }).join('\n');
+            });
+        const skipped = cards.length - rows.length;
+        const tsv = rows.join('\n');
         const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url;
         a.download = `flipdeck_${(deckList.find(x => x.id === id)?.title || id).replace(/[^\w\u4e00-\u9fff]/g, '_')}.txt`;
         a.click(); URL.revokeObjectURL(url);
+        if (skipped > 0) appAlert(t('dlg.anki_skipped', { n: skipped }), t('do.anki')); // v5.11.0 #15
     }
 
     // v5.5.2：循環切換朗讀語言（自動 → zh-TW → en-US → ja-JP → ko-KR），並用當前卡示範發音
@@ -1513,7 +1589,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const icon = document.getElementById('display-mode-icon');
         if (icon) icon.textContent = dual ? 'visibility' : 'flip';
         displayModeBtn.setAttribute('aria-label', dual ? t('menu.mode_dual') : t('menu.mode_combo'));
-        displayModeBtn.title = dual ? t('menu.mode_dual') : t('menu.mode_combo');
+        // v5.11.0 #18：雙面模式的 q=4 計分規則揭露於 tooltip
+        displayModeBtn.title = dual ? t('menu.mode_dual_hint') : t('menu.mode_combo');
     }
 
     function changeDeckFontSize(step) {
@@ -1545,10 +1622,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const tf = arrRoles(Array.isArray(s.tagFields) ? s.tagFields : d.tagFields);
         const hf = arrRoles(Array.isArray(s.hiddenFields) ? s.hiddenFields : d.hiddenFields);
         const sf = Number.isInteger(s.frontSubField) ? s.frontSubField : null;
-        // v5.9.0：任一角色非預設才帶 s 鍵，且完整帶入（避免部分遺失造成版面不一致）
-        const isDefault = JSON.stringify([ff, bf, sf, tf, hf]) === JSON.stringify([d.frontFields, d.backFields, d.frontSubField, d.tagFields, d.hiddenFields]);
+        // v5.9.0：任一角色非預設才帶 s 鍵，且完整帶入（避免部分遺失造成版面不一致）；v5.11.0 #6：小字換邊設定一併帶入
+        const isDefault = JSON.stringify([ff, bf, sf, tf, hf]) === JSON.stringify([d.frontFields, d.backFields, d.frontSubField, d.tagFields, d.hiddenFields])
+            && (s.subSide ?? 'front') === 'front';
         const compact = { i: deck.id, t: deck.title, c: deck.cards.map(c => [c.card_id, c.fields, c.tags || [], c.notes || '']) };
-        if (!isDefault) compact.s = { frontFields: ff, backFields: bf, frontSubField: sf, tagFields: tf, hiddenFields: hf };
+        if (!isDefault) compact.s = { frontFields: ff, backFields: bf, frontSubField: sf, tagFields: tf, hiddenFields: hf, ...(s.subSide === 'back' ? { subSide: 'back' } : {}) };
         const buf = new TextEncoder().encode(JSON.stringify(compact));
         const stream = new Blob([buf]).stream().pipeThrough(new CompressionStream('deflate-raw'));
         const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -1576,7 +1654,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ...(intArr(s.backFields) ? { backFields: intArr(s.backFields) } : {}),
             ...(Number.isInteger(s.frontSubField) ? { frontSubField: s.frontSubField } : {}),
             ...(intArr(s.tagFields) ? { tagFields: intArr(s.tagFields) } : {}),
-            ...(intArr(s.hiddenFields) ? { hiddenFields: intArr(s.hiddenFields) } : {})
+            ...(intArr(s.hiddenFields) ? { hiddenFields: intArr(s.hiddenFields) } : {}),
+            ...(s.subSide === 'back' ? { subSide: 'back' } : {})
         } : null;
         return { id: compact.i, title: compact.t, cards: compact.c.map(([card_id, fields, tags, notes]) => ({ card_id, fields, tags, notes })), settings };
     }
@@ -1777,7 +1856,8 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         // TXT / CSV 路徑
         const cards = lines.map((l, i) => ({
             card_id: `p_${ts}_${i}`,
-            fields: l.split(';').map(x => x.trim().replace(/\/\//g, '<br>')),
+            // v5.11.0 #16(c)：只把非 URL 的「//」轉換行（https:// 的雙斜線不再被誤傷）
+        fields: l.split(';').map(x => x.trim().replace(/([^:])\/\//g, '$1<br>')),
             tags: []
         })).filter(c => c.fields[0]);
         return cards.length ? { cards } : { error: 'shape' };
@@ -1935,6 +2015,9 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
     function renderAllCardsTable() {
         const q = cardSearchInput.value.toLowerCase().trim();
         const detail = allCardsDetail;
+        // v5.11.0 #17：重渲染時同步「詳細 ✓」狀態文案（applyI18n 會把它覆寫回 ac.detail）
+        const detailSpan = document.querySelector('#ac-detail-toggle-btn [data-i18n]');
+        if (detailSpan) detailSpan.textContent = detail ? t('ac.detail_on') : t('ac.detail');
 
         // 表頭
         let html = '<thead><tr class="text-stone-400 text-[10px] uppercase tracking-widest">';
@@ -1942,7 +2025,7 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         html += `<th class="p-4">${t('ac.col_front')}</th>`;
         html += `<th class="p-4">${t('ac.col_back')}</th>`;
         if (detail) {
-            const extras = Math.max((currentFullDeck[0]?.fields.length || 2) - 2, 0);
+            const extras = Math.max(deckMaxFieldLen(currentFullDeck) - 2, 0); // v5.11.0 #12：以全牌組最大欄數計（異質牌組表格不錯位）
             for (let i = 0; i < extras; i++) html += `<th class="p-4">${t('ac.col_field')} ${i + 3}</th>`;
             html += `<th class="p-4">${t('ac.col_mastery')}</th>`;
             html += `<th class="p-4">${t('ac.col_tags')}</th>`;
@@ -2083,14 +2166,15 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         const isNew = !id;
         const data = isNew ? (prefill && prefill.length ? prefill : [{ card_id: `c_${Date.now()}_0`, fields: ["", "", ""], tags: [] }]) : getDeckData(id);
         if (!data) return;
-        // v5.9.2：圖形化編輯器僅支援 3 欄（第 4 欄起會以「; 」併入補充欄、對應欄位角色失準）——既有多欄牌組先確認
-        if (!isNew && data.some(c => (c.fields?.length || 0) > 3)) {
+        // v5.9.2：圖形化編輯器僅支援 3 欄（第 4 欄起會以「; 」併入補充欄、對應欄位角色失準）——多欄牌組先確認
+        // v5.11.0 #16(d)：貼上預填（isNew 但帶 prefill）的多欄資料也一併警告；取消時新牌組路徑回到快速開始
+        if (data.some(c => (c.fields?.length || 0) > 3)) {
             const okCols = await appConfirm({
                 title: t('dlg.ed_cols_t'),
                 message: t('dlg.ed_cols'),
                 okText: t('common.ok')
             });
-            if (!okCols) return;
+            if (!okCols) { if (!isNew) return; openQuickStartModal(); return; }
         }
         // v5.8.1：偵測詞性版面（50% 門檻，成功時順手正規化不一致卡列）→ 編輯器欄位標籤改為「正面／詞性／定義」
         const posLayout = Object.keys(detectPosLayout(data)).length > 0;
@@ -2172,6 +2256,8 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             editorConfirmClose = null;
             deckEditorModal.classList.add('hidden');
             renderHomeScreen();
+            // v5.11.0 #8：背後開著「顯示全部」時同步刷新表格（原本只有 JSON 編輯路徑會刷新）
+            if (!allCardsModal.classList.contains('hidden')) renderAllCardsTable();
         };
 
         // v4.3.0：有未儲存變更時，離開前先確認（含 Escape 路徑）
@@ -2335,11 +2421,14 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             const st = currentCardStatus.get(c.card_id);
             return st && !st.suspended && (st.reps ?? 0) === 0 && (st.due ?? 0) === 0;
         }).length;
-        const note = remainingNew > 0
-            ? t('learn.daily_used', { n: remainingNew })
-            : (futureDues.length
-                ? t('learn.next_due', { t: fmtDue(Math.min(...futureDues)), n: futureDues.length })
-                : t('learn.none_scheduled'));
+        // v5.11.0 #10：練習模式不排程——顯示練習完成文案而非 SM-2 排程資訊
+        const note = practiceMode
+            ? t('learn.practice_done', { n: currentLearningDeck.length })
+            : (remainingNew > 0
+                ? t('learn.daily_used', { n: remainingNew })
+                : (futureDues.length
+                    ? t('learn.next_due', { t: fmtDue(Math.min(...futureDues)), n: futureDues.length })
+                    : t('learn.none_scheduled')));
         cardStackContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
                 <div class="w-24 h-24 bg-teal-600 dark:bg-teal-400 text-white dark:text-stone-950 rounded-full flex items-center justify-center shadow-2xl">
@@ -2372,6 +2461,31 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
         const hours = Math.round(mins / 60);
         if (hours < 24) return t('fmt.hour', { n: hours });
         return t('fmt.day', { n: Math.round(hours / 24) });
+    }
+
+    // v5.11.0 #9：篩選把佇列清空——顯示篩選空狀態（含「清除篩選」）而非慶祝畫面
+    function displayFilterEmpty() {
+        cardStackContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
+                <div class="w-20 h-20 bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500 rounded-full flex items-center justify-center shadow-sm">
+                    <span class="material-symbols-outlined !text-4xl">filter_alt_off</span>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-black mb-2 text-stone-900 dark:text-white">${t('learn.filter_empty_t')}</h3>
+                    <p class="text-stone-500 dark:text-stone-400 font-bold text-sm">${t('learn.filter_empty')}</p>
+                </div>
+                <button id="clear-filter-btn" class="px-8 py-3.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 text-white dark:text-stone-950 font-black rounded-2xl shadow-xl">${t('learn.filter_clear')}</button>
+            </div>`;
+        document.getElementById('clear-filter-btn').onclick = () => {
+            currentDeckSettings.filterTags = [];
+            persistDeckSettings();
+            populateCardTagFilters();
+            updateLearningDeck();
+            hideUndoPill();
+            history = []; historyIndex = -1; upcomingQueue = [];
+            fillUpcomingQueue();
+            showNextCard('new_game');
+        };
     }
 
     // v4.3.0 P7：完成後直接再讀一輪 —— 只重置「目前篩選下」的卡片熟練度

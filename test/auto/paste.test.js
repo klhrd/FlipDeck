@@ -169,6 +169,10 @@ eval(extractFn('parsePastedContent'));
     assert.deepStrictEqual(resolveFieldRoles({ frontFields: [0], backFields: [2], frontSubField: 2 }, deck3), { ff: [0], bf: [2], sf: null, tf: [], hf: [], maxF: 2 }, 'sub conflicts with back → null');
     assert.deepStrictEqual(resolveFieldRoles({ frontFields: [0], backFields: [1], frontSubField: 7, tagFields: [1, 5], hiddenFields: [3] }, deck3), { ff: [0], bf: [1], sf: null, tf: [1], hf: [], maxF: 2 }, 'tag/hide clamped, sub out-of-range null');
     assert.deepStrictEqual(resolveFieldRoles({}, [{ fields: ['only'] }]), { ff: [0], bf: [], sf: null, tf: [], hf: [], maxF: 0 }, 'single-field deck');
+    // v5.11.0 #2：隱藏感知 fallback——隱藏欄不會被復活為正面
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [0], backFields: [1], hiddenFields: [0] }, deck3), { ff: [2], bf: [1], sf: null, tf: [], hf: [0], maxF: 2 }, 'hidden front falls to next avail (explicit back kept)');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [], backFields: [1], hiddenFields: [0, 2] }, deck3), { ff: [1], bf: [1], sf: null, tf: [], hf: [0, 2], maxF: 2 }, 'only non-hidden field serves both faces (overlap beats blank)');
+    assert.deepStrictEqual(resolveFieldRoles({ frontFields: [], backFields: [], hiddenFields: [0, 1, 2] }, deck3), { ff: [0], bf: [1], sf: null, tf: [], hf: [0, 1, 2], maxF: 2 }, 'all hidden → last-resort default (better than blank card)');
     console.log('T9 resolveFieldRoles: OK');
 }
 
