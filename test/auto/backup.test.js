@@ -61,3 +61,26 @@ const extractFn = (name) => libExtract(src, name);
     console.log('T4 missing-meta defaults: OK');
     console.log('\nALL v4.4.0 BACKUP-RESTORE TESTS PASSED');
 }
+
+// ---- T5 (v5.12.0): 本地快照純函式——自動快照 24h 閘門 + 滾動保留 ----
+{
+    const DAY = 86400000;
+    const SNAPSHOT_INTERVAL = 86400000, SNAPSHOT_KEEP = 10; // v5.12.0：生產源碼為模組層常數，測試環境補齊
+    eval(extractFn('shouldAutoSnapshot'));
+    eval(extractFn('pruneSnapshots'));
+    // 無快照 → 觸發
+    assert.strictEqual(shouldAutoSnapshot([], Date.now()), true, 'no snapshots → snapshot');
+    // 24 小時內有自動快照 → 不觸發
+    const now = 1700000000000;
+    assert.strictEqual(shouldAutoSnapshot([{ ts: now - DAY / 2, auto: true }], now), false, 'recent auto snapshot → skip');
+    // 超過 24 小時 → 觸發
+    assert.strictEqual(shouldAutoSnapshot([{ ts: now - DAY - 1, auto: true }], now), true, 'stale auto snapshot → snapshot');
+    // 只有手動快照 → 仍觸發（閘門只看 auto）
+    assert.strictEqual(shouldAutoSnapshot([{ ts: now - 100, auto: false }], now), true, 'manual-only ignored by gate');
+    // 滾動保留：12 份留最近 10
+    const entries = Array.from({ length: 12 }, (_, i) => ({ key: i + 1, ts: i + 1, auto: false }));
+    const keep = pruneSnapshots(entries);
+    assert.strictEqual(keep.size, 10, 'keep 10');
+    assert.ok(!keep.has(1) && !keep.has(2) && keep.has(12) && keep.has(3), 'oldest pruned');
+    console.log('T5 snapshot gate + rolling prune: OK');
+}

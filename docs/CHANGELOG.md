@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.12.0] - 2026-11-03
+### Added（本地快照——IndexedDB 防誤刪）
+- **自動快照**：App 啟動時檢查——無快照或最近一次自動快照超過 24 小時即建立；滾動保留最近 10 份（自動/手動合計）。失敗靜默（無 IndexedDB 環境如無痕模式）。
+- **設定 Modal「本地快照」區**：立即快照、清單（日期時間、自動/手動、卡片數）、逐一還原（重用備份還原流程——同 id 覆蓋、進度保留）、逐一刪除。
+- **格式復用**：快照即「全域備份」物件（`buildBackupObject` 抽出共用），還原走同一條 `importBackupParsed`；還原不刪除快照本身。
+- **實作**：無依賴 IndexedDB 迷你 key-value 封裝（`idbDb/idbPut/idbGetAll/idbDelete`）；純函式 `shouldAutoSnapshot`（24h 閘門）、`pruneSnapshots`（滾動保留）入測試（`backup.test.js` T5）。
+
+### Changed
+- **版本號升級**：v5.11.0 -> v5.12.0；SW `CACHE_NAME` 同步 bump。
+
 ## [5.11.0] - 2026-11-03
 ### Fixed（UX 大調查——18 項反直覺行為，詳見 docs/UX_AUDIT.md）
 - **#1（高）最後一張判定遺失**：讀完畫面提前 return 跳過 `saveDeckState`——現於進入讀完/篩選空畫面前先落盤，重載不再遺失最後一題的進度。

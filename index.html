@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.11.0</title>
+    <title>FlipDeck v5.12.0</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -388,6 +388,11 @@
                     <button id="settings-theme-btn" data-i18n-aria="aria.theme" aria-label="切換深淺色模式" class="p-3 text-stone-400"><span class="material-symbols-outlined">dark_mode</span></button>
                     <button id="settings-lang-btn" data-i18n-aria="aria.lang" aria-label="切換語言 (English)" class="p-3 text-stone-400"><span class="material-symbols-outlined">translate</span></button>
                 </div>
+
+                <h3 class="text-xs uppercase tracking-widest font-black text-stone-500 dark:text-stone-400 mb-2" data-i18n="settings.snapshots">本地快照</h3>
+                <p class="text-[10px] text-stone-400 mb-3 leading-relaxed" data-i18n="settings.snapshots_hint">每日自動快照一次，保留最近 10 份（IndexedDB）。用於瀏覽器資料被清除或誤刪牌組時還原；還原不會刪除快照。</p>
+                <button id="snapshot-now-btn" class="w-full py-3 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-bold rounded-2xl flex items-center justify-center" data-i18n-aria="aria.snapshot_now" aria-label="立即建立快照"><span class="material-symbols-outlined mr-2">history</span><span data-i18n="settings.snapshot_now">立即快照</span></button>
+                <div id="snapshot-list" class="mt-3 flex flex-col gap-2"></div>
 
                 <div id="deck-settings-items" class="hidden">
                     <h3 class="text-xs uppercase tracking-widest font-black text-stone-500 dark:text-stone-400 mb-4" data-i18n="settings.deck">牌組設定</h3>

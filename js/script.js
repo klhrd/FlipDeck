@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.11.0 (UX Audit Fixes, Free Practice Mode, Field Manager) =====
+// ===== FlipDeck v5.12.0 (Local Snapshots, UX Audit Fixes, Free Practice) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -187,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHomeScreen();
         bindEventListeners();
         handleSharedDeckUrl(); // v5.4.0：分享連結匯入（非同步，不阻塞啟動）
+        autoSnapshot(); // v5.12.0：每日自動快照（非同步，失敗靜默）
     }
 
     function saveUXFlags() { localStorage.setItem(STORAGE_KEYS.UX_FLAGS, JSON.stringify(uxFlags)); }
@@ -822,6 +823,16 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsLangBtn.onclick = (e) => { e.stopPropagation(); toggleLang(); };
         ttsLangRow.classList.toggle('hidden', !canSpeak);
 
+        // --- v5.12.0 本地快照 ---
+        const snapshotNowBtn = document.getElementById('snapshot-now-btn');
+        snapshotNowBtn.onclick = async () => {
+            try {
+                await createSnapshot(false);
+                await renderSnapshotList();
+            } catch (e) { appAlert(t('settings.snapshot_unavailable'), t('settings.snapshots')); }
+        };
+        const snapshotList = document.getElementById('snapshot-list');
+
         // --- 融合 Modal 按鈕 ---
         const modalJsonBtn = document.getElementById('modal-json-btn');
         if (modalJsonBtn) modalJsonBtn.onclick = () => openEditDeckModal();
@@ -1039,6 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
         deckSettingsItems.classList.toggle('hidden', !inDeck);
         deckSettingsHint.classList.toggle('hidden', !!inDeck);
         if (inDeck) applyCurrentDeckSettings();
+        renderSnapshotList(); // v5.12.0：本地快照清單
         settingsModal.classList.remove('hidden');
     }
 
@@ -2390,15 +2402,127 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             .replace(/>/g, '&' + 'gt;');
     }
 
-    function backupAllData() {
-        const data = {
+    // v5.12.0：備份物件建構（檔案下載與本地快照共用）
+    function buildBackupObject() {
+        return {
             deckList, allTags,
             decks: deckList.map(d => ({ id: d.id, data: getDeckData(d.id), state: Object.fromEntries(getDeckState(d.id)) }))
         };
+    }
+
+    function backupAllData() {
+        const data = buildBackupObject();
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `flipdeck_backup_${Date.now()}.json`;
         a.click(); URL.revokeObjectURL(url);
+    }
+
+    // =================================================================
+    // ===== v5.12.0 本地快照（IndexedDB，防誤刪／清瀏覽器資料） =====
+    // =================================================================
+
+    // 迷你 key-value 封裝（無依賴）；回傳 reject 於不支援環境（無痕模式等）
+    function idbDb() {
+        return new Promise((resolve, reject) => {
+            if (!('indexedDB' in window)) { reject(new Error('no idb')); return; }
+            const req = indexedDB.open('flipdeck-snapshots', 1);
+            req.onupgradeneeded = () => req.result.createObjectStore('snapshots');
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+    function idbPut(key, val) {
+        return idbDb().then(db => new Promise((res, rej) => {
+            const tx = db.transaction('snapshots', 'readwrite');
+            tx.objectStore('snapshots').put(val, key);
+            tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+        }));
+    }
+    function idbGetAll() {
+        return idbDb().then(db => new Promise((res, rej) => {
+            const req = db.transaction('snapshots', 'readonly').objectStore('snapshots').openCursor();
+            const out = [];
+            req.onsuccess = () => { const c = req.result; if (c) { out.push({ key: c.key, val: c.value }); c.continue(); } else res(out); };
+            req.onerror = () => rej(req.error);
+        }));
+    }
+    function idbDelete(key) {
+        return idbDb().then(db => new Promise((res, rej) => {
+            const tx = db.transaction('snapshots', 'readwrite');
+            tx.objectStore('snapshots').delete(key);
+            tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+        }));
+    }
+
+    const SNAPSHOT_KEEP = 10, SNAPSHOT_INTERVAL = 86400000; // 保留 10 份、自動快照 24h 閘門
+    // 純函式（供測試）：無自動快照或最近一次超過 24 小時才觸發
+    function shouldAutoSnapshot(entries, now) {
+        const lastAuto = entries.filter(e => e.auto).map(e => e.ts).sort((a, b) => b - a)[0] ?? 0;
+        return now - lastAuto >= SNAPSHOT_INTERVAL;
+    }
+    // 純函式（供測試）：滾動保留最近 keep 份，回傳應保留的 key 集合
+    function pruneSnapshots(entries, keep = SNAPSHOT_KEEP) {
+        return new Set([...entries].sort((a, b) => b.ts - a.ts).slice(0, keep).map(e => e.key));
+    }
+
+    async function createSnapshot(auto) {
+        const ts = Date.now();
+        const data = buildBackupObject();
+        await idbPut(ts, {
+            ts, auto,
+            cards: data.deckList.reduce((a, d) => a + (d.totalCards || 0), 0),
+            data
+        });
+        const entries = await idbGetAll();
+        const keep = pruneSnapshots(entries);
+        await Promise.all(entries.filter(e => !keep.has(e.key)).map(e => idbDelete(e.key)));
+    }
+
+    // v5.12.0：設定 Modal 快照清單（還原重用備份還原流程：同 id 覆蓋、進度保留）
+    async function renderSnapshotList() {
+        const list = document.getElementById('snapshot-list');
+        if (!list) return;
+        let entries = [];
+        try { entries = await idbGetAll(); } catch (e) {
+            list.innerHTML = `<p class="text-xs text-stone-400 italic pl-2">${t('settings.snapshot_unavailable')}</p>`;
+            return;
+        }
+        if (entries.length === 0) { list.innerHTML = `<p class="text-xs text-stone-400 italic pl-2">${t('settings.snapshot_none')}</p>`; return; }
+        entries.sort((a, b) => b.ts - a.ts);
+        list.innerHTML = '';
+        entries.forEach(e => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between gap-2 bg-stone-50 dark:bg-stone-800 rounded-xl px-3 py-2';
+            const dt = new Date(e.val.ts);
+            const meta = `${e.val.auto ? t('settings.snapshot_auto') : t('settings.snapshot_manual')} • ${t('home.cards', { n: e.val.cards })}`;
+            row.innerHTML = `
+                <div class="min-w-0">
+                    <div class="text-xs font-bold text-stone-900 dark:text-white truncate">${dt.toLocaleDateString()} ${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}</div>
+                    <div class="text-[10px] text-stone-400">${meta}</div>
+                </div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    <button class="snap-restore p-1.5 text-stone-400 hover:text-teal-700 dark:hover:text-teal-300 rounded-full transition-colors" aria-label="${t('aria.snapshot_restore')}" title="${t('aria.snapshot_restore')}"><span class="material-symbols-outlined !text-base">restore</span></button>
+                    <button class="snap-delete p-1.5 text-stone-300 hover:text-red-500 rounded-full transition-colors" aria-label="${t('aria.snapshot_delete')}" title="${t('aria.snapshot_delete')}"><span class="material-symbols-outlined !text-base">delete</span></button>
+                </div>`;
+            row.querySelector('.snap-restore').onclick = async () => {
+                await importBackupParsed(e.val.data);
+                renderSnapshotList();
+            };
+            row.querySelector('.snap-delete').onclick = async () => {
+                try { await idbDelete(e.key); } catch (err) {}
+                renderSnapshotList();
+            };
+            list.appendChild(row);
+        });
+    }
+
+    async function autoSnapshot() {
+        try {
+            const entries = await idbGetAll();
+            if (!shouldAutoSnapshot(entries, Date.now())) return;
+            await createSnapshot(true);
+        } catch (e) { /* 無 IDB（無痕模式等）——靜默略過 */ }
     }
 
     function downloadData(fmt) {
