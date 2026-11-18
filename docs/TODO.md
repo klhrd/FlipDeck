@@ -116,6 +116,13 @@
 - [x] 無 IndexedDB 環境（如無痕模式）靜默停用並顯示提示
 - [x] 純函式測試：`shouldAutoSnapshot`（24h 閘門）、`pruneSnapshots`（滾動保留）
 
+## 牌組市集（2026-11-03 立案，v5.13.0）
+- [x] 立案：GitHub 靜態 JSON 目錄當無後端倉庫——PR 收錄、app 內瀏覽安裝（規格見 docs/MARKETPLACE.md）
+- [x] `marketplace/index.json` 目錄 + `marketplace/decks/*.json` 牌組檔（decodeDeckFromUrl 同形狀）；jsDelivr CDN 載入（約 12h 快取）
+- [x] 快速開始「牌組市集」入口 + 市集 Modal（列表／刷新／loading／離線錯誤皆 in-modal）
+- [x] 安裝流程：驗證 → 同 id 覆蓋確認 → processNewDeck（詞性版面自動偵測）→ 關閉 Modal 進學習
+- [x] 純函式測試：`validateCatalogEntry`／`validateMarketDeck`＋產出 count 一致性斷言；目錄種子＝四個內建範例（產生器 `test/auto/build-marketplace.js`）
+
 ## 未來主題候選
 - [ ] 雲端同步（需先選定方案：Google Drive / Supabase / 自架後端；「連結分享」可先覆蓋無後端的分享需求）
 
@@ -144,7 +151,7 @@
 
 ### 分享與社群
 - [x] 分享連結 QR Code 產生（現有 `#d=` 連結直接轉 QR，掃碼即匯）(v5.5.0)
-- [ ] 牌組市集（GitHub 靜態 JSON 目錄當無後端倉庫：PR 收錄、app 內瀏覽安裝）
+- [x] 牌組市集（GitHub 靜態 JSON 目錄當無後端倉庫：PR 收錄、app 內瀏覽安裝）(v5.13.0)
 
 ### 平台與外觀
 - [ ] Capacitor 原生包裝（iOS/Android 商店上架版）

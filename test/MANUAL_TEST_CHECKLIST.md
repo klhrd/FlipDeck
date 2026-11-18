@@ -391,6 +391,19 @@
 
 ---
 
+## 32. 牌組市集（v5.13.0）
+
+- [ ] 快速開始 Modal 出現全寬「牌組市集」按鈕（storefront 圖示），點擊開啟市集 Modal
+- [ ] 市集列表顯示四個範例牌組：標題、說明、張數 · 作者 · 標籤、「安裝」鈕
+- [ ] 點「安裝」→ loading 覆蓋層 → 安裝完成直接進入學習畫面、Modal 已關閉（hs_6000 詞性/等級標籤篩選可用）
+- [ ] **覆蓋確認**：已安裝過同 id 牌組（如先載入範例 ex_hs_6000）再安裝 → 紅色 danger 對話框「已安裝」，取消可反悔、確定後覆蓋（進度重置）
+- [ ] 刷新鈕 → 重新抓取目錄（Network 面板可見對 `cdn.jsdelivr.net/.../marketplace/index.json` 的請求）
+- [ ] **離線**：DevTools → Offline 後開市集（或按刷新）→ Modal 內顯示「無法載入市集（離線或網路錯誤）」，不跳 appAlert、應用不崩
+- [ ] Escape 關閉市集 Modal；Tab 焦點循環鎖在 Modal 內
+- [ ] 語言切換：市集標題、按鈕文案跟隨 zh/en
+
+---
+
 ## 已知限制（非 bug）
 
 - iOS Safari 不支援 `navigator.vibrate`（無震動屬正常）

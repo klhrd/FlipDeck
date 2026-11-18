@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.12.0 (Local Snapshots, UX Audit Fixes, Free Practice) =====
+// ===== FlipDeck v5.13.0 (Deck Marketplace, Local Snapshots, UX Audit Fixes) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -140,6 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalEditorBtn = document.getElementById('modal-editor-btn');
     const emptyStateCta = document.getElementById('empty-state-cta');
 
+    const marketplaceModal = document.getElementById('marketplace-modal');
+    const closeMarketplaceModalBtn = document.getElementById('close-marketplace-modal-btn');
+    const marketRefreshBtn = document.getElementById('market-refresh-btn');
+    const marketListEl = document.getElementById('market-list');
+    const marketStatusEl = document.getElementById('market-status');
+    const openMarketplaceBtn = document.getElementById('open-marketplace-btn');
+
     // --- 狀態定義 ---
     const STORAGE_KEYS = {
         PREFERENCES: 'flashcardPWA_prefs_v2',
@@ -156,6 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
         { nameKey: "ex.elements", file: "elements.json" },
         { nameKey: "ex.capitals", file: "capitals.json" }
     ];
+
+    // v5.13.0：牌組市集目錄基底——GitHub 靜態 JSON 經 jsDelivr CDN（CORS 開啟、快取約 12 小時）
+    const MARKETPLACE_BASE = 'https://cdn.jsdelivr.net/gh/klhrd/FlipDeck@main/marketplace/';
 
     let deckList = [], allTags = [], currentFilter = { sortBy: 'lastOpened' };
     let currentDeckId = null, currentFullDeck = [], currentLearningDeck = [], upcomingQueue = [];
@@ -891,6 +901,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 匯入格式說明 Modal（v5.5.4） ---
         if (openFormatGuideBtn) openFormatGuideBtn.onclick = () => { formatGuideModal.classList.remove('hidden'); };
         closeFormatGuideBtn.onclick = () => formatGuideModal.classList.add('hidden');
+
+        // --- 牌組市集 Modal（v5.13.0）---
+        if (openMarketplaceBtn) openMarketplaceBtn.onclick = () => openMarketplace();
+        closeMarketplaceModalBtn.onclick = () => marketplaceModal.classList.add('hidden');
+        marketRefreshBtn.onclick = () => loadCatalog();
+
         fgCopyPromptBtn.onclick = () => copyWithFeedback(fgCopyPromptBtn, buildAgentPrompt());
         fgCopySpecBtn.onclick = () => copyWithFeedback(fgCopySpecBtn, buildFormatSpec());
 
@@ -933,14 +949,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // v4.5.0 P6：Modal 開啟時 Tab 焦點鎖定在 Modal 內（focus trap）
             if (e.key === 'Tab') {
-                const top = [appConfirmModal, deckEditorModal, editDeckModal, shareModal, formatGuideModal, settingsModal, allCardsModal, deckOptionsModal, statsModal, howToUseModal, quickStartModal]
+                const top = [appConfirmModal, deckEditorModal, editDeckModal, shareModal, formatGuideModal, marketplaceModal, settingsModal, allCardsModal, deckOptionsModal, statsModal, howToUseModal, quickStartModal]
                     .find(m => !m.classList.contains('hidden'));
                 if (top) trapTab(top, e);
                 return;
             }
 
             // 任一 Modal 或選單開啟中（或焦點在輸入框）時，不攔截按鍵
-            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal, statsModal, shareModal, formatGuideModal, settingsModal]
+            const modalOpen = [quickStartModal, allCardsModal, editDeckModal, deckOptionsModal, howToUseModal, deckEditorModal, appConfirmModal, statsModal, shareModal, formatGuideModal, marketplaceModal, settingsModal]
                 .some(m => !m.classList.contains('hidden'))
                 || !menuOverlay.classList.contains('hidden')
                 || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName || '');
@@ -999,7 +1015,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // v4.2.0 P6：Escape 依 z-index 由高到低關閉最上層視窗
     function handleEscape() {
         if (confirmResolveFn) { confirmResolveFn(false); return; }
-        const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, statsModal, shareModal, formatGuideModal, settingsModal, editDeckModal, deckEditorModal];
+        const stack = [quickStartModal, howToUseModal, deckOptionsModal, allCardsModal, statsModal, shareModal, formatGuideModal, marketplaceModal, settingsModal, editDeckModal, deckEditorModal];
         for (let i = stack.length - 1; i >= 0; i--) {
             if (!stack[i].classList.contains('hidden')) {
                 // v4.3.0：編輯器有未儲存變更時，先經確認再關閉
@@ -1189,6 +1205,115 @@ document.addEventListener('DOMContentLoaded', () => {
         deckList.unshift(m); saveDeckList();
         const state = new Map(); data.forEach(c => state.set(c.card_id, { mastery: 1, lastTime: Date.now() }));
         saveDeckState(id, state); startGame(id);
+    }
+
+    // =================================================================
+    // ===== 牌組市集 (v5.13.0：GitHub 靜態 JSON 目錄 + jsDelivr CDN) =====
+    // =================================================================
+
+    // v5.13.0：目錄驗證——id/title/file 非空字串、count 非負整數、file 限 decks/ 相對路徑（防路徑跳脫）
+    function validateCatalogEntry(e) {
+        if (!e || typeof e !== 'object') return false;
+        if (typeof e.id !== 'string' || !e.id) return false;
+        if (typeof e.title !== 'string' || !e.title) return false;
+        if (typeof e.file !== 'string' || !e.file) return false;
+        if (!Number.isInteger(e.count) || e.count < 0) return false;
+        if (e.file.includes('..') || e.file.includes('\\') || e.file.includes(':')) return false;
+        return e.file.startsWith('decks/');
+    }
+
+    // v5.13.0：市集牌組驗證——同 decodeDeckFromUrl 的最小形狀（id、title、cards 內容完整）
+    function validateMarketDeck(d) {
+        if (!d || typeof d !== 'object') return false;
+        if (typeof d.id !== 'string' || !d.id) return false;
+        if (typeof d.title !== 'string') return false;
+        if (!Array.isArray(d.cards) || d.cards.length === 0) return false;
+        return d.cards.every(c => c && typeof c.card_id === 'string' && Array.isArray(c.fields));
+    }
+
+    // v5.13.0：抓取目錄並濾除驗證失敗的條目
+    async function fetchCatalog() {
+        const r = await fetch(MARKETPLACE_BASE + 'index.json');
+        const arr = await r.json();
+        if (!Array.isArray(arr)) throw new Error('bad catalog');
+        return arr.filter(validateCatalogEntry);
+    }
+
+    async function openMarketplace() {
+        hideAllMenus();
+        quickStartModal.classList.add('hidden');
+        marketplaceModal.classList.remove('hidden');
+        marketRefreshBtn.focus();
+        await loadCatalog();
+    }
+
+    // v5.13.0：載入/刷新市集——loading 與錯誤都以 in-modal 狀態列呈現（不用 appAlert 轟炸）
+    async function loadCatalog() {
+        marketListEl.innerHTML = '';
+        marketStatusEl.classList.remove('hidden');
+        marketStatusEl.textContent = t('load.default');
+        try {
+            const entries = await fetchCatalog();
+            if (entries.length === 0) { marketListEl.innerHTML = ''; marketStatusEl.textContent = t('market.empty'); return; }
+            marketStatusEl.classList.add('hidden');
+            marketListEl.innerHTML = '';
+            entries.forEach(e => marketListEl.appendChild(buildMarketCard(e)));
+        } catch (e) {
+            marketListEl.innerHTML = '';
+            marketStatusEl.textContent = t('market.load_fail');
+        }
+    }
+
+    function buildMarketCard(e) {
+        const card = document.createElement('div');
+        card.className = 'p-4 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-neutral-700 flex items-start gap-3';
+        const info = document.createElement('div');
+        info.className = 'flex-grow min-w-0';
+        const title = document.createElement('p');
+        title.className = 'text-sm font-black text-stone-900 dark:text-white';
+        title.textContent = e.title;
+        const desc = document.createElement('p');
+        desc.className = 'text-xs font-medium text-stone-400 mt-0.5 break-words';
+        desc.textContent = e.description || '';
+        const meta = document.createElement('p');
+        meta.className = 'text-[10px] font-bold text-stone-400 mt-1.5';
+        meta.textContent = [t('home.cards', { n: e.count }), e.author || '', (e.tags || []).join(' / ')].filter(Boolean).join(' · ');
+        info.append(title, desc, meta);
+        const btn = document.createElement('button');
+        btn.className = 'px-4 py-2 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-stone-950 dark:hover:bg-teal-400 text-xs font-black rounded-xl flex-shrink-0 hover:scale-105 active:scale-95 transition-all';
+        btn.textContent = t('market.install');
+        btn.onclick = () => installFromMarketplace(e);
+        card.append(info, btn);
+        return card;
+    }
+
+    // v5.13.0：安裝流程——抓檔 → 驗證 → 同 id 覆蓋確認（進度將重置，danger 紅色警示）→ processNewDeck（detectPosLayout 自動套用）
+    async function installFromMarketplace(entry) {
+        showLoading(t('load.parsing'));
+        let json = null;
+        try {
+            const r = await fetch(MARKETPLACE_BASE + entry.file);
+            json = await r.json();
+            await nextPaint();
+            if (!validateMarketDeck(json)) throw new Error('bad deck');
+        } catch (e) {
+            marketStatusEl.textContent = t('market.load_fail');
+            marketStatusEl.classList.remove('hidden');
+            hideLoading();
+            return;
+        }
+        hideLoading(); // 先收 loading（z 高於確認對話框，不收會擋住按鈕）
+        if (deckList.some(x => x.id === json.id)) {
+            const ok = await appConfirm({
+                title: t('market.installed'),
+                message: t('dlg.share_msg_overwrite', { t: json.title, n: json.cards.length }),
+                okText: t('market.install'),
+                danger: true
+            });
+            if (!ok) return;
+        }
+        marketplaceModal.classList.add('hidden');
+        processNewDeck(json.cards, json.id, json.title);
     }
 
     function renderHomeScreen() {

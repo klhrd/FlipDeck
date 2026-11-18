@@ -18,6 +18,10 @@ const I18N = {
         'add.upload': '上傳檔案', 'add.upload_desc': '.txt、.csv、.json 或備份檔',
         'add.paste': '貼上內容', 'add.paste_desc': 'JSON、Markdown 表格、TXT',
         'add.examples': '載入範例',
+        // 牌組市集（v5.13.0）
+        'market.title': '牌組市集', 'market.subtitle': '瀏覽並安裝社群牌組',
+        'market.refresh': '重新載入', 'market.load_fail': '無法載入市集（離線或網路錯誤）',
+        'market.empty': '市集尚無內容', 'market.install': '安裝', 'market.installed': '已安裝',
         'settings.title': '設定', 'settings.app': '應用程式', 'settings.deck': '牌組設定',
         'settings.deck_hint': '進入學習畫面時可用',
         'menu.backup': '全域備份 (.json)', 'menu.help': '操作教學',
@@ -152,7 +156,8 @@ const I18N = {
         'aria.decrease_new': '減少每日新卡上限', 'aria.increase_new': '增加每日新卡上限',
         'aria.bulk_tags': '批次標籤', 'aria.clear_selection': '清除選取',
         'aria.search_cards': '搜尋卡片', 'aria.visual_edit': '開啟圖形化編輯器', 'aria.start_learning': '開始學習',
-        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.field_mgmt': '管理欄位角色', 'aria.reset_progress': '重置此牌組學習進度'
+        'aria.deck_options': '單字集選項', 'aria.leech': '難卡（多次忘記）', 'aria.share_deck': '複製分享連結', 'aria.display_mode': '切換顯示模式', 'aria.tts_lang': '切換朗讀語言', 'aria.review_dir': '切換複習方向', 'aria.anki_export': '匯出 Anki TSV', 'aria.field_mgmt': '管理欄位角色', 'aria.reset_progress': '重置此牌組學習進度',
+        'aria.market_open': '開啟牌組市集', 'aria.market_refresh': '重新載入市集'
     },
     en: {
         'app.menu': 'Menu', 'app.settings': 'Settings',
@@ -168,6 +173,10 @@ const I18N = {
         'add.upload': 'Upload File', 'add.upload_desc': '.txt, .csv, .json or backup files',
         'add.paste': 'Paste Content', 'add.paste_desc': 'JSON, Markdown tables, TXT',
         'add.examples': 'Load Example',
+        // 牌組市集（v5.13.0）
+        'market.title': 'Deck Marketplace', 'market.subtitle': 'Browse & install community decks',
+        'market.refresh': 'Reload', 'market.load_fail': 'Could not load the marketplace (offline or network error)',
+        'market.empty': 'The marketplace is empty', 'market.install': 'Install', 'market.installed': 'Already Installed',
         'settings.title': 'Settings', 'settings.app': 'Application', 'settings.deck': 'Deck Settings',
         'settings.deck_hint': 'Available while in a deck',
         'menu.backup': 'Backup All (.json)', 'menu.help': 'How to Use',
@@ -287,7 +296,8 @@ const I18N = {
         'aria.decrease_new': 'Decrease daily new-card limit', 'aria.increase_new': 'Increase daily new-card limit',
         'aria.bulk_tags': 'Batch tags', 'aria.clear_selection': 'Clear selection',
         'aria.search_cards': 'Search cards', 'aria.visual_edit': 'Open visual editor', 'aria.start_learning': 'Start Learning',
-        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language', 'aria.review_dir': 'Toggle review direction', 'aria.anki_export': 'Export Anki TSV', 'aria.field_mgmt': 'Manage field roles', 'aria.reset_progress': 'Reset deck learning progress'
+        'aria.deck_options': 'Deck options', 'aria.leech': 'Leech (repeatedly forgotten)', 'aria.share_deck': 'Copy share link', 'aria.display_mode': 'Toggle card view', 'aria.tts_lang': 'Toggle speech language', 'aria.review_dir': 'Toggle review direction', 'aria.anki_export': 'Export Anki TSV', 'aria.field_mgmt': 'Manage field roles', 'aria.reset_progress': 'Reset deck learning progress',
+        'aria.market_open': 'Open deck marketplace', 'aria.market_refresh': 'Reload marketplace'
     }
 };
 

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "ex_hs_6000",
+    "title": "高中 6000 單字",
+    "description": "High School 6000 English words (grouped by level)",
+    "author": "FlipDeck",
+    "tags": [
+      "英文"
+    ],
+    "count": 6498,
+    "file": "decks/ex_hs_6000.json",
+    "updated": "2026-11-03"
+  },
+  {
+    "id": "ex_verbs",
+    "title": "動詞三態",
+    "description": "Irregular verb past / past-participle forms",
+    "author": "FlipDeck",
+    "tags": [
+      "英文"
+    ],
+    "count": 100,
+    "file": "decks/ex_verbs.json",
+    "updated": "2026-11-03"
+  },
+  {
+    "id": "ex_elements",
+    "title": "元素週期表",
+    "description": "Periodic table elements (Chinese)",
+    "author": "FlipDeck",
+    "tags": [
+      "自然"
+    ],
+    "count": 118,
+    "file": "decks/ex_elements.json",
+    "updated": "2026-11-03"
+  },
+  {
+    "id": "ex_capitals",
+    "title": "國家與首都",
+    "description": "Countries and their capitals",
+    "author": "FlipDeck",
+    "tags": [
+      "地理"
+    ],
+    "count": 205,
+    "file": "decks/ex_capitals.json",
+    "updated": "2026-11-03"
+  }
+]

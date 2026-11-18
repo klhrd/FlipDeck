@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipDeck v5.12.0</title>
+    <title>FlipDeck v5.13.0</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -179,6 +179,14 @@
                         <span>
                             <span class="block text-sm font-black text-stone-900 dark:text-white" data-i18n="add.paste">貼上內容</span>
                             <span class="block text-xs font-medium text-stone-400" data-i18n="add.paste_desc">JSON、Markdown 表格、TXT</span>
+                        </span>
+                    </button>
+                    <!-- v5.13.0：牌組市集入口 -->
+                    <button id="open-marketplace-btn" data-i18n-aria="aria.market_open" aria-label="開啟牌組市集" class="w-full flex items-center gap-4 p-4 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-neutral-700 hover:border-teal-600 transition-colors text-left">
+                        <span class="material-symbols-outlined !text-3xl text-stone-300">storefront</span>
+                        <span>
+                            <span class="block text-sm font-black text-stone-900 dark:text-white" data-i18n="market.title">牌組市集</span>
+                            <span class="block text-xs font-medium text-stone-400" data-i18n="market.subtitle">瀏覽並安裝社群牌組</span>
                         </span>
                     </button>
                 </div>
@@ -481,6 +489,21 @@ banana;香蕉;水果</pre>
                 <button id="fg-copy-prompt-btn" class="flex-1 py-3.5 bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-stone-950 font-black rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all" data-i18n="fg.copy_prompt">複製 AI Agent 提示詞</button>
                 <button id="fg-copy-spec-btn" class="flex-1 py-3.5 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white font-bold rounded-2xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors" data-i18n="fg.copy_spec">複製格式規則</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 牌組市集 Modal (v5.13.0：GitHub 靜態 JSON 目錄，jsDelivr CDN 載入) -->
+    <div id="marketplace-modal" class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-[4400] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="marketplace-title">
+        <div class="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl w-full max-w-md dvh-80 flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center">
+                <h2 id="marketplace-title" class="text-xl font-black" data-i18n="market.title">牌組市集</h2>
+                <div class="flex items-center">
+                    <button id="market-refresh-btn" data-i18n-aria="aria.market_refresh" aria-label="重新載入" data-i18n-title="market.refresh" title="重新載入" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">refresh</span></button>
+                    <button id="close-marketplace-modal-btn" data-i18n-aria="aria.close" aria-label="關閉" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+                </div>
+            </div>
+            <p id="market-status" class="hidden px-6 pt-4 text-xs font-bold text-stone-400"></p>
+            <div id="market-list" class="flex-grow overflow-y-auto p-6 pt-4 space-y-3 custom-scrollbar"></div>
         </div>
     </div>
 

@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.13.0] - 2026-11-03
+### Added（牌組市集——GitHub 靜態 JSON 目錄當無後端倉庫，詳見 docs/MARKETPLACE.md）
+- **快速開始新增「牌組市集」入口**：全寬按鈕（storefront 圖示），開啟市集 Modal 瀏覽並安裝社群牌組。
+- **市集 Modal**：目錄列表（標題、說明、標籤、張數、作者）＋刷新鈕＋捲動清單；loading 與離線錯誤皆以 in-modal 狀態列呈現（不用 appAlert 轟炸）。
+- **無後端架構**：`marketplace/index.json` 靜態目錄（PR 收錄）＋`marketplace/decks/*.json` 牌組檔，經 jsDelivr CDN（CORS 開啟、快取約 12 小時）載入；SW 不預快取，市集為 network-only。
+- **安裝流程**：抓檔 → `validateMarketDeck` 驗證 → 同 id 顯示覆蓋確認（重用 `dlg.share_msg_overwrite` 語意，danger 紅色）→ `processNewDeck`（detectPosLayout 自動套用）→ 關閉 Modal 直接進入學習。
+- **驗證純函式入測試**：`validateCatalogEntry`（路徑限 `decks/` 相對、防 `..` 跳脫）、`validateMarketDeck`（同 `decodeDeckFromUrl` 最小形狀）；`marketplace.test.js` 另驗證目錄產出 count 與實際卡片數一致。
+- **目錄種子**：四個內建範例（hs_6000／verbs／elements／capitals）轉為市集牌組，id 沿用 `ex_*`（重裝即乾淨覆蓋）；產生器收錄於 `test/auto/build-marketplace.js`（可重生）。
+
+### Changed
+- **版本號升級**：v5.12.0 -> v5.13.0；SW `CACHE_NAME` 同步 bump。
+
 ## [5.12.0] - 2026-11-03
 ### Added（本地快照——IndexedDB 防誤刪）
 - **自動快照**：App 啟動時檢查——無快照或最近一次自動快照超過 24 小時即建立；滾動保留最近 10 份（自動/手動合計）。失敗靜默（無 IndexedDB 環境如無痕模式）。
