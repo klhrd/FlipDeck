@@ -7,7 +7,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ===== FlipDeck v5.13.0 (Deck Marketplace, Local Snapshots, UX Audit Fixes) =====
+// ===== FlipDeck v5.15.0 (Image Cards, IndexedDB Data Layer, FSRS) =====
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- DOM 元素讀取 ---
@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ttsLangRow = document.getElementById('tts-lang-row');
     const reviewDirBtn = document.getElementById('review-dir-btn');
     const practiceBtn = document.getElementById('practice-btn');
+    const algorithmBtn = document.getElementById('algorithm-btn');
     const fieldMgmtRow = document.getElementById('field-mgmt-row');
     const fieldMgmtList = document.getElementById('field-mgmt-list');
     const fieldMgmtResetBtn = document.getElementById('field-mgmt-reset-btn');
@@ -174,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let uxFlags = {}, lastAction = null, undoTimer = null, confirmResolveFn = null;
     let editorConfirmClose = null;
 
-    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto', frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [], subSide: 'front' };
+    const DEFAULT_DECK_SETTINGS = { fontSize: 2.5, filterTags: [], newPerDay: 20, displayMode: 'combo', ttsLang: 'auto', frontFields: [0], backFields: [1], frontSubField: null, tagFields: [], hiddenFields: [], subSide: 'front', algorithm: 'sm2' };
     const MAX_HISTORY = 50;
     const RECENT_SKIP = 8; // v4.3.0 P5：排隊時排除最近 N 張已作答卡片，避免立即回鍋
     const DAY_MS = 86400000;
@@ -184,13 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== 核心儲存邏輯 =====
     // =================================================================
 
-    function initializeApp() {
+    async function initializeApp() {
         const savedDecks = localStorage.getItem(STORAGE_KEYS.DECK_LIST);
         deckList = savedDecks ? JSON.parse(savedDecks) : [];
         const savedTags = localStorage.getItem(STORAGE_KEYS.ALL_TAGS);
         allTags = savedTags ? JSON.parse(savedTags) : [];
         try { uxFlags = JSON.parse(localStorage.getItem(STORAGE_KEYS.UX_FLAGS)) || {}; } catch (e) { uxFlags = {}; }
 
+        await loadDataLayer(); // v5.15.0：IDB 載入＋localStorage 遷移（先於首屏渲染）
         applyThemeIcons();
         applyI18n();
         populateExampleSelector();
@@ -239,9 +241,85 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextPaint = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 20)));
 
     function saveDeckList() { localStorage.setItem(STORAGE_KEYS.DECK_LIST, JSON.stringify(deckList)); }
-    function getDeckData(id) { const s = localStorage.getItem(STORAGE_KEYS.DECK_DATA_PREFIX + id); return s ? JSON.parse(s) : null; }
-    function saveDeckData(id, data) { localStorage.setItem(STORAGE_KEYS.DECK_DATA_PREFIX + id, JSON.stringify(data)); }
-    
+    // =================================================================
+    // ===== v5.15.0 資料層：牌組資料存 IndexedDB（突破 localStorage 5MB），同步快取 =====
+    // =================================================================
+    // 讀取路徑不變（getDeckData 同步）；寫入＝記憶體快取＋防抖批次落 IDB。
+    // 無 IndexedDB 環境（jsdom/極舊瀏覽器）自動退回 localStorage 舊路徑。
+    let dataLayerMode = 'idb'; // 'idb' | 'local'
+    const deckDataCache = new Map();
+    const deckDataDirty = new Set();
+    let deckDataFlushTimer = null;
+
+    function idbDataOpen() {
+        return new Promise((resolve, reject) => {
+            if (!('indexedDB' in window)) { reject(new Error('no idb')); return; }
+            const req = indexedDB.open('flipdeck-data', 1);
+            req.onupgradeneeded = () => req.result.createObjectStore('decks');
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+    function idbDataPut(key, val) {
+        return idbDataOpen().then(db => new Promise((res, rej) => {
+            const tx = db.transaction('decks', 'readwrite');
+            tx.objectStore('decks').put(val, key);
+            tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+        }));
+    }
+    function idbDataDelete(key) {
+        return idbDataOpen().then(db => new Promise((res, rej) => {
+            const tx = db.transaction('decks', 'readwrite');
+            tx.objectStore('decks').delete(key);
+            tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+        }));
+    }
+
+    // 啟動時：IDB 全量載入快取；localStorage 尚存的舊資料搬入 IDB 後移除（一次性遷移）
+    async function loadDataLayer() {
+        try {
+            const db = await idbDataOpen();
+            await new Promise((res, rej) => {
+                const req = db.transaction('decks', 'readonly').objectStore('decks').openCursor();
+                req.onsuccess = () => { const c = req.result; if (c) { deckDataCache.set(c.key, c.value); c.continue(); } else res(); };
+                req.onerror = () => rej(req.error);
+            });
+            const migrateKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith(STORAGE_KEYS.DECK_DATA_PREFIX)) migrateKeys.push(k);
+            }
+            for (const k of migrateKeys) {
+                const id = k.slice(STORAGE_KEYS.DECK_DATA_PREFIX.length);
+                if (!deckDataCache.has(id)) {
+                    try { deckDataCache.set(id, JSON.parse(localStorage.getItem(k))); await idbDataPut(id, deckDataCache.get(id)); } catch (e) { /* 壞資料略過 */ }
+                }
+                localStorage.removeItem(k); // 已入 IDB，釋放 localStorage 空間
+            }
+            dataLayerMode = 'idb';
+        } catch (e) { dataLayerMode = 'local'; }
+    }
+
+    function flushDeckData() {
+        const ids = [...deckDataDirty]; deckDataDirty.clear();
+        (async () => {
+            try { for (const id of ids) await idbDataPut(id, deckDataCache.get(id)); }
+            catch (e) { ids.forEach(id => deckDataDirty.add(id)); } // 失敗重排下次沖刷
+        })();
+    }
+
+    function getDeckData(id) {
+        if (dataLayerMode === 'idb') return deckDataCache.get(id) ?? null;
+        const s = localStorage.getItem(STORAGE_KEYS.DECK_DATA_PREFIX + id); return s ? JSON.parse(s) : null;
+    }
+
+    function saveDeckData(id, data) {
+        deckDataCache.set(id, data);
+        if (dataLayerMode !== 'idb') { localStorage.setItem(STORAGE_KEYS.DECK_DATA_PREFIX + id, JSON.stringify(data)); return; }
+        deckDataDirty.add(id);
+        clearTimeout(deckDataFlushTimer);
+        deckDataFlushTimer = setTimeout(flushDeckData, 400); // v5.15.0：400ms 防抖批次落 IDB
+    }
     function getDeckState(id) {
         const s = localStorage.getItem(STORAGE_KEYS.DECK_STATE_PREFIX + id);
         if (!s) return new Map();
@@ -469,6 +547,46 @@ document.addEventListener('DOMContentLoaded', () => {
         return { ef, reps, interval, due: now + interval * DAY_MS };
     }
 
+    // =================================================================
+    // ===== v5.14.0：FSRS 排程演算法（自由間隔重複排程，預設參數版） =====
+    // =================================================================
+    // FSRS-5 預設參數（w0–w16）；記憶模型：D=難度(1-10)、S=穩定度(天)、R=可提取性
+    const FSRS_W = [0.40255, 1.18385, 3.173, 15.69105, 7.1949, 0.5345, 1.4604, 0.0046, 1.54575, 0.1192, 1.01925, 1.9395, 0.11, 0.29605, 2.2698, 0.2315, 2.9898];
+    const FSRS_DECAY = -0.5, FSRS_FACTOR = 19 / 81, FSRS_RETENTION = 0.9;
+    const fsrsClamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+    // 純函式，簽名與 sm2Update 對齊：q: 2=忘記(→Again) / 4=翻面正確(→Good) / 5=即答(→Easy)
+    // 忘記 → 立即重到期（due=now, interval=0，與 SM-2 語意一致）；成功 → interval ≈ S（R=0.9 時精確相等）
+    // 舊 SM-2 資料無 d/s 欄位時惰性推導：d = 5+(2.5-ef)×2.5、s = interval（原欄位保留不動）
+    function fsrsUpdate(state, q, now = Date.now()) {
+        const G = q === 2 ? 1 : (q === 4 ? 3 : 4);
+        const t = Math.max(0, (now - (state?.lastTime || now)) / DAY_MS);
+        let { d, s } = state ?? {};
+        if (!(state?.reps > 0)) {
+            // 首次判定：FSRS 初始 D/S
+            d = fsrsClamp(FSRS_W[4] - (G - 3) * FSRS_W[5], 1, 10);
+            s = FSRS_W[G - 1];
+        } else {
+            if (d === undefined || s === undefined) {
+                d = fsrsClamp(5 + (2.5 - (state.ef ?? 2.5)) * 2.5, 1, 10);
+                s = Math.max(state.interval ?? 0, 0.5);
+            }
+            d = fsrsClamp(d, 1, 10); s = Math.max(s, 0.1);
+            const r = Math.pow(1 + FSRS_FACTOR * t / s, FSRS_DECAY);
+            if (G === 1) {
+                s = FSRS_W[11] * Math.pow(d, -FSRS_W[12]) * (Math.pow(s + 1, FSRS_W[13]) - 1) * Math.exp((1 - Math.min(r, 1)) * FSRS_W[14]);
+            } else {
+                const hardPenalty = G === 2 ? FSRS_W[15] : 1;
+                const easyBonus = G === 4 ? FSRS_W[16] : 1;
+                s = s * (1 + Math.exp(FSRS_W[8]) * (11 - d) * Math.pow(s, -FSRS_W[9]) * (Math.exp((1 - Math.min(r, 1)) * FSRS_W[10]) - 1) * hardPenalty * easyBonus);
+            }
+            const dRaw = d - FSRS_W[6] * (G - 3);
+            d = fsrsClamp(FSRS_W[7] * FSRS_W[4] + (1 - FSRS_W[7]) * dRaw, 1, 10); // 均值回歸至初始難度
+        }
+        s = fsrsClamp(s, 0.1, 36500);
+        const interval = G === 1 ? 0 : Math.max(1, Math.round(s));
+        return { d, s, reps: (state?.reps ?? 0) + 1, interval, due: G === 1 ? now : now + interval * DAY_MS };
+    }
+
     function fillUpcomingQueue() {
         // v4.3.0 P5：排除最近答過的卡片，避免同一張卡立刻回鍋；牌組太小時退而求其次
         const recent = new Set(history.slice(-RECENT_SKIP));
@@ -489,6 +607,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const prevSnapshot = prevState ? {
             mastery: prevState.mastery, ef: prevState.ef, reps: prevState.reps,
             interval: prevState.interval, due: prevState.due,
+            // v5.14.0：FSRS 欄位隨快照復原（SM-2 狀態下不存在，條件展開維持 payload 形狀不變）
+            ...(prevState.d !== undefined ? { d: prevState.d } : {}),
+            ...(prevState.s !== undefined ? { s: prevState.s } : {}),
             lapses: prevState.lapses, leech: prevState.leech, suspended: prevState.suspended
         } : null;
 
@@ -503,8 +624,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // v5.4.0：雙面模式答案可見，答對一律記 q=4（視為「看過答案後想起」）
                 const flipped = document.getElementById('active-combo-card')?.querySelector('.card-inner')?.classList.contains('rotate-y-180') ?? false;
                 const q = action === 'incorrect' ? 2 : (currentDeckSettings.displayMode === 'dual' ? 4 : (flipped ? 4 : 5));
-                wasIntro = (state.reps ?? 0) === 0 && (state.due ?? 0) === 0; // v5.1：首次引入新卡
-                Object.assign(state, sm2Update(state, q));
+                wasIntro = (state.reps ?? 0) === 0 && (state.due ?? 0) === 0; // v5.1：判斷是否引入新卡
+                // v5.14.0：排程演算法分流（per-deck 設定；FSRS 判定映射：忘記→Again、翻面→Good、即答→Easy）
+                Object.assign(state, currentDeckSettings.algorithm === 'fsrs' ? fsrsUpdate(state, q) : sm2Update(state, q));
                 if (action === 'incorrect') applyLapse(state); // v5.1：失敗計數 + leech
                 state.mastery = action === 'incorrect' ? 1 : Math.min((state.mastery ?? 1) + 1, 5);
                 state.lastTime = Date.now();
@@ -639,10 +761,12 @@ document.addEventListener('DOMContentLoaded', () => {
             cardEl.className = `combo-card absolute w-full h-full transition-all duration-300 ease-out ${isTop ? 'z-[30]' : 'pointer-events-none'}`;
             cardEl.style.transform = `translateY(${i * 16}px) scale(${1 - i * 0.05})`;
             cardEl.style.opacity = 1 - i * 0.2;
-            const front = joinFields(ff, data);
+            const front = joinFields(ff, data); // 純文字（TTS 用）
             const back = joinFields(bf, data);
+            const frontHtml = fieldsToHtml(ff, data); // v5.15.0：渲染用（圖片卡）
+            const backHtml = fieldsToHtml(bf, data);
             const sub = sf !== null ? (data.fields[sf] || '') : '';
-            const extras = joinFields(extrasIdx, data);
+            const extras = fieldsToHtml(extrasIdx, data);
 
             if (isTop) {
                 cardEl.id = 'active-combo-card';
@@ -660,10 +784,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${canSpeak ? `<button class="speak-btn absolute top-3 right-3 z-[5] p-2 text-stone-300 hover:text-stone-900 dark:hover:text-white rounded-full transition-colors" aria-label="${t('aria.speak')}" title="${t('aria.speak')}"><span class="material-symbols-outlined !text-lg">volume_up</span></button>` : ''}
                     <div class="card-inner">
                         <div class="absolute inset-0 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex flex-col items-center justify-center p-6 sm:p-8 overflow-hidden">
-                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${fs}rem">${front}</div>
+                            <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${fs}rem">${frontHtml}</div>
                             ${subFront ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mt-1" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${subFront}</div>` : ''}
                             <div class="w-12 h-px bg-stone-200 dark:bg-stone-700 my-3 sm:my-4 flex-shrink-0"></div>
-                            <div class="card-content text-center text-stone-600 dark:text-stone-300 font-bold break-words w-full" style="font-size: ${fs * 0.8}rem">${back}</div>
+                            <div class="card-content text-center text-stone-600 dark:text-stone-300 font-bold break-words w-full" style="font-size: ${fs * 0.8}rem">${backHtml}</div>
                             ${subBack ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mt-1" style="font-size: ${Math.max(fs * 0.35, 0.8)}rem">${subBack}</div>` : ''}
                             <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full text-center mt-2">${extras}</div>
                         </div>
@@ -677,13 +801,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-inner">
                         <div class="absolute inset-0 backface-hidden bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-sm flex items-center justify-center p-8 overflow-hidden">
                             <div class="w-full flex flex-col items-center gap-2">
-                                <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${currentDeckSettings.fontSize}rem">${front}</div>
+                                <div class="card-content text-center text-stone-900 dark:text-stone-100 font-bold break-words w-full" style="font-size: ${currentDeckSettings.fontSize}rem">${frontHtml}</div>
                                 ${subHtml}
                             </div>
                             <span class="absolute bottom-5 left-0 right-0 text-center text-[10px] uppercase tracking-widest text-stone-400 font-bold pointer-events-none select-none">${t('learn.tap_flip')}</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-3xl shadow-lg flex flex-col items-center justify-center p-8 text-center overflow-hidden">
-                            <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${back}</div>
+                            <div class="card-content font-bold mb-4 break-words w-full" style="font-size: ${currentDeckSettings.fontSize * 0.8}rem">${backHtml}</div>
                             ${subBack ? `<div class="card-content text-center text-stone-400 dark:text-stone-500 font-bold break-words w-full mb-3" style="font-size: ${Math.max(currentDeckSettings.fontSize * 0.35, 0.8)}rem">${subBack}</div>` : ''}
                             <div class="text-stone-400 dark:text-stone-500 text-sm leading-relaxed overflow-y-auto max-h-full w-full">${extras}</div>
                         </div>
@@ -698,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     speakBtn.onclick = (e) => { e.stopPropagation(); speakText(front); };
                 }
             } else {
-                cardEl.innerHTML = `<div class="w-full h-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl flex items-center justify-center p-8"><div class="text-stone-200 dark:text-stone-800 font-bold truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">${front}</div></div>`;
+                cardEl.innerHTML = `<div class="w-full h-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl flex items-center justify-center p-8"><div class="text-stone-200 dark:text-stone-800 font-bold truncate w-full text-center" style="font-size: ${currentDeckSettings.fontSize}rem">${frontHtml}</div></div>`;
                 cardStackContainer.appendChild(cardEl);
             }
         }
@@ -815,6 +939,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ttsLangBtn.onclick = (e) => { e.stopPropagation(); cycleTtsLang(); };
         reviewDirBtn.onclick = (e) => { e.stopPropagation(); cycleReviewDirection(); };
         practiceBtn.onclick = (e) => { e.stopPropagation(); togglePracticeMode(); };
+        algorithmBtn.onclick = (e) => { e.stopPropagation(); cycleAlgorithm(); };
         fieldMgmtResetBtn.onclick = (e) => { e.stopPropagation(); resetFieldRoles(); };
         deckMenuCloseBtn.onclick = (e) => { e.stopPropagation(); hideAllMenus(); };
 
@@ -1385,6 +1510,8 @@ document.addEventListener('DOMContentLoaded', () => {
         applyDisplayModeIcon();
         ttsLangBtn.textContent = (currentDeckSettings.ttsLang && currentDeckSettings.ttsLang !== 'auto') ? currentDeckSettings.ttsLang : t('tts.auto');
         applyPracticeButton();
+        algorithmBtn.textContent = t(currentDeckSettings.algorithm === 'fsrs' ? 'menu.algo_fsrs' : 'menu.algo_sm2');
+        algorithmBtn.title = currentDeckSettings.algorithm === 'fsrs' ? t('menu.algo_fsrs_hint') : t('menu.algo_sm2_hint');
         renderFieldManagement();
         populateCardTagFilters();
     }
@@ -1462,6 +1589,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // v5.9.0：多欄拼接（過濾空欄，不渲染空行）
     function joinFields(idxs, card) {
         return (idxs || []).map(i => (card.fields?.[i] || '').trim()).filter(Boolean).join('<br>');
+    }
+
+    // =================================================================
+    // ===== v5.15.0 圖片卡：欄位內容為圖片 URL 時自動渲染 =====
+    // =================================================================
+    const IMAGE_URL_RE = /^https?:\/\/\S+\.(png|jpe?g|gif|webp|avif|svg)(\?\S*)?$/i;
+    function isImageUrl(s) {
+        return IMAGE_URL_RE.test((s || '').trim());
+    }
+    // 單欄渲染：整欄是圖片 URL → <img>（載入失敗以 URL 文字遞補）；否則原樣（允許既有 HTML）
+    function fieldHtml(f) {
+        const s = (f || '').trim();
+        if (!isImageUrl(s)) return f;
+        const safe = s.replace(/"/g, '%22');
+        return `<img src="${safe}" alt="${safe}" class="inline-block max-h-48 sm:max-h-64 rounded-xl my-1" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode(this.alt))">`;
+    }
+    // 渲染用多欄拼接（TTS 仍用 joinFields 純文字）
+    function fieldsToHtml(idxs, card) {
+        return (idxs || []).map(i => fieldHtml(card.fields?.[i] || '')).filter(h => h.trim() !== '').join('<br>');
     }
 
     function maxFieldCount() {
@@ -1648,6 +1794,14 @@ document.addEventListener('DOMContentLoaded', () => {
         practiceBtn.className = practiceMode
             ? 'px-4 py-1.5 bg-teal-700 dark:bg-teal-500 text-white dark:text-stone-950 rounded-xl text-xs font-bold'
             : 'px-4 py-1.5 bg-stone-100 dark:bg-stone-800 rounded-xl text-xs font-bold text-stone-900 dark:text-white';
+    }
+
+    // v5.14.0：排程演算法切換（SM-2 ↔ FSRS）——現有進度不重置，FSRS 欄位（d/s）於下次判定時惰性推導
+    function cycleAlgorithm() {
+        currentDeckSettings.algorithm = currentDeckSettings.algorithm === 'fsrs' ? 'sm2' : 'fsrs';
+        persistDeckSettings();
+        algorithmBtn.textContent = t(currentDeckSettings.algorithm === 'fsrs' ? 'menu.algo_fsrs' : 'menu.algo_sm2');
+        algorithmBtn.title = currentDeckSettings.algorithm === 'fsrs' ? t('menu.algo_fsrs_hint') : t('menu.algo_sm2_hint');
     }
 
     // v5.8.1：正規化詞性版面中的不一致卡列——fields[1] 是定義（非詞性）且第 3 欄空 → 定義遞補至第 3 欄
@@ -2261,6 +2415,7 @@ Topic: (describe what you want, e.g. "TOEIC 500 core words with phonetics and ex
             });
             if (!ok) return;
             deckList = deckList.filter(x => x.id !== id);
+            if (dataLayerMode === 'idb') { deckDataCache.delete(id); idbDataDelete(id).catch(() => {}); }
             localStorage.removeItem(STORAGE_KEYS.DECK_DATA_PREFIX + id);
             localStorage.removeItem(STORAGE_KEYS.DECK_STATE_PREFIX + id);
             saveDeckList(); deckOptionsModal.classList.add('hidden'); renderHomeScreen();

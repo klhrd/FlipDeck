@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.15.0] - 2026-11-03
+### Added（IndexedDB 資料層 + 圖片卡——定位缺口 ④）
+- **資料層遷移（突破 localStorage 5MB 上限）**：牌組卡片資料改存 IndexedDB（`flipdeck-data`），同步記憶體快取讓所有既有程式碼零改動——讀取走快取、寫入 400ms 防抖批次落 IDB。啟動時自動把 localStorage 舊資料搬入 IDB 後移除（釋放空間）；無 IndexedDB 環境（jsdom/極舊瀏覽器）自動退回 localStorage 舊路徑。牌組清單/學習狀態/設定維持 localStorage（體積小）。
+- **圖片卡**：欄位內容為圖片 URL（.png/.jpg/.gif/.webp/.avif/.svg，可含 query string）時自動渲染為 `<img>`（lazy loading、no-referrer、載入失敗以 URL 文字遞補、引號夾帶防護）；正/背面多欄拼接與 extras 皆支援；TTS 朗讀仍讀純文字不會念出 URL。卡片資料僅存 URL 字串，不佔額外空間。
+- **測試**：新增 `image.test.js`（第 17 套）——URL 偵測、渲染與引號防護、多欄混合拼接。
+
+### Changed
+- **版本號升級**：v5.14.0 -> v5.15.0；SW `CACHE_NAME` 同步 bump。
+
+## [5.14.0] - 2026-11-03
+### Added（FSRS 排程演算法——現代繼任者，定位缺口 ③）
+- **`fsrsUpdate` 純函式（FSRS-5 預設參數 17 維）**：遺忘曲線 R=(1+FACTOR·t/S)^DECAY、難度 D（1–10）＋穩定度 S（天）記憶模型、難度均值回歸、Hard 懲罰/Easy 加成；要求保留率 90%（成功時 interval ≈ S）。
+- **判定映射**：忘記→Again(1)、翻面正確→Good(3)、即答→Easy(4)；雙面模式 q=4 同 Good。排程語意與 SM-2 對齊：忘記→立即重到期（due=now）、成功→前向排程。
+- **per-deck 開關**：學習選單新增「排程演算法」循環鈕（SM-2 ↔ FSRS），tooltip 說明兩者；預設維持 SM-2，既有牌組行為不變。
+- **無痛遷移**：舊 SM-2 資料無 d/s 欄位時惰性推導（D = 5+(2.5-ef)×2.5、S = interval），原欄位保留不動、可隨時切回；undo 快照擴充 d/s。
+- **周邊不受影響**：每日新卡上限、leech、自由練習（唯讀）、統計與到期預測（interval/due 由兩種演算法共同維護）。
+- **測試**：新增 `fsrs.test.js`（第 16 套）——判定映射與初始 D/S、成長/墜落曲線、SM-2 惰性遷移、極端連錯夾限。
+
+### Changed
+- **版本號升級**：v5.13.0 -> v5.14.0；SW `CACHE_NAME` 同步 bump。
+
 ## [5.13.0] - 2026-11-03
 ### Added（牌組市集——GitHub 靜態 JSON 目錄當無後端倉庫，詳見 docs/MARKETPLACE.md）
 - **快速開始新增「牌組市集」入口**：全寬按鈕（storefront 圖示），開啟市集 Modal 瀏覽並安裝社群牌組。

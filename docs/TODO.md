@@ -123,6 +123,15 @@
 - [x] 安裝流程：驗證 → 同 id 覆蓋確認 → processNewDeck（詞性版面自動偵測）→ 關閉 Modal 進學習
 - [x] 純函式測試：`validateCatalogEntry`／`validateMarketDeck`＋產出 count 一致性斷言；目錄種子＝四個內建範例（產生器 `test/auto/build-marketplace.js`）
 
+## FSRS 排程演算法（2026-11-03 立案，v5.14.0 已完成）
+- [x] 純函式 `fsrsUpdate`（FSRS-5 預設參數 17 維）：遺忘曲線 R=(1+FACTOR·t/S)^DECAY、D/S 記憶模型、難度均值回歸、Hard/Easy 懲罰加成
+- [x] 判定映射：忘記→Again(1)、翻面正確→Good(3)、即答→Easy(4)；雙面模式 q=4 同 Good
+- [x] 舊 SM-2 資料惰性遷移：`d = 5+(2.5-ef)×2.5`、`s = interval`（無 d/s 欄位時推導，不動原欄位）
+- [x] per-deck 設定 `algorithm: 'sm2' | 'fsrs'`（學習選單循環切換），判定處分流
+- [x] 排程語意對齊 FlipDeck：忘記→立即重到期（due=now）、成功→interval≈S（要求保留率 0.9）
+- [x] undo 快照擴充 d/s 欄位；每日上限/leech/自由練習等周邊不受影響
+- [x] 測試：新卡各判定初值、成長曲線、SM-2 遷移、夾限
+
 ## 未來主題候選
 - [ ] 雲端同步（需先選定方案：Google Drive / Supabase / 自架後端；「連結分享」可先覆蓋無後端的分享需求）
 
@@ -136,16 +145,16 @@
 
 ### 內容與媒體
 - [x] 發音朗讀（Web Speech API，卡面一鍵 TTS；v5.5.2 新增 per-deck 語言切換與切換示範）
-- [ ] 卡片圖片支援（欄位 URL 自動渲染縮圖）
+- [x] 卡片圖片支援（欄位 URL 自動渲染；lazy loading、失敗遞補、引號防護）(v5.15.0)
 - [x] 匯出 Anki 相容格式（TSV，依欄位角色映射正面／背面；不含進度）(v5.8.0)
 
 ### 資料層強化
-- [ ] IndexedDB 遷移（突破 localStorage 5MB 上限；hs_6000 已接近，且為圖片/媒體的前置需求）
-- [ ] 自動本地快照備份（每 N 天存入 IndexedDB，防誤刪）
+- [x] IndexedDB 遷移（牌組卡片資料存 IDB＋同步快取，突破 localStorage 5MB 上限；無 IDB 環境自動退回）(v5.15.0)
+- [x] 自動本地快照備份（每 N 天存入 IndexedDB，防誤刪）
 - [ ] 牌組釘選/排序手動調整（首頁多牌組整理）
 
 ### 演算法進階
-- [ ] FSRS 演算法（SM-2 的現代繼任者：最佳化記憶模型、可調忘卻曲線；Anki 已採用）
+- [x] FSRS 演算法（SM-2 的現代繼任者：最佳化記憶模型、可調忘卻曲線；Anki 已採用）
 - [ ] 學習連續天數 (streak) 與每日目標
 - [ ] 到期推播提醒（PWA Notification + Service Worker 定時觸發）
 

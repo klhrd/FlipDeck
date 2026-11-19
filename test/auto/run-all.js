@@ -3,6 +3,9 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const suites = [
+
+    'fsrs.test.js',
+    'image.test.js',   // 回片卡：URL 儁測 / 渲染
     'sw.test.js',       // Service Worker 快取策略（network-first、快取清理、離線 fallback）
     'session.test.js',  // session 同步 / 進度計算 / escapeAttr
     'learning.test.js', // 判定流程 / undo / appConfirm 對話框
